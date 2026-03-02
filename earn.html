@@ -7,836 +7,574 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f3ed;
-            color: #1f2937;
-        }
-
-        /* Top Navigation */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 56px;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            z-index: 100;
-        }
-
-        .nav-back {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #1f2937;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
-        .nav-back:hover {
-            background-color: #f3f4f6;
-            border-radius: 8px;
-        }
-
-        .nav-title {
-            font-size: 18px;
-            font-weight: 600;
-            flex: 1;
-            text-align: center;
-        }
-
-        .nav-filter {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #1f2937;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-filter:hover {
-            background-color: #f3f4f6;
-            border-radius: 8px;
-        }
-
-        /* Main Content */
-        main {
-            margin-top: 56px;
-            margin-bottom: 80px;
-            padding: 16px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Cards */
-        .card {
-            background-color: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Total Earnings Hero */
-        .hero-card {
-            background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
-            color: white;
-            padding: 24px;
-        }
-
-        .hero-card-label {
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .hero-card-amount {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .hero-card-subtext {
-            font-size: 13px;
-            opacity: 0.85;
-            margin-bottom: 20px;
-        }
-
-        .eye-toggle {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .eye-toggle:hover {
-            opacity: 1;
-        }
-
-        .mini-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .mini-stat {
-            text-align: center;
-        }
-
-        .mini-stat-label {
-            font-size: 11px;
-            opacity: 0.85;
-            margin-bottom: 4px;
-        }
-
-        .mini-stat-value {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        /* Earning Breakdown */
-        .breakdown-container {
-            overflow-x: auto;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-        }
-
-        .breakdown-cards {
-            display: flex;
-            gap: 12px;
-            min-width: min-content;
-            padding: 0 4px;
-        }
-
-        .breakdown-card {
-            flex: 0 0 calc(50% - 6px);
-            border-radius: 16px;
-            padding: 20px;
-            color: white;
-            min-height: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        @media (max-width: 480px) {
-            .breakdown-card {
-                flex: 0 0 calc(50% - 6px);
-            }
-        }
-
-        .breakdown-collab {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-
-        .breakdown-partner {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-        }
-
-        .breakdown-royalties {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
-
-        .breakdown-label {
-            font-size: 13px;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .breakdown-amount {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        /* Section Titles */
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            padding: 0 4px;
-        }
-
-        /* Task Cards */
-        .task-card {
-            display: flex;
-            gap: 12px;
-            padding: 16px;
-            border: 1px solid #f0f0f0;
-        }
-
-        .task-icon {
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-
-        .task-content {
-            flex: 1;
-        }
-
-        .task-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .task-description {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-
-        .task-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .task-reward {
-            font-size: 14px;
-            font-weight: 600;
-            color: #2dd4bf;
-        }
-
-        .task-button {
-            background-color: #2dd4bf;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .task-button:hover {
-            background-color: #14b8a6;
-        }
-
-        .task-button:active {
-            transform: scale(0.98);
-        }
-
-        /* Transaction List */
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .transaction-success {
-            background-color: #d1fae5;
-            color: #059669;
-        }
-
-        .transaction-withdrawal {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .transaction-content {
-            flex: 1;
-        }
-
-        .transaction-description {
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-
-        .transaction-date {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        .transaction-amount {
-            text-align: right;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .transaction-amount.positive {
-            color: #10b981;
-        }
-
-        .transaction-amount.negative {
-            color: #ef4444;
-        }
-
-        /* Withdraw Button */
-        .withdraw-button {
-            width: 100%;
-            background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .withdraw-button:hover {
-            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
-        }
-
-        .withdraw-button:active {
-            transform: scale(0.98);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .modal-message {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-
-        .modal-button {
-            background-color: #2dd4bf;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .modal-button:hover {
-            background-color: #14b8a6;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background-color: white;
-            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            padding-top: 8px;
-            z-index: 100;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            color: #9ca3af;
-            font-size: 12px;
-            font-weight: 500;
-            padding-top: 4px;
-            transition: color 0.2s;
-        }
-
-        .nav-item:hover {
-            color: #6b7280;
-        }
-
-        .nav-item.active {
-            color: #2dd4bf;
-        }
-
-        .nav-item i {
-            font-size: 24px;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 2px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f3ed; color: #1f2937; }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
+        .nav-back { background: none; border: none; font-size: 20px; cursor: pointer; color: #1f2937; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .nav-back:hover { background: #f3f4f6; border-radius: 8px; }
+        .nav-title { font-size: 18px; font-weight: 600; flex: 1; text-align: center; }
+        .nav-spacer { width: 40px; }
+        main { margin-top: 56px; margin-bottom: 80px; padding: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+
+        /* HERO */
+        .hero-card { background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; padding: 24px; }
+        .hero-label { font-size: 14px; font-weight: 500; opacity: 0.9; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .hero-amount { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+        .hero-sub { font-size: 13px; opacity: 0.85; margin-bottom: 20px; }
+        .eye-toggle { background: none; border: none; color: white; cursor: pointer; font-size: 16px; }
+        .mini-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); }
+        .mini-stat { text-align: center; }
+        .mini-stat-label { font-size: 11px; opacity: 0.85; margin-bottom: 4px; }
+        .mini-stat-value { font-size: 14px; font-weight: 600; }
+
+        /* BREAKDOWN */
+        .breakdown-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .bcard { flex: 1; border-radius: 16px; padding: 18px; color: white; }
+        .bcard-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .bcard-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .bcard-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .bcard-label { font-size: 12px; opacity: 0.9; margin-bottom: 6px; }
+        .bcard-amount { font-size: 20px; font-weight: 700; }
+
+        /* SECTION TITLES */
+        .section-title { font-size: 18px; font-weight: 700; margin-top: 24px; margin-bottom: 4px; padding: 0 2px; }
+        .section-sub { font-size: 12px; color: #6b7280; margin-bottom: 14px; padding: 0 2px; }
+
+        /* DAILY RESET TIMER */
+        .reset-banner { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .reset-label { font-size: 12px; opacity: 0.9; }
+        .reset-timer { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+        /* TASK CARDS */
+        .task-card { display: flex; gap: 14px; padding: 4px 0; align-items: flex-start; }
+        .task-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+        .task-content { flex: 1; }
+        .task-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+        .task-description { font-size: 12px; color: #6b7280; margin-bottom: 10px; line-height: 1.4; }
+        .task-footer { display: flex; justify-content: space-between; align-items: center; }
+        .task-reward { font-size: 15px; font-weight: 700; color: #2dd4bf; }
+        .task-reward.daily { color: #f59e0b; }
+        .task-btn { background: #2dd4bf; color: white; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .task-btn:hover { background: #14b8a6; transform: translateY(-1px); }
+        .task-btn:disabled { cursor: not-allowed; transform: none; }
+        .task-btn.done-today { background: #fef3c7; color: #d97706; }
+        .task-btn.daily-btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .task-btn.daily-btn:hover { background: linear-gradient(135deg, #d97706, #b45309); }
+
+        /* DAILY badge */
+        .daily-badge { display: inline-block; background: #fef3c7; color: #d97706; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.3px; }
+
+        /* TRANSACTIONS */
+        .tx-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f3f4f6; }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .tx-icon.pos { background: #d1fae5; color: #059669; }
+        .tx-icon.neg { background: #fee2e2; color: #dc2626; }
+        .tx-content { flex: 1; }
+        .tx-desc { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+        .tx-date { font-size: 11px; color: #9ca3af; }
+        .tx-amount { font-weight: 700; font-size: 14px; }
+        .tx-amount.pos { color: #10b981; }
+        .tx-amount.neg { color: #ef4444; }
+
+        .empty-state { text-align: center; padding: 28px 16px; color: #9ca3af; font-size: 13px; line-height: 1.6; }
+        .empty-state i { font-size: 28px; margin-bottom: 10px; display: block; }
+
+        /* WITHDRAW */
+        .withdraw-btn { width: 100%; background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: box-shadow 0.2s; }
+        .withdraw-btn:hover { box-shadow: 0 4px 14px rgba(45,212,191,0.35); }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-box { background: white; border-radius: 20px; padding: 28px 24px; max-width: 380px; width: 90%; text-align: center; }
+        .modal-emoji { font-size: 48px; margin-bottom: 12px; }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .modal-msg { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.5; }
+        .modal-btn { background: #2dd4bf; color: white; border: none; border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+        /* TOAST */
+        #toastContainer { position: fixed; top: 68px; right: 14px; z-index: 9999; pointer-events: none; }
+        .toast { background: white; border-radius: 12px; padding: 13px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.13); margin-bottom: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 9px; animation: slideIn 0.3s ease; pointer-events: auto; }
+        .toast.success { border-left: 4px solid #10b981; color: #059669; }
+        .toast.error { border-left: 4px solid #ef4444; color: #dc2626; }
+        @keyframes slideIn { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:translateX(0); } }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: white; box-shadow: 0 -1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 8px; z-index: 100; max-width: 480px; margin: 0 auto; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #9ca3af; font-size: 12px; font-weight: 500; padding-top: 4px; transition: color 0.2s; }
+        .nav-item.active { color: #2dd4bf; }
+        .nav-item i { font-size: 24px; }
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <a href="dashboard.html" class="nav-back">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <div class="nav-title">Earn 💰</div>
-        <button class="nav-filter">
-            <i class="fas fa-sliders-h"></i>
-        </button>
-    </nav>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Total Earnings Hero Card -->
-        <div class="card hero-card">
-            <div class="hero-card-label">
-                <span>Total Earned</span>
-                <button class="eye-toggle" id="eyeToggle">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <div class="hero-card-amount" id="totalAmount">$2,455.75</div>
-            <div class="hero-card-subtext">All time earnings</div>
+<nav class="top-nav">
+    <a href="dashboard.html" class="nav-back"><i class="fas fa-arrow-left"></i></a>
+    <div class="nav-title">Earn &#x1F4B0;</div>
+    <div class="nav-spacer"></div>
+</nav>
 
-            <div class="mini-stats">
-                <div class="mini-stat">
-                    <div class="mini-stat-label">This Month</div>
-                    <div class="mini-stat-value" id="thisMonth">$380.00</div>
-                </div>
-                <div class="mini-stat">
-                    <div class="mini-stat-label">Pending</div>
-                    <div class="mini-stat-value" id="pending">$125.50</div>
-                </div>
-                <div class="mini-stat">
-                    <div class="mini-stat-label">Withdrawn</div>
-                    <div class="mini-stat-value" id="withdrawn">$1,950.25</div>
-                </div>
-            </div>
+<div id="toastContainer"></div>
+
+<main>
+    <!-- HERO -->
+    <div class="card hero-card">
+        <div class="hero-label">
+            <span>Total Earned</span>
+            <button class="eye-toggle" id="eyeToggle"><i class="fas fa-eye"></i></button>
         </div>
-
-        <!-- Earning Breakdown -->
-        <div class="breakdown-container">
-            <div class="breakdown-cards">
-                <div class="card breakdown-card breakdown-collab">
-                    <div class="breakdown-label">Collab Earnings</div>
-                    <div class="breakdown-amount">$1,240.50</div>
-                </div>
-                <div class="card breakdown-card breakdown-partner">
-                    <div class="breakdown-label">Partner Earnings</div>
-                    <div class="breakdown-amount">$875.00</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="breakdown-container">
-            <div class="breakdown-cards">
-                <div class="card breakdown-card breakdown-royalties">
-                    <div class="breakdown-label">Royalties</div>
-                    <div class="breakdown-amount">$340.25</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Available Tasks Section -->
-        <h2 class="section-title">Available Tasks</h2>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">📝</div>
-                <div class="task-content">
-                    <div class="task-name">Write a Product Review</div>
-                    <div class="task-description">Review any product on Bazaar</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $5.00</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">📣</div>
-                <div class="task-content">
-                    <div class="task-name">Refer a Friend</div>
-                    <div class="task-description">Invite friends to join the platform</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $15.00</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">🎬</div>
-                <div class="task-content">
-                    <div class="task-name">Upload a Video</div>
-                    <div class="task-description">Share your first video on the platform</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $10.00</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">🎵</div>
-                <div class="task-content">
-                    <div class="task-name">Upload Audio Track</div>
-                    <div class="task-description">Share original music or podcast</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $8.00</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">✅</div>
-                <div class="task-content">
-                    <div class="task-name">Complete Profile</div>
-                    <div class="task-description">Fill in all profile details</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $3.00</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="task-card">
-                <div class="task-icon">🌟</div>
-                <div class="task-content">
-                    <div class="task-name">Rate 5 Products</div>
-                    <div class="task-description">Leave reviews on Bazaar items</div>
-                    <div class="task-footer">
-                        <span class="task-reward">Earn $7.50</span>
-                        <button class="task-button">Start Task</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Transactions Section -->
-        <h2 class="section-title">Recent Transactions</h2>
-
-        <div class="card">
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Collab with @creativestudio</div>
-                    <div class="transaction-date">Jan 28, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$120.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Bazaar sale: Logo Pack</div>
-                    <div class="transaction-date">Jan 27, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$45.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Partner bonus credit</div>
-                    <div class="transaction-date">Jan 26, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$75.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Royalty: Track #447</div>
-                    <div class="transaction-date">Jan 25, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$22.50</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-withdrawal">
-                    <i class="fas fa-minus"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Withdrawal to bank</div>
-                    <div class="transaction-date">Jan 24, 2026</div>
-                </div>
-                <div class="transaction-amount negative">-$200.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Task reward: Video upload</div>
-                    <div class="transaction-date">Jan 23, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$10.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-success">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Referral bonus: 3 friends</div>
-                    <div class="transaction-date">Jan 22, 2026</div>
-                </div>
-                <div class="transaction-amount positive">+$45.00</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="transaction-icon transaction-withdrawal">
-                    <i class="fas fa-minus"></i>
-                </div>
-                <div class="transaction-content">
-                    <div class="transaction-description">Withdrawal to bank</div>
-                    <div class="transaction-date">Jan 15, 2026</div>
-                </div>
-                <div class="transaction-amount negative">-$150.00</div>
-            </div>
-        </div>
-
-        <!-- Withdraw Button -->
-        <button class="withdraw-button" id="withdrawButton">
-            <i class="fas fa-wallet"></i>
-            Withdraw Earnings
-        </button>
-    </main>
-
-    <!-- Withdraw Modal -->
-    <div class="modal" id="withdrawModal">
-        <div class="modal-content">
-            <div class="modal-title">Coming Soon</div>
-            <div class="modal-message">Withdrawals will be available soon!</div>
-            <button class="modal-button" id="closeModal">Got it</button>
+        <div class="hero-amount" id="totalAmount">&#8358;0.00</div>
+        <div class="hero-sub">All time earnings</div>
+        <div class="mini-stats">
+            <div class="mini-stat"><div class="mini-stat-label">This Month</div><div class="mini-stat-value" id="thisMonth">&#8358;0.00</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Tasks Done</div><div class="mini-stat-value" id="tasksDone">0</div></div>
+            <div class="mini-stat"><div class="mini-stat-label">Bonus</div><div class="mini-stat-value" id="bonusTotal">&#8358;0.00</div></div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item">
-            <i class="fas fa-home"></i>
-            Home
-        </a>
-        <a href="wish-hub.html" class="nav-item">
-            <i class="fas fa-heart"></i>
-            Wish Hub
-        </a>
-        <a href="earn.html" class="nav-item active">
-            <i class="fas fa-coins"></i>
-            Earn
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-graduation-cap"></i>
-            Skill Up
-        </a>
-        <a href="profile.html" class="nav-item">
-            <i class="fas fa-user"></i>
-            Profile
-        </a>
-    </nav>
+    <!-- BREAKDOWN -->
+    <div class="breakdown-row">
+        <div class="bcard bcard-green"><div class="bcard-label">Daily Earnings</div><div class="bcard-amount" id="breakDaily">&#8358;0.00</div></div>
+        <div class="bcard bcard-purple"><div class="bcard-label">Referral Earnings</div><div class="bcard-amount" id="breakReferral">&#8358;0.00</div></div>
+    </div>
+    <div class="breakdown-row">
+        <div class="bcard bcard-blue"><div class="bcard-label">Signup Bonus</div><div class="bcard-amount" id="breakBonus">&#8358;0.00</div></div>
+    </div>
 
-    <!-- Supabase Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
+    <!-- DAILY TASKS -->
+    <h2 class="section-title">Daily Tasks <span style="font-size:13px;font-weight:500;color:#6b7280;">&#8212; Resets every midnight</span></h2>
+    <p class="section-sub">Complete these every day to keep earning</p>
 
-    <!-- Page Scripts -->
-    <script>
-        // Auth Guard
-        document.addEventListener('DOMContentLoaded', async () => {
-            const result = await requireAuth('approved');
-            if (!result) return;
-        });
+    <!-- Daily reset countdown -->
+    <div class="reset-banner">
+        <div>
+            <div class="reset-label">&#128337; Resets in</div>
+            <div class="reset-timer" id="resetTimer">--:--:--</div>
+        </div>
+        <div style="font-size:28px;">&#127775;</div>
+    </div>
 
-        // Eye Toggle for visibility
-        const eyeToggle = document.getElementById('eyeToggle');
-        const totalAmount = document.getElementById('totalAmount');
-        const thisMonth = document.getElementById('thisMonth');
-        const pending = document.getElementById('pending');
-        const withdrawn = document.getElementById('withdrawn');
-        let isVisible = true;
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#127909;</div>
+            <div class="task-content">
+                <div class="task-name">Watch a Video <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Watch any video on the platform to earn your daily reward</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;1,000</span>
+                    <button class="task-btn daily-btn" data-task="daily_video" data-reward="1000" data-desc="Daily reward: Video watch" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        eyeToggle.addEventListener('click', () => {
-            isVisible = !isVisible;
-            if (isVisible) {
-                totalAmount.textContent = '$2,455.75';
-                thisMonth.textContent = '$380.00';
-                pending.textContent = '$125.50';
-                withdrawn.textContent = '$1,950.25';
-                eyeToggle.innerHTML = '<i class="fas fa-eye"></i>';
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#127925;</div>
+            <div class="task-content">
+                <div class="task-name">Listen to Audio <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Listen to any audio track or podcast on the platform</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;500</span>
+                    <button class="task-btn daily-btn" data-task="daily_audio" data-reward="500" data-desc="Daily reward: Audio listen" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#127908;</div>
+            <div class="task-content">
+                <div class="task-name">Listen to Music <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Play any music track available on the platform</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;500</span>
+                    <button class="task-btn daily-btn" data-task="daily_music" data-reward="500" data-desc="Daily reward: Music listen" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#11088;</div>
+            <div class="task-content">
+                <div class="task-name">Write a Review <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Review any product or content on the platform</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;700</span>
+                    <button class="task-btn daily-btn" data-task="daily_review" data-reward="700" data-desc="Daily reward: Review written" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#128194;</div>
+            <div class="task-content">
+                <div class="task-name">Download a File <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Download any file from the Files section</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;1,050</span>
+                    <button class="task-btn daily-btn" data-task="daily_file_download" data-reward="1050" data-desc="Daily reward: File download" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="task-card">
+            <div class="task-icon">&#128227;</div>
+            <div class="task-content">
+                <div class="task-name">Refer a Friend <span class="daily-badge">Daily</span></div>
+                <div class="task-description">Share your referral link and get a friend to join</div>
+                <div class="task-footer">
+                    <span class="task-reward daily">Earn &#8358;5,000</span>
+                    <button class="task-btn daily-btn" data-task="daily_referral" data-reward="5000" data-desc="Daily referral bonus" data-daily="true">Start Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY -->
+    <h2 class="section-title" style="margin-top:28px;">Earnings History</h2>
+    <div class="card" id="historyCard">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading history...</div>
+    </div>
+
+    <button class="withdraw-btn" id="withdrawBtn">
+        <i class="fas fa-wallet"></i> Withdraw Earnings
+    </button>
+</main>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal" id="withdrawModal">
+    <div class="modal-box">
+        <div class="modal-emoji">&#128640;</div>
+        <div class="modal-title">Coming Soon!</div>
+        <div class="modal-msg">Withdrawals will be available very soon. Keep earning in the meantime!</div>
+        <button class="modal-btn" id="closeModal">Got it</button>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
+    <a href="wish-hub.html" class="nav-item"><i class="fas fa-heart"></i>Wish Hub</a>
+    <a href="earn.html" class="nav-item active"><i class="fas fa-coins"></i>Earn</a>
+    <a href="#" class="nav-item"><i class="fas fa-graduation-cap"></i>Skill Up</a>
+    <a href="profile.html" class="nav-item"><i class="fas fa-user"></i>Profile</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+    // ─────────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────────
+    let currentUserId = null;
+    let completedOnce = new Set();   // one-time tasks completed
+    let completedToday = new Set();  // daily tasks done today
+    let amountsVisible = true;
+    let savedAmts = {};
+
+    // ─────────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────────
+    const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    function todayStr() {
+        return new Date().toISOString().slice(0,10); // YYYY-MM-DD
+    }
+
+    function timeAgo(d) {
+        const s = Math.floor((Date.now()-new Date(d))/1000);
+        if(s<60) return 'Just now';
+        if(s<3600) return Math.floor(s/60)+'m ago';
+        if(s<86400) return Math.floor(s/3600)+'h ago';
+        if(s<172800) return 'Yesterday';
+        return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    }
+
+    function showToast(msg, type='success') {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        t.className = 'toast '+type;
+        const icon = type==='success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        t.innerHTML = '<i class="fas '+icon+'"></i> '+msg;
+        c.appendChild(t);
+        setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3200);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // COUNTDOWN TIMER (resets at midnight)
+    // ─────────────────────────────────────────────────────────
+    function startCountdown() {
+        function update() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24,0,0,0);
+            const diff = Math.floor((midnight - now) / 1000);
+            const h = String(Math.floor(diff/3600)).padStart(2,'0');
+            const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+            const s = String(diff%60).padStart(2,'0');
+            const el = document.getElementById('resetTimer');
+            if(el) el.textContent = h+':'+m+':'+s;
+        }
+        update();
+        setInterval(update, 1000);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+        const result = await requireAuth('approved');
+        if(!result) return;
+        currentUserId = result.profile.id;
+
+        startCountdown();
+        await loadCompletedStatus();
+        setupAllButtons();
+        await Promise.all([loadStats(), loadHistory()]);
+        setupEye();
+        setupWithdraw();
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // LOAD WHAT'S BEEN COMPLETED
+    // ─────────────────────────────────────────────────────────
+    async function loadCompletedStatus() {
+        try {
+            // One-time tasks
+            const {data:once} = await _supabase
+                .from('completed_tasks')
+                .select('task_type')
+                .eq('user_id', currentUserId);
+            (once||[]).forEach(r => completedOnce.add(r.task_type));
+
+            // Daily tasks (only today's)
+            const {data:daily} = await _supabase
+                .from('daily_completions')
+                .select('task_type')
+                .eq('user_id', currentUserId)
+                .eq('completed_date', todayStr());
+            (daily||[]).forEach(r => completedToday.add(r.task_type));
+
+        } catch(e) { console.error('loadCompletedStatus:', e); }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SETUP ALL TASK BUTTONS
+    // ─────────────────────────────────────────────────────────
+    function setupAllButtons() {
+        document.querySelectorAll('.task-btn').forEach(btn => {
+            const task = btn.dataset.task;
+            const isDaily = btn.dataset.daily === 'true';
+
+            if(isDaily) {
+                if(completedToday.has(task)) {
+                    markDoneToday(btn);
+                } else {
+                    btn.addEventListener('click', () => doTask(btn));
+                }
             } else {
-                totalAmount.textContent = '••••••';
-                thisMonth.textContent = '••••••';
-                pending.textContent = '••••••';
-                withdrawn.textContent = '••••••';
-                eyeToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                if(completedOnce.has(task)) {
+                    markDoneOnce(btn);
+                } else {
+                    btn.addEventListener('click', () => doTask(btn));
+                }
             }
         });
+    }
 
-        // Withdraw Modal
-        const withdrawButton = document.getElementById('withdrawButton');
-        const withdrawModal = document.getElementById('withdrawModal');
-        const closeModal = document.getElementById('closeModal');
+    function markDoneToday(btn) {
+        btn.textContent = '\u2713 Done Today';
+        btn.className = 'task-btn done-today';
+        btn.disabled = true;
+    }
 
-        withdrawButton.addEventListener('click', () => {
-            withdrawModal.classList.add('active');
-        });
 
-        closeModal.addEventListener('click', () => {
-            withdrawModal.classList.remove('active');
-        });
+    // ─────────────────────────────────────────────────────────
+    // HANDLE TASK CLICK
+    // ─────────────────────────────────────────────────────────
+    async function doTask(btn) {
+        const task = btn.dataset.task;
+        const reward = Number(btn.dataset.reward);
+        const desc = btn.dataset.desc;
+        const isDaily = btn.dataset.daily === 'true';
 
-        withdrawModal.addEventListener('click', (e) => {
-            if (e.target === withdrawModal) {
-                withdrawModal.classList.remove('active');
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            if(isDaily) {
+                // Check not already done today
+                const {data:ex} = await _supabase
+                    .from('daily_completions')
+                    .select('id')
+                    .eq('user_id', currentUserId)
+                    .eq('task_type', task)
+                    .eq('completed_date', todayStr())
+                    .maybeSingle();
+
+                if(ex) { markDoneToday(btn); showToast('Already claimed today!','error'); return; }
+
+                // Record daily completion
+                const {error:dcErr} = await _supabase.from('daily_completions').insert({
+                    user_id: currentUserId,
+                    task_type: task,
+                    completed_date: todayStr(),
+                    created_at: new Date().toISOString()
+                });
+                if(dcErr) throw dcErr;
+
+            } else {
+                // One-time: check not already done
+                const {data:ex} = await _supabase
+                    .from('completed_tasks')
+                    .select('id')
+                    .eq('user_id', currentUserId)
+                    .eq('task_type', task)
+                    .maybeSingle();
+
+                if(ex) { markDoneOnce(btn); showToast('Already completed!','error'); return; }
+
+                const {error:ctErr} = await _supabase.from('completed_tasks').insert({
+                    user_id: currentUserId,
+                    task_type: task,
+                    completed_at: new Date().toISOString()
+                });
+                if(ctErr) throw ctErr;
             }
+
+            // Add transaction for both types
+            const txType = isDaily ? 'daily_task' : 'task';
+            const {error:txErr} = await _supabase.from('transactions').insert({
+                user_id: currentUserId,
+                type: txType,
+                description: desc,
+                amount: reward,
+                created_at: new Date().toISOString()
+            });
+            if(txErr) throw txErr;
+
+            // Update wallet
+            const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id', currentUserId).maybeSingle();
+            await _supabase.from('wallets').upsert({
+                user_id: currentUserId,
+                task_earnings: (w?.task_earnings||0) + reward,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+            // Update UI
+            if(isDaily) { completedToday.add(task); markDoneToday(btn); }
+            else { completedOnce.add(task); markDoneOnce(btn); }
+
+            showToast('\U0001f389 +'+fmt(reward)+' earned!');
+            await Promise.all([loadStats(), loadHistory()]);
+
+        } catch(e) {
+            console.error('doTask error:', e);
+            btn.disabled = false;
+            btn.textContent = isDaily ? 'Claim' : 'Start';
+            showToast('Something went wrong. Try again.', 'error');
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // LOAD STATS
+    // ─────────────────────────────────────────────────────────
+    async function loadStats() {
+        try {
+            const {data:txs} = await _supabase.from('transactions').select('*').eq('user_id', currentUserId);
+            let total=0, month=0, bonus=0, daily=0, referral=0, count=0;
+            const ms = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+            (txs||[]).forEach(tx => {
+                const a = Number(tx.amount||0);
+                if(a>0) {
+                    total += a;
+                    if(new Date(tx.created_at)>=ms) month += a;
+                    if(tx.type==='signup_bonus') bonus += a;
+                    if(tx.type==='daily_task') { daily += a; count++; }
+                    if(tx.type==='referral') referral += a;
+                }
+            });
+
+            document.getElementById('totalAmount').textContent = fmt(total);
+            document.getElementById('thisMonth').textContent = fmt(month);
+            document.getElementById('tasksDone').textContent = count;
+            document.getElementById('bonusTotal').textContent = fmt(bonus);
+            document.getElementById('breakDaily').textContent = fmt(daily);
+            document.getElementById('breakReferral').textContent = fmt(referral);
+            document.getElementById('breakBonus').textContent = fmt(bonus);
+        } catch(e) { console.error('loadStats:', e); }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // LOAD HISTORY
+    // ─────────────────────────────────────────────────────────
+    async function loadHistory() {
+        const card = document.getElementById('historyCard');
+        try {
+            const {data} = await _supabase
+                .from('transactions')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .order('created_at', {ascending:false})
+                .limit(25);
+
+            card.innerHTML = '';
+            if(!data||data.length===0) {
+                card.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i>No transactions yet.<br>Complete tasks above to start earning!</div>';
+                return;
+            }
+            data.forEach(tx => {
+                const pos = Number(tx.amount)>=0;
+                const el = document.createElement('div');
+                el.className = 'tx-item';
+                el.innerHTML =
+                    '<div class="tx-icon '+(pos?'pos':'neg')+'"><i class="fas fa-'+(pos?'check':'minus')+'"></i></div>'
+                    +'<div class="tx-content"><div class="tx-desc">'+(tx.description||tx.type)+'</div><div class="tx-date">'+timeAgo(tx.created_at)+'</div></div>'
+                    +'<div class="tx-amount '+(pos?'pos':'neg')+'">'+(pos?'+':'')+fmt(tx.amount)+'</div>';
+                card.appendChild(el);
+            });
+        } catch(e) {
+            card.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i>Could not load history.</div>';
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // EYE TOGGLE
+    // ─────────────────────────────────────────────────────────
+    function setupEye() {
+        const btn = document.getElementById('eyeToggle');
+        const ids = ['totalAmount','thisMonth','bonusTotal','breakDaily','breakReferral','breakBonus'];
+        btn.addEventListener('click', () => {
+            amountsVisible = !amountsVisible;
+            ids.forEach(id => {
+                const el = document.getElementById(id); if(!el) return;
+                if(!amountsVisible) { savedAmts[id]=el.textContent; el.textContent='\u2022\u2022\u2022\u2022\u2022'; }
+                else { el.textContent = savedAmts[id]||el.textContent; }
+            });
+            btn.innerHTML = amountsVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
         });
-    </script>
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // WITHDRAW
+    // ─────────────────────────────────────────────────────────
+    function setupWithdraw() {
+        const modal = document.getElementById('withdrawModal');
+        document.getElementById('withdrawBtn').addEventListener('click', ()=>modal.classList.add('active'));
+        document.getElementById('closeModal').addEventListener('click', ()=>modal.classList.remove('active'));
+        modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('active'); });
+    }
+</script>
 </body>
 </html>
