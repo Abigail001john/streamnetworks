@@ -522,23 +522,23 @@
       <input type="file" id="avatarInput" accept="image/*">
       <div class="user-info-primary">
         <div class="display-name" id="displayName">User</div>
-        <div class="user-email" id="userEmail">user@example.com</div>
-        <div class="member-since" id="memberSince">Member since Jan 1, 2024</div>
+        <div class="user-email" id="userEmail"></div>
+        <div class="member-since" id="memberSince">Member since —</div>
       </div>
     </div>
 
     <!-- STATS ROW -->
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-value">12</div>
+        <div class="stat-value" id="statFilesUploaded">—</div>
         <div class="stat-label">Files Uploaded</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">8</div>
+        <div class="stat-value" id="statItemsSold">—</div>
         <div class="stat-label">Items Sold</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">$2,455</div>
+        <div class="stat-value" id="statTotalEarned">—</div>
         <div class="stat-label">Total Earned</div>
       </div>
     </div>
@@ -603,7 +603,7 @@
       <div class="info-row">
         <span class="info-label">Email</span>
         <span class="info-value">
-          <span id="userEmail2">user@example.com</span>
+          <span id="userEmail2"></span>
           <button class="copy-btn" id="copyEmailBtn" title="Copy email">
             <i class="fas fa-copy"></i>
           </button>
@@ -617,7 +617,7 @@
 
       <div class="info-row">
         <span class="info-label">Member Since</span>
-        <span class="info-value" id="memberSince2">Jan 1, 2024</span>
+        <span class="info-value" id="memberSince2">—</span>
       </div>
 
       <div class="info-row">
@@ -666,7 +666,7 @@
   </nav>
 
   <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
 
   <script>
@@ -783,13 +783,46 @@
       });
 
       // Sign out
-      document.getElementById('signOutBtn').addEventListener('click', () => signOut());
+      document.getElementById('signOutBtn').addEventListener('click', async () => {
+        await _supabase.auth.signOut();
+        window.location.href = 'index.html';
+      });
 
       // Copy email
       document.getElementById('copyEmailBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(profile.email);
-        showToast('Email copied!', 'success');
+        navigator.clipboard.writeText(profile.email).then(() => showToast('Email copied!', 'success'));
       });
+
+      // Load real stats from Supabase
+      try {
+        // Files uploaded by user
+        const { count: filesCount } = await _supabase
+          .from('files')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id);
+        document.getElementById('statFilesUploaded').textContent = filesCount ?? 0;
+
+        // Items sold
+        const { count: soldCount } = await _supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('seller_id', session.user.id)
+          .eq('status', 'completed');
+        document.getElementById('statItemsSold').textContent = soldCount ?? 0;
+
+        // Total earned
+        const { data: earningsData } = await _supabase
+          .from('orders')
+          .select('amount')
+          .eq('seller_id', session.user.id)
+          .eq('status', 'completed');
+        const total = (earningsData || []).reduce((sum, row) => sum + (row.amount || 0), 0);
+        document.getElementById('statTotalEarned').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      } catch (e) {
+        document.getElementById('statFilesUploaded').textContent = '0';
+        document.getElementById('statItemsSold').textContent = '0';
+        document.getElementById('statTotalEarned').textContent = '$0';
+      }
     });
   </script>
 </body>
