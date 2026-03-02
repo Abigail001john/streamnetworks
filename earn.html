@@ -9,13 +9,14 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #f7f3ed; color: #1f2937; }
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
+
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; max-width: 480px; margin: 0 auto; }
         .nav-back { background: none; border: none; font-size: 20px; cursor: pointer; color: #1f2937; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .nav-back:hover { background: #f3f4f6; border-radius: 8px; }
         .nav-title { font-size: 18px; font-weight: 600; flex: 1; text-align: center; }
         .nav-spacer { width: 40px; }
+
         main { margin-top: 56px; margin-bottom: 80px; padding: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
-        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
 
         /* HERO */
         .hero-card { background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; padding: 24px; }
@@ -37,33 +38,64 @@
         .bcard-label { font-size: 12px; opacity: 0.9; margin-bottom: 6px; }
         .bcard-amount { font-size: 20px; font-weight: 700; }
 
-        /* SECTION TITLES */
-        .section-title { font-size: 18px; font-weight: 700; margin-top: 24px; margin-bottom: 4px; padding: 0 2px; }
-        .section-sub { font-size: 12px; color: #6b7280; margin-bottom: 14px; padding: 0 2px; }
+        /* SECTION */
+        .section-title { font-size: 17px; font-weight: 700; margin-top: 22px; margin-bottom: 4px; }
+        .section-sub { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
 
-        /* DAILY RESET TIMER */
-        .reset-banner { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
-        .reset-label { font-size: 12px; opacity: 0.9; }
-        .reset-timer { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        /* COUNTDOWN */
+        .reset-banner { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+        .reset-label { font-size: 11px; opacity: 0.9; margin-bottom: 2px; }
+        .reset-timer { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
 
-        /* TASK CARDS */
-        .task-card { display: flex; gap: 14px; padding: 4px 0; align-items: flex-start; }
-        .task-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+        /* TASK CARD */
+        .task-wrap { display: flex; gap: 14px; align-items: flex-start; }
+        .task-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
         .task-content { flex: 1; }
-        .task-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-        .task-description { font-size: 12px; color: #6b7280; margin-bottom: 10px; line-height: 1.4; }
+        .task-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .task-desc { font-size: 12px; color: #6b7280; margin-bottom: 10px; line-height: 1.5; }
         .task-footer { display: flex; justify-content: space-between; align-items: center; }
-        .task-reward { font-size: 15px; font-weight: 700; color: #2dd4bf; }
-        .task-reward.daily { color: #f59e0b; }
-        .task-btn { background: #2dd4bf; color: white; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-        .task-btn:hover { background: #14b8a6; transform: translateY(-1px); }
-        .task-btn:disabled { cursor: not-allowed; transform: none; }
-        .task-btn.done-today { background: #fef3c7; color: #d97706; }
-        .task-btn.daily-btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .task-btn.daily-btn:hover { background: linear-gradient(135deg, #d97706, #b45309); }
+        .task-reward { font-size: 15px; font-weight: 700; color: #f59e0b; }
 
-        /* DAILY badge */
-        .daily-badge { display: inline-block; background: #fef3c7; color: #d97706; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.3px; }
+        .daily-badge { background: #fef3c7; color: #d97706; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+
+        /* BUTTONS */
+        .task-btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-done-today { background: #fef3c7; color: #d97706; cursor: not-allowed; }
+        .btn-coming-soon { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+        .btn-redirect { background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; }
+        .btn-redirect:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-watching { background: #dbeafe; color: #2563eb; cursor: not-allowed; }
+
+        /* VIDEO EMBED */
+        .video-container { margin-top: 12px; border-radius: 10px; overflow: hidden; background: #000; position: relative; }
+        .video-container iframe { width: 100%; height: 200px; border: none; display: block; }
+        .video-confirm { width: 100%; margin-top: 10px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
+        .video-confirm:hover { opacity: 0.9; }
+        .video-confirm:disabled { background: #d1fae5; color: #059669; cursor: not-allowed; }
+
+        /* MUSIC INPUT */
+        .music-input-wrap { margin-top: 10px; display: flex; gap: 8px; }
+        .music-input { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit; outline: none; transition: border 0.2s; }
+        .music-input:focus { border-color: #2dd4bf; }
+        .music-submit { background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; }
+        .music-player { margin-top: 10px; background: #f8fafc; border-radius: 10px; padding: 14px; display: none; }
+        .music-player.active { display: block; }
+        .music-player audio { width: 100%; margin-bottom: 10px; }
+        .music-confirm { width: 100%; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .music-confirm:disabled { background: #d1fae5; color: #059669; cursor: not-allowed; }
+
+        /* FILE DOWNLOAD */
+        .file-download-wrap { margin-top: 10px; background: #f8fafc; border-radius: 10px; padding: 14px; display: none; }
+        .file-download-wrap.active { display: block; }
+        .file-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .file-icon-big { width: 44px; height: 44px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; flex-shrink: 0; }
+        .file-name { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 3px; }
+        .file-size { font-size: 11px; color: #9ca3af; }
+        .file-dl-btn { width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
+        .file-dl-btn:disabled { background: #d1fae5; color: #059669; cursor: not-allowed; }
+        .no-file-msg { font-size: 13px; color: #9ca3af; text-align: center; padding: 8px 0; }
 
         /* TRANSACTIONS */
         .tx-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f3f4f6; }
@@ -82,20 +114,20 @@
         .empty-state i { font-size: 28px; margin-bottom: 10px; display: block; }
 
         /* WITHDRAW */
-        .withdraw-btn { width: 100%; background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: box-shadow 0.2s; }
+        .withdraw-btn { width: 100%; background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
         .withdraw-btn:hover { box-shadow: 0 4px 14px rgba(45,212,191,0.35); }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
-        .modal-box { background: white; border-radius: 20px; padding: 28px 24px; max-width: 380px; width: 90%; text-align: center; }
+        .modal-box { background: white; border-radius: 20px; padding: 28px 24px; max-width: 380px; width: 100%; text-align: center; }
         .modal-emoji { font-size: 48px; margin-bottom: 12px; }
         .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
         .modal-msg { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.5; }
-        .modal-btn { background: #2dd4bf; color: white; border: none; border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .modal-btn { background: #2dd4bf; color: white; border: none; border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
         /* TOAST */
-        #toastContainer { position: fixed; top: 68px; right: 14px; z-index: 9999; pointer-events: none; }
+        #toastContainer { position: fixed; top: 68px; right: 14px; z-index: 9999; pointer-events: none; max-width: 300px; }
         .toast { background: white; border-radius: 12px; padding: 13px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.13); margin-bottom: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 9px; animation: slideIn 0.3s ease; pointer-events: auto; }
         .toast.success { border-left: 4px solid #10b981; color: #059669; }
         .toast.error { border-left: 4px solid #ef4444; color: #dc2626; }
@@ -119,7 +151,8 @@
 <div id="toastContainer"></div>
 
 <main>
-    <!-- HERO -->
+
+    <!-- HERO CARD -->
     <div class="card hero-card">
         <div class="hero-label">
             <span>Total Earned</span>
@@ -128,9 +161,9 @@
         <div class="hero-amount" id="totalAmount">&#8358;0.00</div>
         <div class="hero-sub">All time earnings</div>
         <div class="mini-stats">
+            <div class="mini-stat"><div class="mini-stat-label">Today</div><div class="mini-stat-value" id="todayEarned">&#8358;0.00</div></div>
             <div class="mini-stat"><div class="mini-stat-label">This Month</div><div class="mini-stat-value" id="thisMonth">&#8358;0.00</div></div>
             <div class="mini-stat"><div class="mini-stat-label">Tasks Done</div><div class="mini-stat-value" id="tasksDone">0</div></div>
-            <div class="mini-stat"><div class="mini-stat-label">Bonus</div><div class="mini-stat-value" id="bonusTotal">&#8358;0.00</div></div>
         </div>
     </div>
 
@@ -143,112 +176,131 @@
         <div class="bcard bcard-blue"><div class="bcard-label">Signup Bonus</div><div class="bcard-amount" id="breakBonus">&#8358;0.00</div></div>
     </div>
 
-    <!-- DAILY TASKS -->
-    <h2 class="section-title">Daily Tasks <span style="font-size:13px;font-weight:500;color:#6b7280;">&#8212; Resets every midnight</span></h2>
-    <p class="section-sub">Complete these every day to keep earning</p>
+    <!-- DAILY TASKS HEADER -->
+    <div class="section-title">&#127775; Daily Tasks</div>
+    <div class="section-sub">Complete every day to earn &#8358;. Resets at midnight.</div>
 
-    <!-- Daily reset countdown -->
     <div class="reset-banner">
         <div>
             <div class="reset-label">&#128337; Resets in</div>
             <div class="reset-timer" id="resetTimer">--:--:--</div>
         </div>
-        <div style="font-size:28px;">&#127775;</div>
+        <div style="font-size:32px;">&#9203;</div>
     </div>
 
-    <div class="card">
-        <div class="task-card">
+    <!-- ── 1. VIDEO TASK ── -->
+    <div class="card" id="videoCard">
+        <div class="task-wrap">
             <div class="task-icon">&#127909;</div>
             <div class="task-content">
-                <div class="task-name">Watch a Video <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Watch any video on the platform to earn your daily reward</div>
+                <div class="task-name">Watch Today's Video <span class="daily-badge">Daily</span></div>
+                <div class="task-desc">Watch the video below fully, then claim your reward</div>
                 <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;1,000</span>
-                    <button class="task-btn daily-btn" data-task="daily_video" data-reward="1000" data-desc="Daily reward: Video watch" data-daily="true">Start Task</button>
+                    <span class="task-reward">Earn &#8358;1,000</span>
+                    <button class="task-btn btn-primary" id="videoBtn">Start Task</button>
                 </div>
             </div>
         </div>
+        <!-- Video embed (shown after clicking Start Task) -->
+        <div id="videoEmbed" style="display:none;">
+            <div class="video-container">
+                <iframe id="ytFrame" src="" allowfullscreen allow="autoplay"></iframe>
+            </div>
+            <button class="video-confirm" id="videoConfirmBtn">
+                <i class="fas fa-check-circle"></i> I Watched It &mdash; Claim &#8358;1,000
+            </button>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="task-card">
+    <!-- ── 2. AUDIO TASK ── -->
+    <div class="card" id="audioCard">
+        <div class="task-wrap">
             <div class="task-icon">&#127925;</div>
             <div class="task-content">
                 <div class="task-name">Listen to Audio <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Listen to any audio track or podcast on the platform</div>
+                <div class="task-desc">Paste any audio/music link, listen, then claim your reward</div>
                 <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;500</span>
-                    <button class="task-btn daily-btn" data-task="daily_audio" data-reward="500" data-desc="Daily reward: Audio listen" data-daily="true">Start Task</button>
+                    <span class="task-reward">Earn &#8358;500</span>
+                    <button class="task-btn btn-primary" id="audioBtn">Start Task</button>
                 </div>
+            </div>
+        </div>
+        <div class="music-player" id="musicPlayer">
+            <div class="music-input-wrap">
+                <input type="url" class="music-input" id="musicLinkInput" placeholder="Paste music/audio link here...">
+                <button class="music-submit" id="musicLoadBtn">Load</button>
+            </div>
+            <div id="audioPlayerWrap" style="margin-top:10px;display:none;">
+                <audio id="audioEl" controls style="width:100%;border-radius:8px;margin-bottom:10px;"></audio>
+                <button class="music-confirm" id="audioConfirmBtn">
+                    <i class="fas fa-check-circle"></i>&nbsp; I Listened &mdash; Claim &#8358;500
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- ── 3. REVIEW TASK ── -->
     <div class="card">
-        <div class="task-card">
-            <div class="task-icon">&#127908;</div>
-            <div class="task-content">
-                <div class="task-name">Listen to Music <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Play any music track available on the platform</div>
-                <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;500</span>
-                    <button class="task-btn daily-btn" data-task="daily_music" data-reward="500" data-desc="Daily reward: Music listen" data-daily="true">Start Task</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="task-card">
+        <div class="task-wrap">
             <div class="task-icon">&#11088;</div>
             <div class="task-content">
                 <div class="task-name">Write a Review <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Review any product or content on the platform</div>
+                <div class="task-desc">Review any product or content on the platform</div>
                 <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;700</span>
-                    <button class="task-btn daily-btn" data-task="daily_review" data-reward="700" data-desc="Daily reward: Review written" data-daily="true">Start Task</button>
+                    <span class="task-reward">Earn &#8358;700</span>
+                    <button class="task-btn btn-coming-soon" id="reviewBtn">Coming Soon</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="task-card">
+    <!-- ── 4. FILE DOWNLOAD TASK ── -->
+    <div class="card" id="fileCard">
+        <div class="task-wrap">
             <div class="task-icon">&#128194;</div>
             <div class="task-content">
-                <div class="task-name">Download a File <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Download any file from the Files section</div>
+                <div class="task-name">Download Today's File <span class="daily-badge">Daily</span></div>
+                <div class="task-desc">Download the file provided below to earn your reward</div>
                 <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;1,050</span>
-                    <button class="task-btn daily-btn" data-task="daily_file_download" data-reward="1050" data-desc="Daily reward: File download" data-daily="true">Start Task</button>
+                    <span class="task-reward">Earn &#8358;1,050</span>
+                    <button class="task-btn btn-primary" id="fileBtn">Start Task</button>
+                </div>
+            </div>
+        </div>
+        <div class="file-download-wrap" id="fileDownloadWrap">
+            <div id="fileContent">
+                <div class="empty-state" style="padding:12px 0;">
+                    <i class="fas fa-spinner fa-spin"></i>Loading today's file...
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ── 5. REFER A FRIEND ── -->
     <div class="card">
-        <div class="task-card">
+        <div class="task-wrap">
             <div class="task-icon">&#128227;</div>
             <div class="task-content">
-                <div class="task-name">Refer a Friend <span class="daily-badge">Daily</span></div>
-                <div class="task-description">Share your referral link and get a friend to join</div>
+                <div class="task-name">Refer a Friend</div>
+                <div class="task-desc">Invite friends and earn &#8358;5,000 for every friend who joins and gets approved</div>
                 <div class="task-footer">
-                    <span class="task-reward daily">Earn &#8358;5,000</span>
-                    <button class="task-btn daily-btn" data-task="daily_referral" data-reward="5000" data-desc="Daily referral bonus" data-daily="true">Start Task</button>
+                    <span class="task-reward">Earn &#8358;5,000</span>
+                    <a href="referral.html" class="task-btn btn-redirect">Go to Referral</a>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- HISTORY -->
-    <h2 class="section-title" style="margin-top:28px;">Earnings History</h2>
-    <div class="card" id="historyCard">
-        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading history...</div>
+    <div class="section-title" style="margin-top:24px;">Earnings History</div>
+    <div class="card" id="historyCard" style="padding:0 20px;">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading...</div>
     </div>
 
     <button class="withdraw-btn" id="withdrawBtn">
         <i class="fas fa-wallet"></i> Withdraw Earnings
     </button>
+
 </main>
 
 <!-- WITHDRAW MODAL -->
@@ -256,8 +308,18 @@
     <div class="modal-box">
         <div class="modal-emoji">&#128640;</div>
         <div class="modal-title">Coming Soon!</div>
-        <div class="modal-msg">Withdrawals will be available very soon. Keep earning in the meantime!</div>
-        <button class="modal-btn" id="closeModal">Got it</button>
+        <div class="modal-msg">Withdrawals will be available very soon. Keep earning!</div>
+        <button class="modal-btn" onclick="document.getElementById('withdrawModal').classList.remove('active')">Got it</button>
+    </div>
+</div>
+
+<!-- REVIEW COMING SOON MODAL -->
+<div class="modal" id="reviewModal">
+    <div class="modal-box">
+        <div class="modal-emoji">&#11088;</div>
+        <div class="modal-title">Coming Soon!</div>
+        <div class="modal-msg">The Review task is coming very soon. Stay tuned!</div>
+        <button class="modal-btn" onclick="document.getElementById('reviewModal').classList.remove('active')">Got it</button>
     </div>
 </div>
 
@@ -273,308 +335,450 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-    // ─────────────────────────────────────────────────────────
-    // STATE
-    // ─────────────────────────────────────────────────────────
-    let currentUserId = null;
-    let completedOnce = new Set();   // one-time tasks completed
-    let completedToday = new Set();  // daily tasks done today
-    let amountsVisible = true;
-    let savedAmts = {};
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let currentUserId = null;
+let completedToday = new Set();
+let amountsVisible = true;
+let savedAmts = {};
 
-    // ─────────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────────
-    const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-    function todayStr() {
-        return new Date().toISOString().slice(0,10); // YYYY-MM-DD
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function timeAgo(d) {
+    const s = Math.floor((Date.now()-new Date(d))/1000);
+    if(s<60) return 'Just now';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    if(s<86400) return Math.floor(s/3600)+'h ago';
+    if(s<172800) return 'Yesterday';
+    return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function showToast(msg, type='success') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 'toast '+type;
+    t.innerHTML = '<i class="fas fa-'+(type==='success'?'check-circle':'exclamation-circle')+'"></i> '+msg;
+    c.appendChild(t);
+    setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3200);
+}
+
+function markDoneBtn(btn, label='\u2713 Done Today') {
+    btn.textContent = label;
+    btn.className = 'task-btn btn-done-today';
+    btn.disabled = true;
+}
+
+// ═══════════════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════════════
+function startCountdown() {
+    function update() {
+        const now = new Date();
+        const midnight = new Date(now); midnight.setHours(24,0,0,0);
+        const diff = Math.floor((midnight-now)/1000);
+        const h = String(Math.floor(diff/3600)).padStart(2,'0');
+        const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+        const s = String(diff%60).padStart(2,'0');
+        const el = document.getElementById('resetTimer');
+        if(el) el.textContent = h+':'+m+':'+s;
     }
+    update(); setInterval(update, 1000);
+}
 
-    function timeAgo(d) {
-        const s = Math.floor((Date.now()-new Date(d))/1000);
-        if(s<60) return 'Just now';
-        if(s<3600) return Math.floor(s/60)+'m ago';
-        if(s<86400) return Math.floor(s/3600)+'h ago';
-        if(s<172800) return 'Yesterday';
-        return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    }
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+    const result = await requireAuth('approved');
+    if(!result) return;
+    currentUserId = result.profile.id;
 
-    function showToast(msg, type='success') {
-        const c = document.getElementById('toastContainer');
-        const t = document.createElement('div');
-        t.className = 'toast '+type;
-        const icon = type==='success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-        t.innerHTML = '<i class="fas '+icon+'"></i> '+msg;
-        c.appendChild(t);
-        setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3200);
-    }
+    startCountdown();
+    await loadTodayCompletions();
+    await Promise.all([
+        loadStats(),
+        loadHistory(),
+        loadDailyVideo(),
+        loadDailyFile()
+    ]);
+    setupVideoTask();
+    setupAudioTask();
+    setupReviewTask();
+    setupFileTask();
+    setupEye();
+    setupWithdraw();
+});
 
-    // ─────────────────────────────────────────────────────────
-    // COUNTDOWN TIMER (resets at midnight)
-    // ─────────────────────────────────────────────────────────
-    function startCountdown() {
-        function update() {
-            const now = new Date();
-            const midnight = new Date(now);
-            midnight.setHours(24,0,0,0);
-            const diff = Math.floor((midnight - now) / 1000);
-            const h = String(Math.floor(diff/3600)).padStart(2,'0');
-            const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
-            const s = String(diff%60).padStart(2,'0');
-            const el = document.getElementById('resetTimer');
-            if(el) el.textContent = h+':'+m+':'+s;
+// ═══════════════════════════════════════════════════
+// LOAD TODAY'S COMPLETIONS
+// ═══════════════════════════════════════════════════
+async function loadTodayCompletions() {
+    try {
+        const {data} = await _supabase
+            .from('daily_completions')
+            .select('task_type')
+            .eq('user_id', currentUserId)
+            .eq('completed_date', todayStr());
+        (data||[]).forEach(r => completedToday.add(r.task_type));
+    } catch(e) { console.error(e); }
+}
+
+// ═══════════════════════════════════════════════════
+// RECORD DAILY EARN
+// ═══════════════════════════════════════════════════
+async function recordDailyEarn(taskType, amount, desc) {
+    // 1. Insert daily_completions
+    const {error:e1} = await _supabase.from('daily_completions').insert({
+        user_id: currentUserId,
+        task_type: taskType,
+        completed_date: todayStr(),
+        created_at: new Date().toISOString()
+    });
+    if(e1) throw e1;
+
+    // 2. Insert transaction
+    const {error:e2} = await _supabase.from('transactions').insert({
+        user_id: currentUserId,
+        type: 'daily_task',
+        description: desc,
+        amount: amount,
+        created_at: new Date().toISOString()
+    });
+    if(e2) throw e2;
+
+    // 3. Update wallet
+    const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id',currentUserId).maybeSingle();
+    await _supabase.from('wallets').upsert({
+        user_id: currentUserId,
+        task_earnings: (w?.task_earnings||0)+amount,
+        updated_at: new Date().toISOString()
+    },{onConflict:'user_id'});
+
+    completedToday.add(taskType);
+    await Promise.all([loadStats(), loadHistory()]);
+}
+
+// ═══════════════════════════════════════════════════
+// LOAD DAILY VIDEO FROM SUPABASE
+// ═══════════════════════════════════════════════════
+async function loadDailyVideo() {
+    try {
+        const {data} = await _supabase
+            .from('daily_content')
+            .select('*')
+            .eq('type', 'video')
+            .eq('active_date', todayStr())
+            .maybeSingle();
+
+        const btn = document.getElementById('videoBtn');
+        if(!data || !data.url) {
+            btn.textContent = 'No Video Today';
+            btn.className = 'task-btn btn-coming-soon';
+            btn.disabled = true;
+            return;
         }
-        update();
-        setInterval(update, 1000);
-    }
+        // Store video URL on card for later
+        document.getElementById('videoCard').dataset.url = data.url;
+        document.getElementById('videoCard').dataset.videoId = extractYTId(data.url);
 
-    // ─────────────────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', async () => {
-        const result = await requireAuth('approved');
-        if(!result) return;
-        currentUserId = result.profile.id;
+        if(completedToday.has('daily_video')) {
+            markDoneBtn(btn);
+        }
+    } catch(e) { console.error('loadDailyVideo:', e); }
+}
 
-        startCountdown();
-        await loadCompletedStatus();
-        setupAllButtons();
-        await Promise.all([loadStats(), loadHistory()]);
-        setupEye();
-        setupWithdraw();
+function extractYTId(url) {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com.*[?&]v=)([^&\s]{11})/);
+    return m ? m[1] : '';
+}
+
+// ═══════════════════════════════════════════════════
+// LOAD DAILY FILE FROM SUPABASE
+// ═══════════════════════════════════════════════════
+async function loadDailyFile() {
+    try {
+        const {data} = await _supabase
+            .from('daily_content')
+            .select('*')
+            .eq('type', 'file')
+            .eq('active_date', todayStr())
+            .maybeSingle();
+
+        const btn = document.getElementById('fileBtn');
+        if(!data || !data.url) {
+            btn.textContent = 'No File Today';
+            btn.className = 'task-btn btn-coming-soon';
+            btn.disabled = true;
+            return;
+        }
+        document.getElementById('fileCard').dataset.url = data.url;
+        document.getElementById('fileCard').dataset.filename = data.title || 'Download File';
+
+        if(completedToday.has('daily_file_download')) {
+            markDoneBtn(btn);
+        }
+    } catch(e) { console.error('loadDailyFile:', e); }
+}
+
+// ═══════════════════════════════════════════════════
+// VIDEO TASK
+// ═══════════════════════════════════════════════════
+function setupVideoTask() {
+    const btn = document.getElementById('videoBtn');
+    if(btn.disabled) return;
+
+    if(completedToday.has('daily_video')) { markDoneBtn(btn); return; }
+
+    btn.addEventListener('click', () => {
+        const card = document.getElementById('videoCard');
+        const ytId = card.dataset.videoId;
+        if(!ytId) { showToast('No video available today','error'); return; }
+
+        const embed = document.getElementById('videoEmbed');
+        const frame = document.getElementById('ytFrame');
+        frame.src = 'https://www.youtube.com/embed/'+ytId+'?autoplay=1&rel=0';
+        embed.style.display = 'block';
+        btn.textContent = 'Watching...';
+        btn.className = 'task-btn btn-watching';
+        btn.disabled = true;
+
+        // Enable confirm after 10 seconds
+        setTimeout(() => {
+            const confirmBtn = document.getElementById('videoConfirmBtn');
+            confirmBtn.disabled = false;
+        }, 10000);
     });
 
-    // ─────────────────────────────────────────────────────────
-    // LOAD WHAT'S BEEN COMPLETED
-    // ─────────────────────────────────────────────────────────
-    async function loadCompletedStatus() {
+    document.getElementById('videoConfirmBtn').addEventListener('click', async () => {
+        const confirmBtn = document.getElementById('videoConfirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         try {
-            // One-time tasks
-            const {data:once} = await _supabase
-                .from('completed_tasks')
-                .select('task_type')
-                .eq('user_id', currentUserId);
-            (once||[]).forEach(r => completedOnce.add(r.task_type));
+            // Double-check not already done
+            const {data:ex} = await _supabase.from('daily_completions').select('id')
+                .eq('user_id',currentUserId).eq('task_type','daily_video').eq('completed_date',todayStr()).maybeSingle();
+            if(ex) { markDoneBtn(document.getElementById('videoBtn')); return; }
 
-            // Daily tasks (only today's)
-            const {data:daily} = await _supabase
-                .from('daily_completions')
-                .select('task_type')
-                .eq('user_id', currentUserId)
-                .eq('completed_date', todayStr());
-            (daily||[]).forEach(r => completedToday.add(r.task_type));
+            await recordDailyEarn('daily_video', 1000, 'Daily reward: Video watch');
+            markDoneBtn(document.getElementById('videoBtn'));
+            confirmBtn.innerHTML = '\u2713 Reward Claimed!';
+            showToast('\U0001f389 +\u20a61,000 earned for watching!');
+        } catch(e) {
+            console.error(e);
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> I Watched It &mdash; Claim \u20a61,000';
+            showToast('Something went wrong, try again','error');
+        }
+    });
+}
 
-        } catch(e) { console.error('loadCompletedStatus:', e); }
-    }
+// ═══════════════════════════════════════════════════
+// AUDIO TASK
+// ═══════════════════════════════════════════════════
+function setupAudioTask() {
+    const btn = document.getElementById('audioBtn');
+    if(completedToday.has('daily_audio')) { markDoneBtn(btn); return; }
 
-    // ─────────────────────────────────────────────────────────
-    // SETUP ALL TASK BUTTONS
-    // ─────────────────────────────────────────────────────────
-    function setupAllButtons() {
-        document.querySelectorAll('.task-btn').forEach(btn => {
-            const task = btn.dataset.task;
-            const isDaily = btn.dataset.daily === 'true';
+    btn.addEventListener('click', () => {
+        btn.textContent = 'Paste Link Below';
+        btn.className = 'task-btn btn-watching';
+        btn.disabled = true;
+        document.getElementById('musicPlayer').classList.add('active');
+    });
 
-            if(isDaily) {
-                if(completedToday.has(task)) {
-                    markDoneToday(btn);
-                } else {
-                    btn.addEventListener('click', () => doTask(btn));
-                }
-            } else {
-                if(completedOnce.has(task)) {
-                    markDoneOnce(btn);
-                } else {
-                    btn.addEventListener('click', () => doTask(btn));
-                }
+    document.getElementById('musicLoadBtn').addEventListener('click', () => {
+        const link = document.getElementById('musicLinkInput').value.trim();
+        if(!link) { showToast('Please paste a music link first','error'); return; }
+        const audio = document.getElementById('audioEl');
+        audio.src = link;
+        document.getElementById('audioPlayerWrap').style.display = 'block';
+        audio.play().catch(()=>{});
+    });
+
+    document.getElementById('audioConfirmBtn').addEventListener('click', async () => {
+        const confirmBtn = document.getElementById('audioConfirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        try {
+            const {data:ex} = await _supabase.from('daily_completions').select('id')
+                .eq('user_id',currentUserId).eq('task_type','daily_audio').eq('completed_date',todayStr()).maybeSingle();
+            if(ex) { markDoneBtn(document.getElementById('audioBtn')); return; }
+
+            await recordDailyEarn('daily_audio', 500, 'Daily reward: Audio listen');
+            markDoneBtn(document.getElementById('audioBtn'));
+            confirmBtn.innerHTML = '\u2713 Reward Claimed!';
+            showToast('\U0001f389 +\u20a6500 earned for listening!');
+        } catch(e) {
+            console.error(e);
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i>&nbsp; I Listened &mdash; Claim \u20a6500';
+            showToast('Something went wrong, try again','error');
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// REVIEW TASK - COMING SOON
+// ═══════════════════════════════════════════════════
+function setupReviewTask() {
+    document.getElementById('reviewBtn').addEventListener('click', () => {
+        document.getElementById('reviewModal').classList.add('active');
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// FILE DOWNLOAD TASK
+// ═══════════════════════════════════════════════════
+function setupFileTask() {
+    const btn = document.getElementById('fileBtn');
+    if(btn.disabled) return;
+    if(completedToday.has('daily_file_download')) { markDoneBtn(btn); return; }
+
+    btn.addEventListener('click', () => {
+        btn.textContent = 'Downloading...';
+        btn.className = 'task-btn btn-watching';
+        btn.disabled = true;
+
+        const card = document.getElementById('fileCard');
+        const url = card.dataset.url;
+        const filename = card.dataset.filename || 'daily_file';
+        const wrap = document.getElementById('fileDownloadWrap');
+        wrap.classList.add('active');
+
+        wrap.innerHTML = '<div class="file-info">'
+            +'<div class="file-icon-big"><i class="fas fa-file-download"></i></div>'
+            +'<div><div class="file-name">'+filename+'</div><div class="file-size">Tap below to download</div></div>'
+            +'</div>'
+            +'<button class="file-dl-btn" id="actualDlBtn"><i class="fas fa-download"></i>&nbsp; Download File &amp; Claim &#8358;1,050</button>';
+
+        document.getElementById('actualDlBtn').addEventListener('click', async () => {
+            const dlBtn = document.getElementById('actualDlBtn');
+            dlBtn.disabled = true;
+            dlBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Processing...';
+
+            try {
+                // Trigger download
+                const a = document.createElement('a');
+                a.href = url; a.download = filename; a.target = '_blank';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+                // Wait 2s then record
+                setTimeout(async () => {
+                    try {
+                        const {data:ex} = await _supabase.from('daily_completions').select('id')
+                            .eq('user_id',currentUserId).eq('task_type','daily_file_download').eq('completed_date',todayStr()).maybeSingle();
+                        if(ex) { markDoneBtn(document.getElementById('fileBtn')); return; }
+
+                        await recordDailyEarn('daily_file_download', 1050, 'Daily reward: File download');
+                        markDoneBtn(document.getElementById('fileBtn'));
+                        dlBtn.innerHTML = '\u2713 Reward Claimed!';
+                        showToast('\U0001f389 +\u20a61,050 earned for downloading!');
+                    } catch(e) {
+                        console.error(e);
+                        dlBtn.disabled = false;
+                        dlBtn.innerHTML = '<i class="fas fa-download"></i>&nbsp; Download File &amp; Claim \u20a61,050';
+                        showToast('Something went wrong, try again','error');
+                    }
+                }, 2000);
+            } catch(e) {
+                dlBtn.disabled = false;
+                dlBtn.innerHTML = '<i class="fas fa-download"></i>&nbsp; Download File &amp; Claim \u20a61,050';
+                showToast('Download failed, try again','error');
             }
         });
-    }
+    });
+}
 
-    function markDoneToday(btn) {
-        btn.textContent = '\u2713 Done Today';
-        btn.className = 'task-btn done-today';
-        btn.disabled = true;
-    }
+// ═══════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════
+async function loadStats() {
+    try {
+        const {data:txs} = await _supabase.from('transactions').select('*').eq('user_id', currentUserId);
+        let total=0, today=0, month=0, bonus=0, daily=0, referral=0, count=0;
+        const todayDate = todayStr();
+        const ms = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-
-    // ─────────────────────────────────────────────────────────
-    // HANDLE TASK CLICK
-    // ─────────────────────────────────────────────────────────
-    async function doTask(btn) {
-        const task = btn.dataset.task;
-        const reward = Number(btn.dataset.reward);
-        const desc = btn.dataset.desc;
-        const isDaily = btn.dataset.daily === 'true';
-
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
-
-        try {
-            if(isDaily) {
-                // Check not already done today
-                const {data:ex} = await _supabase
-                    .from('daily_completions')
-                    .select('id')
-                    .eq('user_id', currentUserId)
-                    .eq('task_type', task)
-                    .eq('completed_date', todayStr())
-                    .maybeSingle();
-
-                if(ex) { markDoneToday(btn); showToast('Already claimed today!','error'); return; }
-
-                // Record daily completion
-                const {error:dcErr} = await _supabase.from('daily_completions').insert({
-                    user_id: currentUserId,
-                    task_type: task,
-                    completed_date: todayStr(),
-                    created_at: new Date().toISOString()
-                });
-                if(dcErr) throw dcErr;
-
-            } else {
-                // One-time: check not already done
-                const {data:ex} = await _supabase
-                    .from('completed_tasks')
-                    .select('id')
-                    .eq('user_id', currentUserId)
-                    .eq('task_type', task)
-                    .maybeSingle();
-
-                if(ex) { markDoneOnce(btn); showToast('Already completed!','error'); return; }
-
-                const {error:ctErr} = await _supabase.from('completed_tasks').insert({
-                    user_id: currentUserId,
-                    task_type: task,
-                    completed_at: new Date().toISOString()
-                });
-                if(ctErr) throw ctErr;
+        (txs||[]).forEach(tx => {
+            const a = Number(tx.amount||0);
+            if(a>0) {
+                total += a;
+                if(tx.created_at.slice(0,10)===todayDate) today += a;
+                if(new Date(tx.created_at)>=ms) month += a;
+                if(tx.type==='signup_bonus') bonus += a;
+                if(tx.type==='daily_task') { daily += a; count++; }
+                if(tx.type==='referral') referral += a;
             }
-
-            // Add transaction for both types
-            const txType = isDaily ? 'daily_task' : 'task';
-            const {error:txErr} = await _supabase.from('transactions').insert({
-                user_id: currentUserId,
-                type: txType,
-                description: desc,
-                amount: reward,
-                created_at: new Date().toISOString()
-            });
-            if(txErr) throw txErr;
-
-            // Update wallet
-            const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id', currentUserId).maybeSingle();
-            await _supabase.from('wallets').upsert({
-                user_id: currentUserId,
-                task_earnings: (w?.task_earnings||0) + reward,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
-
-            // Update UI
-            if(isDaily) { completedToday.add(task); markDoneToday(btn); }
-            else { completedOnce.add(task); markDoneOnce(btn); }
-
-            showToast('\U0001f389 +'+fmt(reward)+' earned!');
-            await Promise.all([loadStats(), loadHistory()]);
-
-        } catch(e) {
-            console.error('doTask error:', e);
-            btn.disabled = false;
-            btn.textContent = isDaily ? 'Claim' : 'Start';
-            showToast('Something went wrong. Try again.', 'error');
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // LOAD STATS
-    // ─────────────────────────────────────────────────────────
-    async function loadStats() {
-        try {
-            const {data:txs} = await _supabase.from('transactions').select('*').eq('user_id', currentUserId);
-            let total=0, month=0, bonus=0, daily=0, referral=0, count=0;
-            const ms = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-
-            (txs||[]).forEach(tx => {
-                const a = Number(tx.amount||0);
-                if(a>0) {
-                    total += a;
-                    if(new Date(tx.created_at)>=ms) month += a;
-                    if(tx.type==='signup_bonus') bonus += a;
-                    if(tx.type==='daily_task') { daily += a; count++; }
-                    if(tx.type==='referral') referral += a;
-                }
-            });
-
-            document.getElementById('totalAmount').textContent = fmt(total);
-            document.getElementById('thisMonth').textContent = fmt(month);
-            document.getElementById('tasksDone').textContent = count;
-            document.getElementById('bonusTotal').textContent = fmt(bonus);
-            document.getElementById('breakDaily').textContent = fmt(daily);
-            document.getElementById('breakReferral').textContent = fmt(referral);
-            document.getElementById('breakBonus').textContent = fmt(bonus);
-        } catch(e) { console.error('loadStats:', e); }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // LOAD HISTORY
-    // ─────────────────────────────────────────────────────────
-    async function loadHistory() {
-        const card = document.getElementById('historyCard');
-        try {
-            const {data} = await _supabase
-                .from('transactions')
-                .select('*')
-                .eq('user_id', currentUserId)
-                .order('created_at', {ascending:false})
-                .limit(25);
-
-            card.innerHTML = '';
-            if(!data||data.length===0) {
-                card.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i>No transactions yet.<br>Complete tasks above to start earning!</div>';
-                return;
-            }
-            data.forEach(tx => {
-                const pos = Number(tx.amount)>=0;
-                const el = document.createElement('div');
-                el.className = 'tx-item';
-                el.innerHTML =
-                    '<div class="tx-icon '+(pos?'pos':'neg')+'"><i class="fas fa-'+(pos?'check':'minus')+'"></i></div>'
-                    +'<div class="tx-content"><div class="tx-desc">'+(tx.description||tx.type)+'</div><div class="tx-date">'+timeAgo(tx.created_at)+'</div></div>'
-                    +'<div class="tx-amount '+(pos?'pos':'neg')+'">'+(pos?'+':'')+fmt(tx.amount)+'</div>';
-                card.appendChild(el);
-            });
-        } catch(e) {
-            card.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i>Could not load history.</div>';
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // EYE TOGGLE
-    // ─────────────────────────────────────────────────────────
-    function setupEye() {
-        const btn = document.getElementById('eyeToggle');
-        const ids = ['totalAmount','thisMonth','bonusTotal','breakDaily','breakReferral','breakBonus'];
-        btn.addEventListener('click', () => {
-            amountsVisible = !amountsVisible;
-            ids.forEach(id => {
-                const el = document.getElementById(id); if(!el) return;
-                if(!amountsVisible) { savedAmts[id]=el.textContent; el.textContent='\u2022\u2022\u2022\u2022\u2022'; }
-                else { el.textContent = savedAmts[id]||el.textContent; }
-            });
-            btn.innerHTML = amountsVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
         });
-    }
 
-    // ─────────────────────────────────────────────────────────
-    // WITHDRAW
-    // ─────────────────────────────────────────────────────────
-    function setupWithdraw() {
-        const modal = document.getElementById('withdrawModal');
-        document.getElementById('withdrawBtn').addEventListener('click', ()=>modal.classList.add('active'));
-        document.getElementById('closeModal').addEventListener('click', ()=>modal.classList.remove('active'));
-        modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('active'); });
+        document.getElementById('totalAmount').textContent = fmt(total);
+        document.getElementById('todayEarned').textContent = fmt(today);
+        document.getElementById('thisMonth').textContent = fmt(month);
+        document.getElementById('tasksDone').textContent = count;
+        document.getElementById('breakDaily').textContent = fmt(daily);
+        document.getElementById('breakReferral').textContent = fmt(referral);
+        document.getElementById('breakBonus').textContent = fmt(bonus);
+    } catch(e) { console.error('loadStats:', e); }
+}
+
+// ═══════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════
+async function loadHistory() {
+    const card = document.getElementById('historyCard');
+    try {
+        const {data} = await _supabase.from('transactions').select('*')
+            .eq('user_id', currentUserId).order('created_at',{ascending:false}).limit(25);
+        card.innerHTML = '';
+        if(!data||data.length===0) {
+            card.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i>No transactions yet.<br>Complete tasks above to start earning!</div>';
+            return;
+        }
+        data.forEach(tx => {
+            const pos = Number(tx.amount)>=0;
+            const el = document.createElement('div');
+            el.className = 'tx-item';
+            el.innerHTML = '<div class="tx-icon '+(pos?'pos':'neg')+'"><i class="fas fa-'+(pos?'check':'minus')+'"></i></div>'
+                +'<div class="tx-content"><div class="tx-desc">'+(tx.description||tx.type)+'</div><div class="tx-date">'+timeAgo(tx.created_at)+'</div></div>'
+                +'<div class="tx-amount '+(pos?'pos':'neg')+'">'+(pos?'+':'')+fmt(tx.amount)+'</div>';
+            card.appendChild(el);
+        });
+    } catch(e) {
+        card.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i>Could not load history.</div>';
     }
+}
+
+// ═══════════════════════════════════════════════════
+// EYE TOGGLE
+// ═══════════════════════════════════════════════════
+function setupEye() {
+    const btn = document.getElementById('eyeToggle');
+    const ids = ['totalAmount','todayEarned','thisMonth','breakDaily','breakReferral','breakBonus'];
+    btn.addEventListener('click', () => {
+        amountsVisible = !amountsVisible;
+        ids.forEach(id => {
+            const el = document.getElementById(id); if(!el) return;
+            if(!amountsVisible) { savedAmts[id]=el.textContent; el.textContent='\u2022\u2022\u2022\u2022\u2022'; }
+            else { el.textContent = savedAmts[id]||el.textContent; }
+        });
+        btn.innerHTML = amountsVisible ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// WITHDRAW
+// ═══════════════════════════════════════════════════
+function setupWithdraw() {
+    const modal = document.getElementById('withdrawModal');
+    document.getElementById('withdrawBtn').addEventListener('click', ()=>modal.classList.add('active'));
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('active'); });
+}
 </script>
 </body>
 </html>
