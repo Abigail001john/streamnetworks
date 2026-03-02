@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - User Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      padding: 24px 16px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .sidebar-logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .sidebar-logo .logo-text {
+      font-weight: 700;
+      font-size: 16px;
+      color: #2dd4bf;
+    }
+
+    .admin-profile {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+    }
+
+    .admin-profile .name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .admin-profile .badge {
+      display: inline-block;
+      background: #2dd4bf;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex: 1;
+    }
+
+    .nav-links a {
+      padding: 12px 16px;
+      text-decoration: none;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-links a:hover {
+      background: #f1f5f9;
+      color: #2dd4bf;
+    }
+
+    .nav-links a.active {
+      background: #f0fdfa;
+      color: #2dd4bf;
+      font-weight: 600;
+    }
+
+    .nav-links a i {
+      width: 18px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .sign-out-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .sign-out-btn:hover {
+      background: #f8fafc;
+      color: #ef4444;
+      border-color: #fecaca;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .stat-card-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 24px;
+    }
+
+    .stat-card-icon.blue {
+      background: #eff6ff;
+      color: #3b82f6;
+    }
+
+    .stat-card-icon.green {
+      background: #f0fdf4;
+      color: #22c55e;
+    }
+
+    .stat-card-icon.amber {
+      background: #fffbeb;
+      color: #f59e0b;
+    }
+
+    .stat-card-icon.purple {
+      background: #faf5ff;
+      color: #8b5cf6;
+    }
+
+    .stat-card-trend {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f0fdf4;
+      color: #22c55e;
+    }
+
+    .stat-card-number {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .stat-card-label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* USER MANAGEMENT SECTION */
+    .user-management {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .section-header-text h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .section-header-text p {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .search-bar {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .search-bar:focus {
+      outline: none;
+      border-color: #2dd4bf;
+      box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
+    }
+
+    /* TABLE */
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .users-table thead tr {
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .users-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .users-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.2s;
+    }
+
+    .users-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .users-table td {
+      padding: 16px;
+      font-size: 14px;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2dd4bf, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+      width: fit-content;
+    }
+
+    .status-badge.approved {
+      background: #f0fdf4;
+      color: #22c55e;
+    }
+
+    .status-badge.pending {
+      background: #fffbeb;
+      color: #f59e0b;
+    }
+
+    .status-badge.denied {
+      background: #fef2f2;
+      color: #ef4444;
+    }
+
+    /* TOGGLE SWITCH */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #cbd5e1;
+      border-radius: 14px;
+      transition: all 0.3s;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      height: 24px;
+      width: 24px;
+      left: 2px;
+      bottom: 2px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: #22c55e;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+
+    /* TOAST NOTIFICATIONS */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
+      pointer-events: auto;
+      max-width: 400px;
+    }
+
+    .toast.success {
+      background: #f0fdf4;
+      color: #22c55e;
+      border-left: 4px solid #22c55e;
+    }
+
+    .toast.error {
+      background: #fef2f2;
+      color: #ef4444;
+      border-left: 4px solid #ef4444;
+    }
+
+    .toast i {
+      font-size: 18px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .toast.removing {
+      animation: slideOut 0.3s ease-out;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sidebar-logo {
+        margin-bottom: 0;
+      }
+
+      .admin-profile {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .sidebar-footer {
+        margin: 0;
+        padding: 0;
+        border: none;
+      }
+
+      .sign-out-btn {
+        width: auto;
+        padding: 8px 16px;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 16px;
+      }
+
+      .stat-card-number {
+        font-size: 24px;
+      }
+
+      .stat-card-label {
+        font-size: 12px;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .search-bar {
+        max-width: 100%;
+      }
+
+      .users-table {
+        font-size: 12px;
+      }
+
+      .users-table th,
+      .users-table td {
+        padding: 12px 8px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      .user-cell {
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <div class="logo-text">Admin</div>
+      </div>
+
+      <div class="admin-profile">
+        <div class="name" id="adminName">Admin</div>
+        <div class="badge">Administrator</div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="#"><i class="fas fa-users"></i> Users</a>
+        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="sign-out-btn" id="signOutBtn">
+          <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Welcome to the user management admin panel</p>
+      </div>
+
+      <!-- STATS ROW -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-card-icon blue">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 12%</div>
+          </div>
+          <div class="stat-card-number" id="totalUsersCount">8</div>
+          <div class="stat-card-label">Total Users</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-card-icon green">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 5%</div>
+          </div>
+          <div class="stat-card-number" id="verifiedUsersCount">4</div>
+          <div class="stat-card-label">Verified Users</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-card-icon amber">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="stat-card-trend"><i class="fas fa-arrow-down"></i> 2%</div>
+          </div>
+          <div class="stat-card-number" id="pendingUsersCount">3</div>
+          <div class="stat-card-label">Pending Approval</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-card-icon purple">
+              <i class="fas fa-thumbs-up"></i>
+            </div>
+            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 8%</div>
+          </div>
+          <div class="stat-card-number" id="approvedUsersCount">4</div>
+          <div class="stat-card-label">Approved Users</div>
+        </div>
+      </div>
+
+      <!-- USER MANAGEMENT -->
+      <div class="user-management">
+        <div class="section-header">
+          <div class="section-header-text">
+            <h2>User Management</h2>
+            <p>Manage verified users and their access</p>
+          </div>
+          <input 
+            type="text" 
+            class="search-bar" 
+            id="searchInput" 
+            placeholder="Search by name or email..."
+          >
+        </div>
+
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Access</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <!-- Users will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    // _supabase is already initialized in supabase-config.js — do NOT redeclare it here
+
+    // Mock data fallback
+    const mockUsers = [
+      { id: '1', full_name: 'Amara Osei', email: 'amara@example.com', status: 'pending', created_at: '2024-01-15' },
+      { id: '2', full_name: 'Kwame Mensah', email: 'kwame@example.com', status: 'approved', created_at: '2024-01-14' },
+      { id: '3', full_name: 'Fatima Al-Hassan', email: 'fatima@example.com', status: 'approved', created_at: '2024-01-13' },
+      { id: '4', full_name: 'Chidi Okonkwo', email: 'chidi@example.com', status: 'pending', created_at: '2024-01-12' },
+      { id: '5', full_name: 'Zara Diallo', email: 'zara@example.com', status: 'denied', created_at: '2024-01-11' },
+      { id: '6', full_name: 'Emeka Nwosu', email: 'emeka@example.com', status: 'pending', created_at: '2024-01-10' },
+      { id: '7', full_name: 'Nia Kamara', email: 'nia@example.com', status: 'approved', created_at: '2024-01-09' },
+      { id: '8', full_name: 'Kofi Asante', email: 'kofi@example.com', status: 'pending', created_at: '2024-01-08' },
+    ];
+
+    // Store all users for filtering
+    let allUsers = [];
+
+    // Toast notification system
+    function showToast(message, type = 'success') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+      toast.innerHTML = `<i class="${icon}"></i> ${message}`;
+      
+      toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Load users live from Supabase
+    async function loadUsers() {
+      try {
+        const { data, error } = await _supabase
+          .from('profiles')
+          .select('*')
+          .eq('is_admin', false)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading users:', error);
+          showToast('Error loading users: ' + error.message, 'error');
+          return;
+        }
+
+        allUsers = data || [];
+        const query = document.getElementById('searchInput').value.trim();
+        if (query) {
+          filterUsers(query);
+        } else {
+          renderUsers(allUsers);
+        }
+        updateStats();
+      } catch (err) {
+        console.error('Failed to load users:', err);
+      }
+    }
+
+    // Subscribe to realtime changes on profiles table
+    function subscribeRealtime() {
+      _supabase
+        .channel('profiles-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        }, (payload) => {
+          console.log('Realtime change:', payload);
+          loadUsers(); // reload full list on any change
+        })
+        .subscribe((status) => {
+          console.log('Realtime status:', status);
+        });
+    }
+
+    // Render users in table
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">No users found</td></tr>';
+        return;
+      }
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        const initials = (user.full_name || user.email || 'U')
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+
+        const isApproved = user.is_approved === true;
+        const joinedDate = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
+        const statusLabel = isApproved ? 'approved' : 'pending';
+
+        row.innerHTML = `
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">${initials}</div>
+              <div class="user-info">
+                <div class="user-name">${user.full_name || user.username || 'Unknown'}</div>
+              </div>
+            </div>
+          </td>
+          <td>${user.email || 'N/A'}</td>
+          <td>${joinedDate}</td>
+          <td>
+            <span class="status-badge ${statusLabel}">${statusLabel}</span>
+          </td>
+          <td>
+            <div class="toggle-container">
+              <label class="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  ${isApproved ? 'checked' : ''}
+                  data-user-id="${user.id}"
+                  onchange="handleToggleChange(this)"
+                >
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Handle toggle change
+    async function handleToggleChange(checkbox) {
+      const userId = checkbox.dataset.userId;
+      const isChecked = checkbox.checked;
+      try {
+        if (!_supabase) {
+          // Mock update
+          const user = allUsers.find(u => u.id === userId);
+          if (user) user.is_approved = isChecked;
+          showToast(`User access ${isChecked ? 'approved ✅' : 'denied ❌'}`, isChecked ? 'success' : 'error');
+          renderUsers(allUsers);
+          updateStats();
+          return;
+        }
+
+        const { error } = await _supabase
+          .from('profiles')
+          .update({ is_approved: isChecked })
+          .eq('id', userId);
+
+        if (error) {
+          checkbox.checked = !isChecked; // Revert toggle
+          showToast(`Error updating access: ${error.message}`, 'error');
+        } else {
+          const user = allUsers.find(u => u.id === userId);
+          if (user) user.is_approved = isChecked;
+          showToast(`User access ${isChecked ? 'approved ✅' : 'denied ❌'}`, isChecked ? 'success' : 'error');
+          renderUsers(allUsers);
+          updateStats();
+        }
+      } catch (err) {
+        checkbox.checked = !isChecked; // Revert toggle
+        showToast('Error updating user status', 'error');
+        console.error('Toggle error:', err);
+      }
+    }
+
+    // Update statistics
+    function updateStats() {
+      const total = allUsers.length;
+      const approved = allUsers.filter(u => u.is_approved === true).length;
+      const pending = allUsers.filter(u => u.is_approved !== true).length;
+      const verified = approved;
+
+      document.getElementById('totalUsersCount').textContent = total;
+      document.getElementById('verifiedUsersCount').textContent = verified;
+      document.getElementById('pendingUsersCount').textContent = pending;
+      document.getElementById('approvedUsersCount').textContent = approved;
+    }
+
+    // Search functionality
+    function filterUsers(query) {
+      const filtered = allUsers.filter(user => {
+        const name = (user.full_name || '').toLowerCase();
+        const email = (user.email || '').toLowerCase();
+        const q = query.toLowerCase();
+        return name.includes(q) || email.includes(q);
+      });
+      renderUsers(filtered);
+    }
+
+    // Sign out handler
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      try {
+        if (_supabase) {
+          await _supabase.auth.signOut();
+        }
+        window.location.href = 'login.html';
+      } catch (err) {
+        console.error('Sign out error:', err);
+        showToast('Error signing out', 'error');
+      }
+    });
+
+    // Search input handler
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      filterUsers(e.target.value);
+    });
+
+    // Initialize page with auth check
+    async function initPage() {
+      try {
+        const result = await requireAuth('admin');
+        if (!result) return;
+        const { profile } = result;
+        document.getElementById('adminName').textContent = profile.full_name || profile.email || 'Admin';
+      } catch (err) {
+        console.warn('Auth check error:', err);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load users immediately
+      await loadUsers();
+
+      // Subscribe to realtime changes
+      subscribeRealtime();
+
+      // Also auto-reload every 15 seconds as a safety net
+      setInterval(loadUsers, 15000);
+    }
+
+    // Start when DOM is ready
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+</body>
+</html>

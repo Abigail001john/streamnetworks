@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting for Approval</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            overflow-x: hidden;
+        }
+
+        /* Animated shimmer background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(79,209,197,0.06), transparent);
+            animation: shimmer 10s infinite linear;
+            pointer-events: none;
+        }
+        @keyframes shimmer {
+            0% { transform: translate(-50%,-50%) rotate(0deg); }
+            100% { transform: translate(-50%,-50%) rotate(360deg); }
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 48px 32px;
+            width: 100%;
+            max-width: 460px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .logo { margin-bottom: 32px; }
+        .logo img { height: 48px; object-fit: contain; }
+
+        /* Animated clock/checkmark icon */
+        .icon-wrap {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(79,209,197,0.15), rgba(79,209,197,0.05));
+            border: 2px solid rgba(79,209,197,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            animation: pulse-ring 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(79,209,197,0.3); }
+            50% { box-shadow: 0 0 0 16px rgba(79,209,197,0); }
+        }
+
+        .icon-wrap i {
+            font-size: 42px;
+            color: #4fd1c5;
+            animation: tick 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes tick {
+            0% { opacity: 0.7; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.05); }
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        /* Status steps */
+        .status-steps {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            text-align: left;
+        }
+
+        .status-step {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .status-step:last-child { border-bottom: none; }
+
+        .step-icon { font-size: 20px; width: 28px; text-align: center; }
+        .step-label { font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500; }
+        .step-badge {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .badge-done { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-done-blue { background: rgba(79,209,197,0.2); color: #4fd1c5; }
+        .badge-pending { background: rgba(245,158,11,0.2); color: #f59e0b; animation: blink 2s infinite; }
+        .badge-locked { background: rgba(239,68,68,0.15); color: #ef4444; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        /* Info note */
+        .info-note {
+            background: rgba(79,209,197,0.08);
+            border: 1px solid rgba(79,209,197,0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* Buttons */
+        .btn-check {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #4fd1c5, #38b2ac);
+            color: #0f2027;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: opacity 0.2s, transform 0.15s;
+            margin-bottom: 10px;
+        }
+        .btn-check:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-check:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .btn-signout {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-signout:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+        .status-msg {
+            font-size: 13px;
+            min-height: 20px;
+            margin-top: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+        .status-msg.success { color: #10b981; }
+        .status-msg.error { color: #ef4444; }
+
+        /* Auto-check timer */
+        .auto-check-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 36px 20px; }
+            h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">
+        <img src="logo.png" alt="Logo">
+    </div>
+
+    <div class="icon-wrap">
+        <i class="fas fa-clock"></i>
+    </div>
+
+    <h1>Transfer Received 🎉</h1>
+    <p class="subtitle">
+        Thank you! Your transfer has been noted.<br>
+        Our admin team will review and approve your account shortly.
+    </p>
+
+    <!-- Status Steps -->
+    <div class="status-steps">
+        <div class="status-step">
+            <span class="step-icon">✅</span>
+            <span class="step-label">Account Created</span>
+            <span class="step-badge badge-done">Done</span>
+        </div>
+        <div class="status-step">
+            <span class="step-icon">💸</span>
+            <span class="step-label">Transfer Submitted</span>
+            <span class="step-badge badge-done-blue">Submitted</span>
+        </div>
+        <div class="status-step">
+            <span class="step-icon">⏳</span>
+            <span class="step-label">Admin Review</span>
+            <span class="step-badge badge-pending">Pending</span>
+        </div>
+        <div class="status-step">
+            <span class="step-icon">🔒</span>
+            <span class="step-label">Dashboard Access</span>
+            <span class="step-badge badge-locked">Locked</span>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-note">
+        📬 Approval usually takes <strong>a few hours</strong>. You'll get full dashboard access as soon as the admin confirms your payment. You can check your status anytime using the button below.
+    </div>
+
+    <!-- Actions -->
+    <button class="btn-check" id="checkBtn" onclick="checkApproval()">
+        <i class="fas fa-sync-alt"></i> Check Approval Status
+    </button>
+    <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
+
+    <div class="status-msg" id="statusMsg"></div>
+    <div class="auto-check-label" id="autoCheckLabel">Auto-checking every 30 seconds…</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+    let autoInterval;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const result = await requireAuth('any');
+        if (!result) return;
+
+        // Check immediately on load
+        await checkApproval(true);
+
+        // Auto-check every 30 seconds
+        autoInterval = setInterval(() => checkApproval(true), 30000);
+    });
+
+    async function checkApproval(silent = false) {
+        const btn = document.getElementById('checkBtn');
+        const msg = document.getElementById('statusMsg');
+
+        if (!silent) {
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.3);border-top-color:#0f2027;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span>Checking…';
+        }
+
+        try {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
+
+            const { data: profile, error } = await _supabase
+                .from('profiles')
+                .select('is_approved, status, is_admin')
+                .eq('id', session.user.id)
+                .single();
+
+            if (error) throw error;
+
+            if (profile?.is_admin) {
+                clearInterval(autoInterval);
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            if (profile?.is_approved === true || profile?.status === 'approved') {
+                clearInterval(autoInterval);
+                msg.textContent = '🎉 Approved! Redirecting to your dashboard…';
+                msg.className = 'status-msg success';
+                setTimeout(() => window.location.href = 'dashboard.html', 1800);
+                return;
+            }
+
+            if (!silent) {
+                msg.textContent = 'Still pending. Please check back soon.';
+                msg.className = 'status-msg error';
+                setTimeout(() => { msg.textContent = ''; msg.className = 'status-msg'; }, 4000);
+            }
+        } catch (err) {
+            if (!silent) {
+                msg.textContent = 'Error checking status. Try again.';
+                msg.className = 'status-msg error';
+            }
+        } finally {
+            if (!silent) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Check Approval Status';
+            }
+        }
+    }
+
+    async function doSignOut() {
+        clearInterval(autoInterval);
+        await _supabase.auth.signOut();
+        window.location.href = 'login.html';
+    }
+</script>
+</body>
+</html>

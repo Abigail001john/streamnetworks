@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - MyApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container img {
+            max-width: 60px;
+            height: auto;
+        }
+
+        .form-title {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4fd1c5;
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #4fd1c5;
+            box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4fd1c5;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .alert.success {
+            background: rgba(79, 209, 197, 0.1);
+            border: 1px solid rgba(79, 209, 197, 0.3);
+            color: #4fd1c5;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4fd1c5, #45b8ae);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            position: relative;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(79, 209, 197, 0.3);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .form-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .forgot-password-link {
+            color: #4fd1c5;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password-link:hover {
+            color: #45b8ae;
+            text-decoration: underline;
+        }
+
+        .signup-link {
+            color: #4fd1c5;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .signup-link:hover {
+            text-decoration: underline;
+        }
+
+        .signup-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        .divider {
+            margin: 25px 0;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Modal for forgot password */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #ffffff;
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+
+            .form-title {
+                font-size: 24px;
+            }
+
+            .form-links {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .signup-text {
+                display: block;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo">
+            </div>
+
+            <h1 class="form-title">Sign In</h1>
+            <p class="form-subtitle">Welcome back to your account</p>
+
+            <div id="alertContainer"></div>
+
+            <form id="loginForm">
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input
+                            type="email"
+                            id="email"
+                            class="form-input"
+                            placeholder="you@example.com"
+                            required
+                        >
+                    </div>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input
+                            type="password"
+                            id="password"
+                            class="form-input"
+                            placeholder="Enter your password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="passwordToggle"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="form-links">
+                <a href="#" class="forgot-password-link" id="forgotPasswordLink">
+                    Forgot password?
+                </a>
+                <span class="signup-text">
+                    Don't have an account?
+                    <a href="register.html" class="signup-link">Sign up</a>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgotPasswordModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h2 class="modal-title">Reset Password</h2>
+            <p class="modal-subtitle">Enter your email address and we'll send you a link to reset your password.</p>
+
+            <div id="forgotPasswordAlertContainer"></div>
+
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="forgotEmail" class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input
+                            type="email"
+                            id="forgotEmail"
+                            class="form-input"
+                            placeholder="you@example.com"
+                            required
+                        >
+                    </div>
+                    <div class="error-message" id="forgotEmailError"></div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="resetBtn">
+                    Send Reset Link
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+
+    <script>
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        const closeModal = document.getElementById('closeModal');
+        const forgotEmailInput = document.getElementById('forgotEmail');
+        const resetBtn = document.getElementById('resetBtn');
+        const alertContainer = document.getElementById('alertContainer');
+        const forgotPasswordAlertContainer = document.getElementById('forgotPasswordAlertContainer');
+
+        // Utility Functions
+        function showAlert(container, message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert ${type} show`;
+            // Use innerHTML so HTML links in messages render correctly
+            alert.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${message}`;
+            container.innerHTML = '';
+            container.appendChild(alert);
+        }
+
+        function hideAlert(container) {
+            container.innerHTML = '';
+        }
+
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.add('show');
+        }
+
+        function hideError(element) {
+            element.textContent = '';
+            element.classList.remove('show');
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Password Toggle
+        passwordToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordToggle.innerHTML = `<i class="fas fa-eye${type === 'password' ? '' : '-slash'}"></i>`;
+        });
+
+        // Login Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert(alertContainer);
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            // Validation
+            let isValid = true;
+
+            if (!email) {
+                showError(document.getElementById('emailError'), 'Email is required');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                showError(document.getElementById('emailError'), 'Please enter a valid email');
+                isValid = false;
+            } else {
+                hideError(document.getElementById('emailError'));
+            }
+
+            if (!password) {
+                showError(document.getElementById('passwordError'), 'Password is required');
+                isValid = false;
+            } else {
+                hideError(document.getElementById('passwordError'));
+            }
+
+            if (!isValid) return;
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div> Signing in...';
+
+            try {
+                // Sign in with Supabase
+                const { data, error } = await _supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    // Check for email not confirmed error — offer resend link
+                    if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
+                        const resendEmail = emailInput.value.trim();
+                        showAlert(alertContainer, `Please verify your email before signing in. <a href="#" id="resendVerifyLink" style="color:#4fd1c5;font-weight:600;text-decoration:underline;">Resend verification email</a>`, 'error');
+                        document.getElementById('resendVerifyLink')?.addEventListener('click', async (ev) => {
+                            ev.preventDefault();
+                            const link = document.getElementById('resendVerifyLink');
+                            link.textContent = 'Sending…';
+                            const { error: resendErr } = await _supabase.auth.resend({ type: 'signup', email: resendEmail });
+                            link.textContent = resendErr ? '❌ Failed, try again' : '✅ Sent! Check your inbox';
+                        });
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Sign In';
+                        return;
+                    }
+                    
+                    showAlert(alertContainer, error.message || 'Invalid email or password', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Sign In';
+                    return;
+                }
+
+                // Get user session
+                const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
+                if (sessionError || !session) {
+                    showAlert(alertContainer, 'Failed to establish session', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Sign In';
+                    return;
+                }
+
+                const user = session.user;
+
+                // Fetch user profile — retry once to handle trigger race condition on new signups
+                let profile = null;
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    if (attempt > 0) await new Promise(r => setTimeout(r, 1200));
+                    const { data, error: profileError } = await _supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
+                    if (!profileError && data) { profile = data; break; }
+                }
+
+                // If profile still not found, fall back to JWT metadata
+                if (!profile) {
+                    const meta = user.user_metadata || {};
+                    profile = {
+                        id: user.id,
+                        email: user.email,
+                        status: 'pending',
+                        is_admin: meta.is_admin === true || meta.is_admin === 'true'
+                    };
+                }
+
+                // Redirect based on profile status
+                if (profile.is_admin === true) {
+                    window.location.href = 'admin.html';
+                } else if (profile.status === 'approved') {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    window.location.href = 'activation.html';
+                }
+            } catch (err) {
+                // Check for email not confirmed error — offer resend link
+                if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+                    const resendEmail = emailInput.value.trim();
+                    showAlert(alertContainer, `Please verify your email before signing in. <a href="#" id="resendVerifyLink" style="color:#4fd1c5;font-weight:600;text-decoration:underline;">Resend verification email</a>`, 'error');
+                    document.getElementById('resendVerifyLink')?.addEventListener('click', async (ev) => {
+                        ev.preventDefault();
+                        const link = document.getElementById('resendVerifyLink');
+                        link.textContent = 'Sending…';
+                        const { error: resendErr } = await _supabase.auth.resend({ type: 'signup', email: resendEmail });
+                        link.textContent = resendErr ? '❌ Failed, try again' : '✅ Sent! Check your inbox';
+                    });
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Sign In';
+                    return;
+                }
+                
+                showAlert(alertContainer, err.message || 'An error occurred during sign in', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Sign In';
+            }
+        });
+
+        // Forgot Password Modal
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotPasswordModal.classList.add('show');
+            hideAlert(forgotPasswordAlertContainer);
+        });
+
+        closeModal.addEventListener('click', () => {
+            forgotPasswordModal.classList.remove('show');
+            hideAlert(forgotPasswordAlertContainer);
+            forgotPasswordForm.reset();
+        });
+
+        forgotPasswordModal.addEventListener('click', (e) => {
+            if (e.target === forgotPasswordModal) {
+                forgotPasswordModal.classList.remove('show');
+                hideAlert(forgotPasswordAlertContainer);
+                forgotPasswordForm.reset();
+            }
+        });
+
+        // Forgot Password Form Submission
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert(forgotPasswordAlertContainer);
+
+            const email = forgotEmailInput.value.trim();
+
+            // Validation
+            if (!email) {
+                showError(document.getElementById('forgotEmailError'), 'Email is required');
+                return;
+            } else if (!validateEmail(email)) {
+                showError(document.getElementById('forgotEmailError'), 'Please enter a valid email');
+                return;
+            } else {
+                hideError(document.getElementById('forgotEmailError'));
+            }
+
+            // Show loading state
+            resetBtn.disabled = true;
+            resetBtn.innerHTML = '<div class="spinner"></div> Sending...';
+
+            try {
+                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password.html`
+                });
+
+                if (error) {
+                    showAlert(forgotPasswordAlertContainer, error.message || 'Failed to send reset email', 'error');
+                } else {
+                    showAlert(forgotPasswordAlertContainer, 'Password reset link sent! Check your email.', 'success');
+                    forgotPasswordForm.reset();
+                    setTimeout(() => {
+                        forgotPasswordModal.classList.remove('show');
+                    }, 2000);
+                }
+            } catch (err) {
+                showAlert(forgotPasswordAlertContainer, err.message || 'An error occurred', 'error');
+            } finally {
+                resetBtn.disabled = false;
+                resetBtn.innerHTML = 'Send Reset Link';
+            }
+        });
+
+        // Clear error messages on input
+        emailInput.addEventListener('input', () => {
+            hideError(document.getElementById('emailError'));
+        });
+
+        passwordInput.addEventListener('input', () => {
+            hideError(document.getElementById('passwordError'));
+        });
+
+        forgotEmailInput.addEventListener('input', () => {
+            hideError(document.getElementById('forgotEmailError'));
+        });
+    </script>
+</body>
+</html>

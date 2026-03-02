@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Approved User</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f3ed;
+            color: #1f2937;
+            overflow-x: hidden;
+        }
+
+        /* Main container with mobile-first max-width */
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: #f7f3ed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP NAVIGATION BAR */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+            height: 64px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+        }
+
+        .top-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #1f2937;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .hamburger-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .logo {
+            height: 32px;
+            width: auto;
+        }
+
+        .top-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #1f2937;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .notification-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2dd4bf, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        /* User dropdown menu */
+        .user-dropdown {
+            position: absolute;
+            top: 64px;
+            right: 16px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .user-dropdown.active {
+            display: flex;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            color: #1f2937;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dropdown-item.sign-out {
+            color: #ef4444;
+        }
+
+        /* Main content area with padding for fixed nav */
+        .main-content {
+            margin-top: 64px;
+            margin-bottom: 80px;
+            padding: 20px 16px;
+            flex: 1;
+        }
+
+        /* WELCOME SECTION */
+        .welcome-section {
+            margin-bottom: 32px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .welcome-date {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* WALLET CARDS */
+        .wallet-section {
+            margin-bottom: 32px;
+        }
+
+        .wallet-cards-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        .wallet-cards-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .wallet-card {
+            flex: 0 0 calc(100% - 20px);
+            border-radius: 20px;
+            padding: 24px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .wallet-card-1 {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .wallet-card-2 {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+        }
+
+        .wallet-card-3 {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .wallet-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .wallet-card-icon {
+            font-size: 28px;
+            opacity: 0.9;
+        }
+
+        .wallet-card-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .wallet-card-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .wallet-card-label {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
+
+        .wallet-card-amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .wallet-card-amount.hidden {
+            font-size: 20px;
+        }
+
+        .wallet-total {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .wallet-total-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        /* QUICK ACTIONS GRID */
+        .quick-actions-section {
+            margin-bottom: 32px;
+        }
+
+        .quick-actions-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .action-icon-bg {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ffffff;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, #2dd4bf, #1db69a);
+        }
+
+        .action-card:nth-child(2) .action-icon-bg {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .action-card:nth-child(3) .action-icon-bg {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .action-card:nth-child(4) .action-icon-bg {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .action-card:nth-child(5) .action-icon-bg {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        .action-card:nth-child(6) .action-icon-bg {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .action-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .action-description {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* RECENT ACTIVITY SECTION */
+        .activity-section {
+            margin-bottom: 20px;
+        }
+
+        .activity-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-item {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.positive {
+            background-color: #d1fae5;
+            color: #10b981;
+        }
+
+        .activity-icon.negative {
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-description {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .activity-amount {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .activity-amount.positive {
+            color: #10b981;
+        }
+
+        .activity-amount.negative {
+            color: #ef4444;
+        }
+
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+            height: 80px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #9ca3af;
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            color: #6b7280;
+        }
+
+        .nav-item.active {
+            color: #2dd4bf;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .top-nav {
+                max-width: 100%;
+            }
+            
+            .bottom-nav {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TOP NAVIGATION BAR -->
+        <nav class="top-nav">
+            <div class="top-nav-left">
+                <button class="hamburger-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="logo.png" alt="Logo" class="logo">
+            </div>
+            <div class="top-nav-right">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge"></span>
+                </button>
+                <div class="user-avatar" id="userAvatarBtn">
+                    <span id="avatarInitial">A</span>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user" style="margin-right: 8px;"></i> Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog" style="margin-right: 8px;"></i> Settings
+                    </a>
+                    <button class="dropdown-item sign-out" id="signOutBtn">
+                        <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- WELCOME SECTION -->
+            <section class="welcome-section">
+                <h1 class="welcome-title" id="welcomeMessage">Good morning, User! 👋</h1>
+                <p class="welcome-subtitle">Welcome back to your dashboard</p>
+                <p class="welcome-date" id="currentDate"></p>
+            </section>
+
+            <!-- WALLET CARDS -->
+            <section class="wallet-section">
+                <div class="wallet-cards-scroll">
+                    <!-- Card 1: Collab Earnings -->
+                    <div class="wallet-card wallet-card-1">
+                        <div class="wallet-card-header">
+                            <div>
+                                <div class="wallet-card-label">Collab Earnings</div>
+                                <div class="wallet-card-amount" data-amount="1240.50">$1,240.50</div>
+                            </div>
+                            <button class="wallet-card-toggle" data-card="card1">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="wallet-card-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Partner Earnings -->
+                    <div class="wallet-card wallet-card-2">
+                        <div class="wallet-card-header">
+                            <div>
+                                <div class="wallet-card-label">Partner Earnings</div>
+                                <div class="wallet-card-amount" data-amount="875.00">$875.00</div>
+                            </div>
+                            <button class="wallet-card-toggle" data-card="card2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="wallet-card-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Total Royalties -->
+                    <div class="wallet-card wallet-card-3">
+                        <div class="wallet-card-header">
+                            <div>
+                                <div class="wallet-card-label">Total Royalties</div>
+                                <div class="wallet-card-amount" data-amount="340.25">$340.25</div>
+                            </div>
+                            <button class="wallet-card-toggle" data-card="card3">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="wallet-card-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="wallet-total">
+                    Total Balance: <span class="wallet-total-amount" id="totalBalance">$2,455.75</span>
+                </div>
+            </section>
+
+            <!-- QUICK ACTIONS GRID -->
+            <section class="quick-actions-section">
+                <h2>Quick Actions</h2>
+                <div class="quick-actions-grid">
+                    <a href="wish-hub.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="action-label">Wish Hub</div>
+                        <div class="action-description">Your wishlist & goals</div>
+                    </a>
+                    <a href="bazaar.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="action-label">Bazaar</div>
+                        <div class="action-description">Buy & sell items</div>
+                    </a>
+                    <a href="earn.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="action-label">Earn</div>
+                        <div class="action-description">Tasks & earnings</div>
+                    </a>
+                    <a href="video.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="action-label">Video</div>
+                        <div class="action-description">Watch & upload</div>
+                    </a>
+                    <a href="audio.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="action-label">Audio</div>
+                        <div class="action-description">Listen & share</div>
+                    </a>
+                    <a href="files.html" class="action-card">
+                        <div class="action-icon-bg">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="action-label">Files</div>
+                        <div class="action-description">Manage your files</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- RECENT ACTIVITY SECTION -->
+            <section class="activity-section">
+                <h2>Recent Activity</h2>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon positive">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">Collab with @creativestudio</div>
+                            <div class="activity-time">2h ago</div>
+                        </div>
+                        <div class="activity-amount positive">+$120.00</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon positive">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">Bazaar sale: Logo Pack</div>
+                            <div class="activity-time">5h ago</div>
+                        </div>
+                        <div class="activity-amount positive">+$45.00</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon positive">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">Royalty from track #447</div>
+                            <div class="activity-time">Yesterday</div>
+                        </div>
+                        <div class="activity-amount positive">+$22.50</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon negative">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">Withdrawal processed</div>
+                            <div class="activity-time">2 days ago</div>
+                        </div>
+                        <div class="activity-amount negative">-$200.00</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon positive">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">Partner bonus credited</div>
+                            <div class="activity-time">3 days ago</div>
+                        </div>
+                        <div class="activity-amount positive">+$75.00</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active">
+                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                <span>Home</span>
+            </a>
+            <a href="wish-hub.html" class="nav-item">
+                <div class="nav-icon"><i class="fas fa-star"></i></div>
+                <span>Wish Hub</span>
+            </a>
+            <a href="earn.html" class="nav-item">
+                <div class="nav-icon"><i class="fas fa-coins"></i></div>
+                <span>Earn</span>
+            </a>
+            <a href="#" class="nav-item">
+                <div class="nav-icon"><i class="fas fa-book"></i></div>
+                <span>Skill Up</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <div class="nav-icon"><i class="fas fa-user"></i></div>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+
+    <script>
+        // ==========================================
+        // AUTH GUARD (CRITICAL - at top of script)
+        // ==========================================
+        async function initPage() {
+            // Allow any logged-in user — we handle pending state ourselves
+            const result = await requireAuth('any');
+            if (!result) return;
+            const { profile } = result;
+
+            const fullName = profile.full_name || profile.username || 'User';
+            const initial = fullName.charAt(0).toUpperCase();
+            document.getElementById('avatarInitial').textContent = initial;
+
+            // Update welcome message now that we have the name
+            const hour = new Date().getHours();
+            let greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('welcomeMessage').textContent = `${greeting}, ${fullName}! 👋`;
+
+            // If not approved, show the pending overlay — block all feature clicks
+            const isApproved = profile.is_approved === true || profile.status === 'approved';
+            if (!isApproved && !profile.is_admin) {
+                showPendingOverlay();
+            }
+        }
+
+        function showPendingOverlay() {
+            // Intercept all action card clicks
+            document.querySelectorAll('.action-card, .nav-item:not(:first-child)').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = 'activation.html';
+                }, true);
+            });
+
+            // Show a banner at top of main content
+            const banner = document.createElement('div');
+            banner.id = 'pendingBanner';
+            banner.innerHTML = `
+                <div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:16px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                    <div style="font-size:32px;">⏳</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Account Pending Approval</div>
+                        <div style="font-size:13px;opacity:0.9;">Your account is awaiting admin approval. Activate now to get full access.</div>
+                    </div>
+                    <button onclick="window.location.href='activation.html'" style="background:rgba(255,255,255,0.25);border:none;color:#fff;font-weight:700;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;">
+                        Activate Now →
+                    </button>
+                </div>
+            `;
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertBefore(banner, mainContent.firstChild);
+        }
+
+        // ==========================================
+        // DOM CONTENT LOADED
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+            
+            // Set current date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('en-US', options);
+            document.getElementById('currentDate').textContent = today;
+            
+            // Update greeting based on time of day
+            const hour = new Date().getHours();
+            let greeting = 'Good morning';
+            if (hour >= 12 && hour < 18) {
+                greeting = 'Good afternoon';
+            } else if (hour >= 18) {
+                greeting = 'Good evening';
+            }
+            
+            const userName = document.getElementById('userName').textContent || 'User';
+            document.getElementById('welcomeMessage').textContent = `${greeting}, ${userName}! 👋`;
+            
+            // User dropdown toggle
+            const userAvatarBtn = document.getElementById('userAvatarBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            userAvatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', () => {
+                userDropdown.classList.remove('active');
+            });
+            
+            // Wallet card toggle (hide/show balance)
+            const walletToggles = document.querySelectorAll('.wallet-card-toggle');
+            const cardStates = { card1: false, card2: false, card3: false };
+            
+            walletToggles.forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const cardKey = toggle.dataset.card;
+                    const amountElement = toggle.closest('.wallet-card').querySelector('.wallet-card-amount');
+                    const originalAmount = amountElement.dataset.amount;
+                    
+                    cardStates[cardKey] = !cardStates[cardKey];
+                    
+                    if (cardStates[cardKey]) {
+                        // Show hidden state
+                        amountElement.textContent = '••••••';
+                        amountElement.classList.add('hidden');
+                        toggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    } else {
+                        // Show amount
+                        amountElement.textContent = `$${originalAmount}`;
+                        amountElement.classList.remove('hidden');
+                        toggle.innerHTML = '<i class="fas fa-eye"></i>';
+                    }
+                });
+            });
+            
+            // Sign out functionality
+            const signOutBtn = document.getElementById('signOutBtn');
+            signOutBtn.addEventListener('click', async () => {
+                if (typeof logout === 'function') {
+                    await logout();
+                } else {
+                    // Fallback if logout function not available
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+        // Create userName element if it doesn't exist (for welcome message update)
+        if (!document.getElementById('userName')) {
+            const tempDiv = document.createElement('span');
+            tempDiv.id = 'userName';
+            tempDiv.style.display = 'none';
+            tempDiv.textContent = 'User';
+            document.body.appendChild(tempDiv);
+        }
+    </script>
+</body>
+</html>

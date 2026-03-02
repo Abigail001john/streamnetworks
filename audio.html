@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #1a0533 0%, #0f0f1a 100%);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        /* TOP NAV */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 5, 51, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .top-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-nav-left a {
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .top-nav-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .top-nav-upload {
+            cursor: pointer;
+            font-size: 18px;
+            color: #ffffff;
+        }
+
+        /* CONTENT AREA */
+        main {
+            margin-top: 56px;
+            margin-bottom: 70px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 16px;
+        }
+
+        /* NOW PLAYING MINI PLAYER */
+        .now-playing {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .album-art {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #d946ef 0%, #a855f7 100%);
+            border-radius: 8px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .track-info {
+            margin-bottom: 16px;
+        }
+
+        .track-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .control-btn:hover {
+            opacity: 0.8;
+        }
+
+        .control-btn.play {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .progress-container {
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #2dd4bf;
+            width: 60%;
+        }
+
+        .time-display {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* SECTION TITLES */
+        .section-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin: 24px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* TRENDING TRACKS SCROLL */
+        .trending-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+            padding-bottom: 8px;
+        }
+
+        .trending-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .trending-card {
+            flex-shrink: 0;
+            width: 140px;
+            background-color: rgba(45, 212, 191, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .trending-card:active {
+            transform: scale(0.95);
+        }
+
+        .trending-album {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .trending-rank {
+            font-weight: 600;
+            font-size: 12px;
+            color: #a855f7;
+            margin-bottom: 4px;
+        }
+
+        .trending-name {
+            font-weight: 500;
+            font-size: 12px;
+            margin-bottom: 4px;
+            white-space: normal;
+        }
+
+        .trending-artist {
+            font-size: 10px;
+            color: #a0a0a0;
+            margin-bottom: 4px;
+        }
+
+        .trending-plays {
+            font-size: 10px;
+            color: #808080;
+        }
+
+        /* MY LIBRARY LIST */
+        .library-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .library-item {
+            background-color: rgba(45, 212, 191, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .library-item:active {
+            transform: scale(0.98);
+        }
+
+        .library-album {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            flex-shrink: 0;
+        }
+
+        .library-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .library-name {
+            font-weight: 500;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .library-plays {
+            font-size: 11px;
+            color: #a0a0a0;
+        }
+
+        .library-duration {
+            font-size: 11px;
+            color: #808080;
+            margin-top: 2px;
+        }
+
+        .library-play-btn {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(168, 85, 247, 0.2);
+            border-radius: 50%;
+            border: none;
+            color: #a855f7;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .library-play-btn:hover {
+            background-color: rgba(168, 85, 247, 0.3);
+            color: #2dd4bf;
+        }
+
+        /* GENRE PILLS */
+        .genre-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+            padding-bottom: 8px;
+        }
+
+        .genre-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .genre-pill {
+            padding: 8px 14px;
+            background-color: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 16px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .genre-pill:hover {
+            background-color: rgba(168, 85, 247, 0.25);
+        }
+
+        .genre-pill.active {
+            background-color: #a855f7;
+            color: #ffffff;
+            border-color: #a855f7;
+        }
+
+        /* ROYALTIES TEASER CARD */
+        .royalties-card {
+            background: linear-gradient(135deg, #a855f7 0%, #6d28d9 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .royalties-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .royalties-message {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .royalties-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .royalties-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1a0533;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: #a855f7;
+        }
+
+        .nav-item:hover {
+            color: #a855f7;
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP NAV -->
+    <nav class="top-nav">
+        <div class="top-nav-left">
+            <a href="dashboard.html"><i class="fas fa-arrow-left"></i></a>
+            <div class="top-nav-title">Audio 🎵</div>
+        </div>
+        <div class="top-nav-upload">
+            <i class="fas fa-upload"></i>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- NOW PLAYING MINI PLAYER -->
+        <div class="now-playing">
+            <div class="album-art">
+                <i class="fas fa-music"></i>
+            </div>
+            <div class="track-info">
+                <div class="track-name">Midnight Vibes (Extended Mix)</div>
+                <div class="track-artist">@beatmaker99</div>
+            </div>
+            <div class="playback-controls">
+                <button class="control-btn"><i class="fas fa-step-backward"></i></button>
+                <button class="control-btn"><i class="fas fa-backward"></i></button>
+                <button class="control-btn play"><i class="fas fa-play"></i></button>
+                <button class="control-btn"><i class="fas fa-forward"></i></button>
+                <button class="control-btn"><i class="fas fa-step-forward"></i></button>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="time-display">2:34 / 4:15</div>
+            </div>
+        </div>
+
+        <!-- TRENDING TRACKS -->
+        <h3 class="section-title">Trending Now 🔥</h3>
+        <div class="trending-scroll">
+            <div class="trending-card">
+                <div class="trending-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="trending-rank">#1</div>
+                <div class="trending-name">City Lights Remix</div>
+                <div class="trending-artist">@urbanbeats</div>
+                <div class="trending-plays">52K plays</div>
+            </div>
+
+            <div class="trending-card">
+                <div class="trending-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="trending-rank">#2</div>
+                <div class="trending-name">Golden Hour</div>
+                <div class="trending-artist">@sunsetvibes</div>
+                <div class="trending-plays">38K plays</div>
+            </div>
+
+            <div class="trending-card">
+                <div class="trending-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="trending-rank">#3</div>
+                <div class="trending-name">Deep Focus</div>
+                <div class="trending-artist">@lofimaster</div>
+                <div class="trending-plays">29K plays</div>
+            </div>
+
+            <div class="trending-card">
+                <div class="trending-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="trending-rank">#4</div>
+                <div class="trending-name">Thunder Drop</div>
+                <div class="trending-artist">@bassking</div>
+                <div class="trending-plays">21K plays</div>
+            </div>
+        </div>
+
+        <!-- MY LIBRARY -->
+        <h3 class="section-title">My Library</h3>
+        <div class="library-list">
+            <div class="library-item">
+                <div class="library-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="library-info">
+                    <div class="library-name">Chill Morning Beat</div>
+                    <div class="library-plays">1.2K plays</div>
+                    <div class="library-duration">3:45</div>
+                </div>
+                <button class="library-play-btn">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+
+            <div class="library-item">
+                <div class="library-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="library-info">
+                    <div class="library-name">Upbeat Commercial</div>
+                    <div class="library-plays">890 plays</div>
+                    <div class="library-duration">2:15</div>
+                </div>
+                <button class="library-play-btn">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+
+            <div class="library-item">
+                <div class="library-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="library-info">
+                    <div class="library-name">Cinematic Strings</div>
+                    <div class="library-plays">2.4K plays</div>
+                    <div class="library-duration">5:30</div>
+                </div>
+                <button class="library-play-btn">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+
+            <div class="library-item">
+                <div class="library-album">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="library-info">
+                    <div class="library-name">Podcast Intro v2</div>
+                    <div class="library-plays">456 plays</div>
+                    <div class="library-duration">0:45</div>
+                </div>
+                <button class="library-play-btn">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- GENRES -->
+        <h3 class="section-title">Genres</h3>
+        <div class="genre-scroll">
+            <button class="genre-pill active">All</button>
+            <button class="genre-pill">Hip-Hop</button>
+            <button class="genre-pill">Afrobeats</button>
+            <button class="genre-pill">Lo-Fi</button>
+            <button class="genre-pill">Electronic</button>
+            <button class="genre-pill">Podcast</button>
+            <button class="genre-pill">R&B</button>
+        </div>
+
+        <!-- ROYALTIES TEASER -->
+        <div class="royalties-card">
+            <div class="royalties-title">Earn from your music 🎶</div>
+            <div class="royalties-message">Your tracks earned $340.25 in royalties this month. Keep uploading!</div>
+            <a href="earn.html"><button class="royalties-btn">View Earnings →</button></a>
+        </div>
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i></a>
+        <a href="wish-hub.html" class="nav-item"><i class="fas fa-gift"></i></a>
+        <a href="earn.html" class="nav-item"><i class="fas fa-coins"></i></a>
+        <a href="#" class="nav-item"><i class="fas fa-book"></i></a>
+        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i></a>
+    </nav>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const result = await requireAuth('approved');
+            if (!result) return;
+        });
+    </script>
+</body>
+</html>

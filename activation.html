@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Pending Approval</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background shimmer effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(79, 209, 197, 0.1),
+                transparent
+            );
+            animation: shimmer 8s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* Glassmorphism card */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Logo */
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            max-width: 80px;
+            height: auto;
+        }
+
+        /* Icon container with animation */
+        .icon-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .animated-icon {
+            font-size: 64px;
+            color: #4fd1c5;
+            animation: pulse-scale 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-scale {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .animated-icon.spin {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Heading and subtext */
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .subtext {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Status card */
+        .status-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .status-icon.verified {
+            color: #10b981;
+        }
+
+        .status-icon.pending {
+            color: #f59e0b;
+            animation: pulse-opacity 2s ease-in-out infinite;
+        }
+
+        .status-icon.locked {
+            color: #ef4444;
+        }
+
+        @keyframes pulse-opacity {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4fd1c5, #45b8ad);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 209, 197, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        /* Loading state */
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin-loader 0.8s linear infinite;
+        }
+
+        @keyframes spin-loader {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .subtext {
+                font-size: 13px;
+            }
+
+            .animated-icon {
+                font-size: 56px;
+            }
+
+            button {
+                padding: 14px 20px;
+                font-size: 13px;
+            }
+        }
+
+        /* Status message */
+        .message {
+            text-align: center;
+            font-size: 13px;
+            margin-top: 15px;
+            min-height: 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .message.error {
+            color: #ef4444;
+        }
+
+        .message.success {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Logo -->
+            <div class="logo">
+                <img src="logo.png" alt="Logo">
+            </div>
+
+            <!-- Animated Icon -->
+            <div class="icon-container">
+                <i class="fas fa-hourglass-end animated-icon spin"></i>
+            </div>
+
+            <!-- Heading -->
+            <h1>Account Pending Approval</h1>
+
+            <!-- Subtext -->
+            <p class="subtext">
+                Your account has been created! An admin will review and approve your access shortly. You will gain full dashboard access once approved.
+            </p>
+
+            <!-- Status Card -->
+            <div class="status-section">
+                <div class="status-item">
+                    <span class="status-icon verified">✅</span>
+                    <span>Account Created</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon pending">⏳</span>
+                    <span>Admin Approval (Pending)</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon locked">🔒</span>
+                    <span>Dashboard Access (Locked)</span>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button class="btn-primary" id="activateNowBtn" onclick="window.location.href='activationpay.html'" style="background: linear-gradient(135deg, #f59e0b, #d97706); font-size:15px; padding:14px; width:100%; margin-bottom:10px;">
+                    <i class="fas fa-bolt"></i> Activate Now
+                </button>
+                <button class="btn-secondary" id="checkAgainBtn" onclick="checkStatus()">
+                    <i class="fas fa-redo-alt"></i> Check Status
+                </button>
+                <button class="btn-secondary" id="signOutBtn" onclick="handleSignOut()">
+                    Sign Out
+                </button>
+            </div>
+
+            <!-- Message -->
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Config -->
+    <script src="supabase-config.js"></script>
+
+    <script>
+        let autoCheckInterval;
+
+        // Initialize on page load
+        async function initializePage() {
+            try {
+                // requireAuth() returns { session, profile } or redirects to login.html
+                const auth = await requireAuth();
+                
+                if (!auth) return; // requireAuth already redirected
+
+                const { session, profile } = auth;
+
+                // If already approved, redirect to dashboard
+                if (profile && (profile.status === 'approved' || profile.is_approved === true)) {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // If admin, redirect to admin panel
+                if (profile && profile.is_admin === true) {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                // Start auto-check every 30 seconds
+                startAutoCheck();
+            } catch (error) {
+                console.error('Error initializing page:', error);
+                showMessage('Error loading page. Please refresh.', 'error');
+            }
+        }
+
+        // Get user profile from Supabase
+        async function getUserProfile(userId) {
+            try {
+                const { data, error } = await _supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                return null;
+            }
+        }
+
+        // Check status and redirect if approved
+        async function checkStatus() {
+            try {
+                const btn = document.getElementById('checkAgainBtn');
+                btn.disabled = true;
+
+                // Show loading state
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span class="loading-spinner"></span>Checking...';
+
+                const session = await _supabase.auth.getSession();
+                
+                if (!session.data.session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const profile = await getUserProfile(session.data.session.user.id);
+
+                if (profile) {
+                    if (profile.status === 'approved' || profile.is_approved === true) {
+                        showMessage('Account approved! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else if (profile.is_admin === true) {
+                        showMessage('Admin detected! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'admin.html';
+                        }, 1500);
+                    } else {
+                        showMessage('Still pending admin review. Please check again later.', 'error');
+                    }
+                } else {
+                    showMessage('Could not fetch profile. Please try again.', 'error');
+                }
+
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            } catch (error) {
+                console.error('Error checking status:', error);
+                showMessage('Error checking status. Please try again.', 'error');
+                
+                const btn = document.getElementById('checkAgainBtn');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-redo-alt"></i> Check Again';
+            }
+        }
+
+        // Sign out handler
+        async function handleSignOut() {
+            try {
+                const btn = document.getElementById('signOutBtn');
+                btn.disabled = true;
+
+                const { error } = await _supabase.auth.signOut();
+                
+                if (error) throw error;
+
+                // Clear auto-check interval
+                if (autoCheckInterval) {
+                    clearInterval(autoCheckInterval);
+                }
+
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+                showMessage('Error signing out. Please try again.', 'error');
+                
+                const btn = document.getElementById('signOutBtn');
+                btn.disabled = false;
+            }
+        }
+
+        // Show status message
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+
+            if (type === 'error') {
+                setTimeout(() => {
+                    messageEl.textContent = '';
+                    messageEl.className = 'message';
+                }, 5000);
+            }
+        }
+
+        // Auto-check every 30 seconds
+        function startAutoCheck() {
+            autoCheckInterval = setInterval(async () => {
+                try {
+                    const session = await _supabase.auth.getSession();
+                    
+                    if (!session.data.session) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const profile = await getUserProfile(session.data.session.user.id);
+
+                    if (profile && (profile.status === 'approved' || profile.is_approved === true)) {
+                        clearInterval(autoCheckInterval);
+                        window.location.href = 'dashboard.html';
+                    }
+                } catch (error) {
+                    console.error('Error in auto-check:', error);
+                }
+            }, 30000);
+        }
+
+        // Initialize page when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializePage);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>

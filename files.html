@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Files - My App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f7f3ed;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    /* ── FIXED TOP NAV ── */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      max-width: 480px;
+      margin: 0 auto;
+      left: 0;
+      right: 0;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .nav-left a {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #f3f4f6;
+      color: #1f2937;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-left a:hover {
+      background: #e5e7eb;
+    }
+
+    .nav-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #2dd4bf;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upload-btn:hover {
+      background: #22c5a8;
+      transform: translateY(-2px);
+    }
+
+    /* ── MAIN CONTAINER ── */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding-top: 72px;
+      padding-bottom: 80px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* ── CARD STYLES ── */
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+
+    /* ── STORAGE METER ── */
+    .storage-meter {
+      margin-bottom: 16px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #2dd4bf;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .storage-label {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .storage-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6b7280;
+      gap: 8px;
+    }
+
+    .stat-item {
+      flex: 1;
+    }
+
+    /* ── UPLOAD DROP ZONE ── */
+    .drop-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f9fafb;
+    }
+
+    .drop-zone:hover {
+      border-color: #2dd4bf;
+      background: #f0fdfb;
+    }
+
+    .drop-zone.drag-over {
+      border-color: #2dd4bf;
+      background: #f0fdfb;
+      transform: scale(1.02);
+    }
+
+    .drop-zone i {
+      font-size: 40px;
+      color: #2dd4bf;
+      margin-bottom: 12px;
+    }
+
+    .drop-zone-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .drop-zone-hint {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* ── FILES LIST ── */
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .file-row:last-child {
+      border-bottom: none;
+    }
+
+    .file-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1f2937;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #f3f4f6;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .icon-btn:hover {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .icon-btn.danger {
+      color: #ef4444;
+    }
+
+    .icon-btn.danger:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .icon-btn:disabled:hover {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      color: #d1d5db;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .empty-state span {
+      font-size: 13px;
+      display: block;
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .loading i {
+      color: #2dd4bf;
+      margin-right: 8px;
+    }
+
+    /* ── FOLDERS SECTION ── */
+    .folders-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .folder-item {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid #f3f4f6;
+    }
+
+    .folder-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .folder-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .folder-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1f2937;
+    }
+
+    .folder-item.yellow .folder-icon { color: #f59e0b; }
+    .folder-item.purple .folder-icon { color: #8b5cf6; }
+    .folder-item.red .folder-icon { color: #ef4444; }
+    .folder-item.blue .folder-icon { color: #3b82f6; }
+
+    /* ── FIXED BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      max-width: 480px;
+      margin: 0 auto;
+      left: 0;
+      right: 0;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #6b7280;
+      transition: all 0.2s;
+      flex: 1;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .nav-item:hover {
+      color: #2dd4bf;
+    }
+
+    .nav-item.active {
+      color: #2dd4bf;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-120px);
+      background: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      font-size: 14px;
+      z-index: 200;
+      transition: all 0.3s ease;
+      max-width: 320px;
+      text-align: center;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid #10b981;
+      color: #10b981;
+    }
+
+    .toast.error {
+      border-left: 4px solid #ef4444;
+      color: #ef4444;
+    }
+
+    .toast.info {
+      border-left: 4px solid #2dd4bf;
+      color: #2dd4bf;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .top-nav, .bottom-nav {
+        width: 100vw;
+      }
+      .container {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div class="nav-left">
+      <a href="dashboard.html" title="Back"><i class="fas fa-arrow-left"></i></a>
+      <div class="nav-title">Files 📁</div>
+    </div>
+    <div class="nav-right">
+      <button class="upload-btn" id="uploadBtn"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+    <!-- STORAGE METER -->
+    <div class="card storage-meter">
+      <div class="card-title">Storage</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="storageFill"></div>
+      </div>
+      <div class="storage-label"><span id="storageUsed">0 B</span> of <span id="storageTotal">50 MB</span> used (<span id="storagePercent">0</span>%)</div>
+      <div class="storage-stats">
+        <div class="stat-item">Files: <strong id="fileCount">0</strong></div>
+        <div class="stat-item">Max file: <strong>50 MB</strong></div>
+      </div>
+    </div>
+
+    <!-- UPLOAD DROP ZONE -->
+    <div class="card">
+      <div class="drop-zone" id="dropZone">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <div class="drop-zone-title">Drag & drop files here</div>
+        <div class="drop-zone-hint">or click to browse — Max 50MB per file</div>
+      </div>
+      <input type="file" id="fileInput" multiple>
+    </div>
+
+    <!-- FILES LIST -->
+    <div class="card">
+      <div class="card-title">Files</div>
+      <div id="fileList">
+        <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading files...</div>
+      </div>
+    </div>
+
+    <!-- FOLDERS SECTION -->
+    <div class="card">
+      <div class="card-title">Folders (Coming Soon)</div>
+      <div class="folders-grid">
+        <div class="folder-item yellow">
+          <div class="folder-icon">📁</div>
+          <div class="folder-name">Design Assets</div>
+        </div>
+        <div class="folder-item purple">
+          <div class="folder-icon">📁</div>
+          <div class="folder-name">Music Projects</div>
+        </div>
+        <div class="folder-item red">
+          <div class="folder-icon">📁</div>
+          <div class="folder-name">Video Drafts</div>
+        </div>
+        <div class="folder-item blue">
+          <div class="folder-icon">📁</div>
+          <div class="folder-name">Documents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="wish-hub.html" class="nav-item">
+      <i class="fas fa-sparkles"></i>
+      <span>Wish Hub</span>
+    </a>
+    <a href="earn.html" class="nav-item">
+      <i class="fas fa-coins"></i>
+      <span>Earn</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fas fa-book"></i>
+      <span>Skill Up</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── TOAST NOTIFICATION ──
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ── SUPABASE FUNCTIONS ──
+    async function uploadFile(file, userId) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = userId + '/' + Date.now() + '_' + safeName;
+      const { data, error } = await _supabase.storage
+        .from('user-files')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      return { data, error };
+    }
+
+    async function listFiles(userId) {
+      const { data, error } = await _supabase.storage
+        .from('user-files')
+        .list(userId + '/', { sortBy: { column: 'created_at', order: 'desc' } });
+      return { data, error };
+    }
+
+    async function getFileUrl(path) {
+      const { data } = await _supabase.storage
+        .from('user-files')
+        .createSignedUrl(path, 3600);
+      return data?.signedUrl;
+    }
+
+    async function deleteFile(path) {
+      const { error } = await _supabase.storage
+        .from('user-files')
+        .remove([path]);
+      return !error;
+    }
+
+    // ── FILE UTILITIES ──
+    function getFileIcon(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      const map = {
+        pdf: { icon: 'fa-file-pdf', color: '#ef4444' },
+        doc: { icon: 'fa-file-word', color: '#3b82f6' },
+        docx: { icon: 'fa-file-word', color: '#3b82f6' },
+        xls: { icon: 'fa-file-excel', color: '#10b981' },
+        xlsx: { icon: 'fa-file-excel', color: '#10b981' },
+        ppt: { icon: 'fa-file-powerpoint', color: '#f97316' },
+        pptx: { icon: 'fa-file-powerpoint', color: '#f97316' },
+        jpg: { icon: 'fa-file-image', color: '#8b5cf6' },
+        jpeg: { icon: 'fa-file-image', color: '#8b5cf6' },
+        png: { icon: 'fa-file-image', color: '#8b5cf6' },
+        gif: { icon: 'fa-file-image', color: '#8b5cf6' },
+        mp4: { icon: 'fa-file-video', color: '#ef4444' },
+        mov: { icon: 'fa-file-video', color: '#ef4444' },
+        mp3: { icon: 'fa-file-audio', color: '#a855f7' },
+        wav: { icon: 'fa-file-audio', color: '#a855f7' },
+        zip: { icon: 'fa-file-archive', color: '#f59e0b' },
+        rar: { icon: 'fa-file-archive', color: '#f59e0b' },
+        psd: { icon: 'fa-file-image', color: '#3b82f6' },
+      };
+      return map[ext] || { icon: 'fa-file', color: '#6b7280' };
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024, sizes = ['B','KB','MB','GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function renderFiles(files, isMock = false) {
+      const container = document.getElementById('fileList');
+      container.innerHTML = '';
+      files.forEach(file => {
+        const path = currentUserId + '/' + file.name;
+        const size = formatBytes(file.metadata?.size || 0);
+        const date = file.updated_at ? new Date(file.updated_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'Unknown';
+        const { icon, color } = getFileIcon(file.name);
+        const div = document.createElement('div');
+        div.className = 'file-row';
+        
+        const downloadBtn = isMock 
+          ? `<button class="icon-btn" disabled title="Disabled"><i class="fas fa-download"></i></button>`
+          : `<button class="icon-btn" onclick="downloadFile('${path}','${file.name}')" title="Download"><i class="fas fa-download"></i></button>`;
+        
+        const deleteBtn = isMock 
+          ? `<button class="icon-btn danger" disabled title="Disabled"><i class="fas fa-trash"></i></button>`
+          : `<button class="icon-btn danger" onclick="deleteFilePrompt('${path}')" title="Delete"><i class="fas fa-trash"></i></button>`;
+        
+        div.innerHTML = `
+          <div class="file-icon-wrap" style="background:${color}20;color:${color}">
+            <i class="fas ${icon}"></i>
+          </div>
+          <div class="file-info">
+            <div class="file-name">${file.name.length > 32 ? file.name.substring(0,29)+'...' : file.name}</div>
+            <div class="file-meta">${size} • ${date}</div>
+          </div>
+          <div class="file-actions">
+            ${downloadBtn}
+            ${deleteBtn}
+          </div>`;
+        container.appendChild(div);
+      });
+    }
+
+    async function downloadFile(path, name) {
+      showToast('Preparing download...', 'info');
+      const url = await getFileUrl(path);
+      if (!url) { showToast('Download failed', 'error'); return; }
+      const a = document.createElement('a');
+      a.href = url; 
+      a.download = name; 
+      a.target = '_blank';
+      a.click();
+    }
+
+    async function deleteFilePrompt(path) {
+      if (!confirm('Delete this file? This cannot be undone.')) return;
+      const ok = await deleteFile(path);
+      if (ok) { showToast('File deleted', 'success'); await refreshFileList(); }
+      else showToast('Delete failed', 'error');
+    }
+
+    function updateStorageStats(files, totalBytes) {
+      const maxBytes = 50 * 1024 * 1024;
+      const pct = Math.min(100, (totalBytes / maxBytes) * 100).toFixed(1);
+      document.getElementById('storageUsed').textContent = formatBytes(totalBytes);
+      document.getElementById('storageTotal').textContent = '50 MB';
+      document.getElementById('storagePercent').textContent = pct;
+      document.getElementById('storageFill').style.width = pct + '%';
+      document.getElementById('fileCount').textContent = files.length;
+    }
+
+    function renderMockFiles() {
+      const mockFiles = [
+        { name: 'brand_kit_final.zip', size: 14.5*1024*1024, updated_at: '2026-01-29' },
+        { name: 'promo_video_v3.mp4', size: 89*1024*1024, updated_at: '2026-01-28' },
+        { name: 'logo_variations.psd', size: 78*1024*1024, updated_at: '2026-01-27' },
+        { name: 'podcast_ep12.mp3', size: 52*1024*1024, updated_at: '2026-01-26' },
+        { name: 'contract_template.pdf', size: 2.4*1024*1024, updated_at: '2026-01-25' },
+        { name: 'social_banners_pack.png', size: 34*1024*1024, updated_at: '2026-01-24' },
+        { name: 'content_calendar.docx', size: 1.2*1024*1024, updated_at: '2026-01-23' },
+      ];
+      const fakeFiles = mockFiles.map(f => ({ name: f.name, updated_at: f.updated_at, metadata: { size: f.size } }));
+      renderFiles(fakeFiles, true);
+      const total = mockFiles.reduce((s,f)=>s+f.size,0);
+      updateStorageStats(fakeFiles, total);
+    }
+
+    // ── PAGINATION / REFRESH ──
+    let currentUserId = null;
+
+    async function refreshFileList() {
+      const container = document.getElementById('fileList');
+      container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading files...</div>';
+      
+      const { data: files, error } = await listFiles(currentUserId);
+      
+      if (error || !files) {
+        renderMockFiles();
+        return;
+      }
+      
+      if (files.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>No files yet</p>
+            <span>Upload your first file to get started</span>
+          </div>`;
+        updateStorageStats([], 0);
+        return;
+      }
+      
+      renderFiles(files);
+      
+      const totalBytes = files.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
+      updateStorageStats(files, totalBytes);
+    }
+
+    // ── UPLOAD HANDLING ──
+    async function handleUpload(files) {
+      if (!currentUserId) return;
+      for (const file of files) {
+        if (file.size > 50 * 1024 * 1024) { 
+          showToast(file.name + ' exceeds 50MB limit', 'error'); 
+          continue; 
+        }
+        showToast('Uploading ' + file.name + '...', 'info');
+        const { error } = await uploadFile(file, currentUserId);
+        if (error) showToast('Failed: ' + file.name, 'error');
+        else showToast(file.name + ' uploaded!', 'success');
+      }
+      await refreshFileList();
+    }
+
+    // ── DRAG & DROP ──
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      await handleUpload(files);
+    });
+    dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+
+    document.getElementById('fileInput').addEventListener('change', async e => {
+      await handleUpload(Array.from(e.target.files));
+      e.target.value = '';
+    });
+
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+      document.getElementById('fileInput').click();
+    });
+
+    // ── PAGE INIT ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      const result = await requireAuth('approved');
+      if (!result) return;
+      currentUserId = result.session.user.id;
+      await refreshFileList();
+    });
+  </script>
+</body>
+</html>
