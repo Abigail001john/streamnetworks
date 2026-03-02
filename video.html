@@ -1,521 +1,376 @@
-<!DOCTYPE html>
+
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Videos - Dashboard</title>
+    <title>Video – FW</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            font-family: 'Inter', sans-serif;
             background-color: #0f0f0f;
             color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%; max-width: 480px;
+            margin: 0 auto;
+            background-color: #0f0f0f;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         /* TOP NAV */
         .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #1a1a1a;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            position: fixed; top: 0; left: 0; right: 0;
+            max-width: 480px; margin: 0 auto; width: 100%;
+            height: 60px;
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(12px);
+            display: flex; align-items: center;
+            padding: 0 16px; gap: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             z-index: 100;
         }
-
-        .top-nav-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .top-nav-left a {
-            color: #ffffff;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .top-nav-title {
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .top-nav-search {
-            cursor: pointer;
-            font-size: 18px;
-            color: #ffffff;
-        }
-
-        /* CONTENT AREA */
-        main {
-            margin-top: 56px;
-            margin-bottom: 70px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 16px;
-        }
-
-        /* CATEGORY TABS */
-        .category-tabs {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            scrollbar-width: none;
-        }
-
-        .category-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-pill {
-            padding: 8px 16px;
-            background-color: #2a2a2a;
-            color: #ffffff;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
-        }
-
-        .category-pill.active {
-            background-color: #2dd4bf;
-            color: #000000;
-            font-weight: 600;
-        }
-
-        /* FEATURED VIDEO */
-        .featured-video {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .featured-thumbnail {
-            width: 100%;
-            aspect-ratio: 9/16;
-            background-color: #2a2a2a;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .play-icon {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(255, 255, 255, 0.2);
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: none; color: #fff;
+            width: 36px; height: 36px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #2dd4bf;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px;
+            transition: background 0.2s;
+            text-decoration: none;
         }
-
-        .duration-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-
-        .featured-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .featured-channel {
-            color: #a0a0a0;
-            font-size: 12px;
-            margin-bottom: 12px;
-        }
-
-        .video-actions {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-        }
-
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            color: #a0a0a0;
-            transition: color 0.2s ease;
-        }
-
-        .action-btn:hover {
-            color: #2dd4bf;
-        }
-
-        .action-btn i {
-            font-size: 20px;
-        }
-
-        /* VIDEO GRID */
-        .video-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .video-card {
-            background-color: #1a1a1a;
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            gap: 12px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .video-card:active {
-            transform: scale(0.98);
-        }
-
-        .video-thumbnail {
-            width: 80px;
-            height: 120px;
-            border-radius: 8px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            position: relative;
-        }
-
-        .video-info {
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .nav-title {
+            font-size: 17px; font-weight: 700;
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-width: 0;
+        }
+        .nav-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff; font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 20px;
+            letter-spacing: 0.5px;
         }
 
-        .video-title {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 4px;
-            white-space: normal;
+        /* MAIN */
+        .main-content {
+            margin-top: 60px;
+            padding: 20px 16px 100px;
+            flex: 1;
         }
 
-        .video-channel {
-            color: #a0a0a0;
-            font-size: 11px;
-            margin-bottom: 6px;
+        /* DAY LABEL */
+        .day-label {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px;
+        }
+        .day-pill {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff; font-size: 12px; font-weight: 700;
+            padding: 5px 14px; border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+        .day-text {
+            font-size: 13px; color: rgba(255,255,255,0.5);
         }
 
-        .video-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: #808080;
+        /* VIDEO PLAYER WRAPPER */
+        .video-wrapper {
+            width: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #1a1a1a;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .video-wrapper iframe {
+            width: 100%;
+            display: block;
+            border: none;
+        }
+        /* For shorts: 9:16 aspect, for regular: 16:9 */
+        .video-wrapper.shorts { aspect-ratio: 9/16; }
+        .video-wrapper.regular { aspect-ratio: 16/9; }
+        .video-wrapper iframe { height: 100%; }
+
+        /* VIDEO INFO */
+        .video-info {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .video-info-title {
+            font-size: 15px; font-weight: 700;
+            margin-bottom: 6px; color: #fff;
+        }
+        .video-info-sub {
+            font-size: 13px; color: rgba(255,255,255,0.45);
+            display: flex; align-items: center; gap: 6px;
         }
 
-        .video-duration {
-            background-color: rgba(45, 212, 191, 0.2);
-            color: #2dd4bf;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
+        /* RECYCLE NOTICE */
+        .recycle-notice {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px;
         }
+        .recycle-icon { font-size: 22px; }
+        .recycle-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+        .recycle-text strong { color: #fff; }
 
-        /* COLOR VARIANTS FOR THUMBNAILS */
-        .thumb-teal { background-color: #134e4a; color: #2dd4bf; }
-        .thumb-purple { background-color: #4c1d95; color: #a855f7; }
-        .thumb-blue { background-color: #0c4a6e; color: #3b82f6; }
-        .thumb-pink { background-color: #500724; color: #ec4899; }
-        .thumb-green { background-color: #14532d; color: #22c55e; }
-        .thumb-orange { background-color: #5a2e0a; color: #f97316; }
-        .thumb-amber { background-color: #5a3400; color: #fbbf24; }
-
-        /* FLOATING UPLOAD BUTTON */
-        .upload-fab {
-            position: fixed;
-            bottom: 90px;
-            right: 16px;
-            width: 56px;
-            height: 56px;
-            background-color: #2dd4bf;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #000000;
-            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+        /* PLAYLIST SECTION */
+        .section-title {
+            font-size: 14px; font-weight: 700;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+        .playlist {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .playlist-item {
+            background: #1a1a1a;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 50;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+            text-decoration: none;
         }
-
-        .upload-fab:active {
-            transform: scale(0.95);
+        .playlist-item:hover, .playlist-item.active {
+            background: #222;
+            border-color: #ef4444;
+        }
+        .playlist-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+        .playlist-item.active .playlist-num {
+            background: #ef4444; color: #fff;
+        }
+        .playlist-item-info { flex: 1; }
+        .playlist-item-title {
+            font-size: 13px; font-weight: 600; color: #fff;
+            margin-bottom: 3px;
+        }
+        .playlist-item-type {
+            font-size: 11px; color: rgba(255,255,255,0.4);
+        }
+        .playlist-today {
+            font-size: 10px; font-weight: 700;
+            background: #ef4444; color: #fff;
+            padding: 2px 8px; border-radius: 10px;
         }
 
         /* BOTTOM NAV */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 70px;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-            border-top: 1px solid #2a2a2a;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            max-width: 480px; margin: 0 auto;
+            height: 72px;
+            background: rgba(15,15,15,0.97);
+            backdrop-filter: blur(12px);
+            display: flex; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 100;
         }
-
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            color: #ffffff;
-            text-decoration: none;
-            cursor: pointer;
-            font-size: 18px;
-            transition: color 0.2s ease;
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 4px; text-decoration: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 10px; font-weight: 500;
+            transition: color 0.2s;
+            padding: 8px 0;
         }
-
-        .nav-item.active {
-            color: #2dd4bf;
-        }
-
-        .nav-item:hover {
-            color: #2dd4bf;
-        }
+        .nav-item.active { color: #ef4444; }
+        .nav-icon { font-size: 20px; }
     </style>
 </head>
 <body>
+<div class="container">
+
     <!-- TOP NAV -->
     <nav class="top-nav">
-        <div class="top-nav-left">
-            <a href="dashboard.html"><i class="fas fa-arrow-left"></i></a>
-            <div class="top-nav-title">Videos 🎬</div>
-        </div>
-        <div class="top-nav-search">
-            <i class="fas fa-search"></i>
-        </div>
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="nav-title">🎬 FW Video</div>
+        <span class="nav-badge">LIVE</span>
     </nav>
 
-    <!-- MAIN CONTENT -->
-    <main>
-        <!-- CATEGORY TABS -->
-        <div class="category-tabs">
-            <button class="category-pill active">For You</button>
-            <button class="category-pill">Trending</button>
-            <button class="category-pill">Following</button>
-            <button class="category-pill">Collabs</button>
-            <button class="category-pill">Tutorials</button>
+    <!-- MAIN -->
+    <div class="main-content">
+
+        <div class="day-label">
+            <span class="day-pill" id="dayPill">Day 1</span>
+            <span class="day-text" id="dayText">Today's featured video</span>
         </div>
 
-        <!-- FEATURED VIDEO -->
-        <div class="featured-video">
-            <div class="featured-thumbnail">
-                <div class="play-icon">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="duration-badge">12:45</div>
-            </div>
-            <h2 class="featured-title">How to Build a Personal Brand in 2026</h2>
-            <p class="featured-channel">@brandmaster • 24K views • 3 days ago</p>
-            <div class="video-actions">
-                <div class="action-btn">
-                    <i class="far fa-heart"></i>
-                    <span style="font-size: 10px;">Like</span>
-                </div>
-                <div class="action-btn">
-                    <i class="far fa-comment"></i>
-                    <span style="font-size: 10px;">Comment</span>
-                </div>
-                <div class="action-btn">
-                    <i class="far fa-share-from-square"></i>
-                    <span style="font-size: 10px;">Share</span>
-                </div>
+        <!-- EMBEDDED VIDEO -->
+        <div class="video-wrapper" id="videoWrapper">
+            <iframe id="videoFrame"
+                src=""
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
+
+        <!-- VIDEO INFO -->
+        <div class="video-info">
+            <div class="video-info-title" id="videoTitle">Loading today's video…</div>
+            <div class="video-info-sub">
+                <i class="fab fa-youtube" style="color:#ef4444;"></i>
+                <span id="videoType">YouTube</span>
+                &nbsp;·&nbsp;
+                <span id="videoDate"></span>
             </div>
         </div>
 
-        <!-- VIDEO GRID -->
-        <div class="video-grid">
-            <!-- Video 1 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-teal">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Top 10 Collab Strategies</div>
-                    <div class="video-channel">@collabking</div>
-                    <div class="video-stats">
-                        <span>18K views</span>
-                        <span class="video-duration">8:32</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 2 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-purple">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Bazaar Selling Tips for Beginners</div>
-                    <div class="video-channel">@sellpro</div>
-                    <div class="video-stats">
-                        <span>9.2K views</span>
-                        <span class="video-duration">6:15</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 3 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-blue">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Earn $500/Month on the Platform</div>
-                    <div class="video-channel">@earntips</div>
-                    <div class="video-stats">
-                        <span>45K views</span>
-                        <span class="video-duration">15:22</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 4 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-pink">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Studio Setup Under $200</div>
-                    <div class="video-channel">@budgetstudio</div>
-                    <div class="video-stats">
-                        <span>12K views</span>
-                        <span class="video-duration">10:05</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 5 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-green">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Audio Mastering for Beginners</div>
-                    <div class="video-channel">@soundcraft</div>
-                    <div class="video-stats">
-                        <span>7.8K views</span>
-                        <span class="video-duration">20:11</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 6 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-orange">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">My First Month Earnings Revealed</div>
-                    <div class="video-channel">@transparentcreator</div>
-                    <div class="video-stats">
-                        <span>33K views</span>
-                        <span class="video-duration">11:48</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 7 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-amber">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Wish Hub: How to Get Your Wishes Granted</div>
-                    <div class="video-channel">@wishmaster</div>
-                    <div class="video-stats">
-                        <span>5.1K views</span>
-                        <span class="video-duration">4:30</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video 8 -->
-            <div class="video-card">
-                <div class="video-thumbnail thumb-teal">
-                    <i class="fas fa-play"></i>
-                </div>
-                <div class="video-info">
-                    <div class="video-title">Files & Digital Products Explained</div>
-                    <div class="video-channel">@digitalpro</div>
-                    <div class="video-stats">
-                        <span>3.4K views</span>
-                        <span class="video-duration">7:20</span>
-                    </div>
-                </div>
+        <!-- RECYCLE NOTICE -->
+        <div class="recycle-notice">
+            <span class="recycle-icon">🔄</span>
+            <div class="recycle-text">
+                <strong>Daily Rotation Active</strong><br>
+                New video every day. After 20 days, the playlist recycles automatically.
             </div>
         </div>
-    </main>
 
-    <!-- FLOATING UPLOAD BUTTON -->
-    <div class="upload-fab">
-        <i class="fas fa-video"></i>
+        <!-- PLAYLIST -->
+        <div class="section-title">All 20 Videos</div>
+        <div class="playlist" id="playlist"></div>
+
     </div>
 
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i></a>
-        <a href="wish-hub.html" class="nav-item"><i class="fas fa-gift"></i></a>
-        <a href="earn.html" class="nav-item"><i class="fas fa-coins"></i></a>
-        <a href="#" class="nav-item"><i class="fas fa-book"></i></a>
-        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i></a>
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span>Home</span>
+        </a>
+        <a href="wish-hub.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-star"></i></div>
+            <span>Wish Hub</span>
+        </a>
+        <a href="earn.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-coins"></i></div>
+            <span>Earn</span>
+        </a>
+        <a href="video.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-play"></i></div>
+            <span>Video</span>
+        </a>
+        <a href="audio.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-headphones"></i></div>
+            <span>Audio</span>
+        </a>
     </nav>
+</div>
 
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            const result = await requireAuth('approved');
-            if (!result) return;
+<script>
+    const YOUTUBE_LINKS = [
+        { url: 'https://www.youtube.com/shorts/P0GIv8x2ofE',  type: 'Short', label: 'FW Short #1' },
+        { url: 'https://www.youtube.com/shorts/8sFJsjIUUQE',  type: 'Short', label: 'FW Short #2' },
+        { url: 'https://www.youtube.com/shorts/6ENVSeme2H8',  type: 'Short', label: 'FW Short #3' },
+        { url: 'https://www.youtube.com/shorts/h1e02qDMya8',  type: 'Short', label: 'FW Short #4' },
+        { url: 'https://www.youtube.com/watch?v=pKBF2AzNjA4', type: 'Video', label: 'FW Video #5' },
+        { url: 'https://www.youtube.com/shorts/aNf9ErWc4oI',  type: 'Short', label: 'FW Short #6' },
+        { url: 'https://www.youtube.com/shorts/tldanEqkb2Y',  type: 'Short', label: 'FW Short #7' },
+        { url: 'https://www.youtube.com/shorts/j-GTdLI4Zfc',  type: 'Short', label: 'FW Short #8' },
+        { url: 'https://www.youtube.com/watch?v=ZU0f8_C5Pm0', type: 'Video', label: 'FW Video #9' },
+        { url: 'https://www.youtube.com/shorts/IhOmjtI7IWY',  type: 'Short', label: 'FW Short #10' },
+        { url: 'https://www.youtube.com/shorts/VHIMPwhFn1Q',  type: 'Short', label: 'FW Short #11' },
+        { url: 'https://www.youtube.com/shorts/JEHtUnORZKo',  type: 'Short', label: 'FW Short #12' },
+        { url: 'https://www.youtube.com/watch?v=U3h1jSgVChc', type: 'Video', label: 'FW Video #13' },
+        { url: 'https://www.youtube.com/shorts/CqucCRWeguc',  type: 'Short', label: 'FW Short #14' },
+        { url: 'https://www.youtube.com/watch?v=oeqwB8YXHDA', type: 'Video', label: 'FW Video #15' },
+        { url: 'https://www.youtube.com/watch?v=uSsHQzveObo', type: 'Video', label: 'FW Video #16' },
+        { url: 'https://www.youtube.com/watch?v=R1BHj1eXxRA', type: 'Video', label: 'FW Video #17' },
+        { url: 'https://www.youtube.com/watch?v=8Jg3VlxsVqg', type: 'Video', label: 'FW Video #18' },
+        { url: 'https://www.youtube.com/watch?v=TgarwUxpem4', type: 'Video', label: 'FW Video #19' },
+        { url: 'https://www.youtube.com/watch?v=RRnmRBVdsdw', type: 'Video', label: 'FW Video #20' },
+    ];
+
+    function getDayIndex() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 0);
+        const dayOfYear = Math.floor((now - start) / 86400000);
+        return dayOfYear % 20;
+    }
+
+    function getEmbedUrl(url) {
+        // Shorts
+        const shortsMatch = url.match(/shorts\/([a-zA-Z0-9_-]+)/);
+        if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0`;
+        // Regular watch
+        const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+        if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&rel=0`;
+        return url;
+    }
+
+    function loadVideo(idx) {
+        const item = YOUTUBE_LINKS[idx];
+        const isShort = item.type === 'Short';
+        const wrapper = document.getElementById('videoWrapper');
+        const frame = document.getElementById('videoFrame');
+
+        wrapper.className = 'video-wrapper ' + (isShort ? 'shorts' : 'regular');
+        frame.src = getEmbedUrl(item.url);
+
+        document.getElementById('videoTitle').textContent = item.label;
+        document.getElementById('videoType').textContent = isShort ? 'YouTube Short' : 'YouTube Video';
+
+        // Highlight active in playlist
+        document.querySelectorAll('.playlist-item').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
         });
-    </script>
+    }
+
+    function init() {
+        const todayIdx = getDayIndex();
+
+        // Day label
+        document.getElementById('dayPill').textContent = `Day ${todayIdx + 1}`;
+        document.getElementById('dayText').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+        document.getElementById('videoDate').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+        // Build playlist
+        const playlist = document.getElementById('playlist');
+        YOUTUBE_LINKS.forEach((item, i) => {
+            const el = document.createElement('div');
+            el.className = 'playlist-item' + (i === todayIdx ? ' active' : '');
+            el.innerHTML = `
+                <div class="playlist-num">${i + 1}</div>
+                <div class="playlist-item-info">
+                    <div class="playlist-item-title">${item.label}</div>
+                    <div class="playlist-item-type"><i class="fab fa-youtube" style="color:#ef4444;margin-right:4px;"></i>${item.type}</div>
+                </div>
+                ${i === todayIdx ? '<span class="playlist-today">TODAY</span>' : ''}
+            `;
+            el.addEventListener('click', () => loadVideo(i));
+            playlist.appendChild(el);
+        });
+
+        // Load today's video
+        loadVideo(todayIdx);
+    }
+
+    init();
+</script>
 </body>
 </html>
