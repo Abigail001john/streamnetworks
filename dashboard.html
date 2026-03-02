@@ -582,7 +582,7 @@
                         <div class="wallet-card-header">
                             <div>
                                 <div class="wallet-card-label">Collab Earnings</div>
-                                <div class="wallet-card-amount" data-amount="1240.50">$1,240.50</div>
+                                <div class="wallet-card-amount" id="collabEarnings" data-amount="0">₦0.00</div>
                             </div>
                             <button class="wallet-card-toggle" data-card="card1">
                                 <i class="fas fa-eye"></i>
@@ -593,12 +593,12 @@
                         </div>
                     </div>
 
-                    <!-- Card 2: Partner Earnings -->
+                    <!-- Card 2: Task Earnings -->
                     <div class="wallet-card wallet-card-2">
                         <div class="wallet-card-header">
                             <div>
-                                <div class="wallet-card-label">Partner Earnings</div>
-                                <div class="wallet-card-amount" data-amount="875.00">$875.00</div>
+                                <div class="wallet-card-label">Task Earnings</div>
+                                <div class="wallet-card-amount" id="taskEarnings" data-amount="0">₦0.00</div>
                             </div>
                             <button class="wallet-card-toggle" data-card="card2">
                                 <i class="fas fa-eye"></i>
@@ -609,24 +609,24 @@
                         </div>
                     </div>
 
-                    <!-- Card 3: Total Royalties -->
+                    <!-- Card 3: Bonus Balance -->
                     <div class="wallet-card wallet-card-3">
                         <div class="wallet-card-header">
                             <div>
-                                <div class="wallet-card-label">Total Royalties</div>
-                                <div class="wallet-card-amount" data-amount="340.25">$340.25</div>
+                                <div class="wallet-card-label">Bonus Balance</div>
+                                <div class="wallet-card-amount" id="bonusBalance" data-amount="0">₦0.00</div>
                             </div>
                             <button class="wallet-card-toggle" data-card="card3">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                         <div class="wallet-card-icon">
-                            <i class="fas fa-music"></i>
+                            <i class="fas fa-gift"></i>
                         </div>
                     </div>
                 </div>
                 <div class="wallet-total">
-                    Total Balance: <span class="wallet-total-amount" id="totalBalance">$2,455.75</span>
+                    Total Balance: <span class="wallet-total-amount" id="totalBalance">₦0.00</span>
                 </div>
             </section>
 
@@ -682,60 +682,10 @@
             <!-- RECENT ACTIVITY SECTION -->
             <section class="activity-section">
                 <h2>Recent Activity</h2>
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon positive">
-                            <i class="fas fa-handshake"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-description">Collab with @creativestudio</div>
-                            <div class="activity-time">2h ago</div>
-                        </div>
-                        <div class="activity-amount positive">+$120.00</div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon positive">
-                            <i class="fas fa-shopping-bag"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-description">Bazaar sale: Logo Pack</div>
-                            <div class="activity-time">5h ago</div>
-                        </div>
-                        <div class="activity-amount positive">+$45.00</div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon positive">
-                            <i class="fas fa-music"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-description">Royalty from track #447</div>
-                            <div class="activity-time">Yesterday</div>
-                        </div>
-                        <div class="activity-amount positive">+$22.50</div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon negative">
-                            <i class="fas fa-arrow-down"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-description">Withdrawal processed</div>
-                            <div class="activity-time">2 days ago</div>
-                        </div>
-                        <div class="activity-amount negative">-$200.00</div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon positive">
-                            <i class="fas fa-award"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-description">Partner bonus credited</div>
-                            <div class="activity-time">3 days ago</div>
-                        </div>
-                        <div class="activity-amount positive">+$75.00</div>
+                <div class="activity-list" id="activityList">
+                    <!-- Loaded from Supabase -->
+                    <div style="text-align:center;padding:32px;color:#9ca3af;font-size:14px;" id="activityLoading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading activity...
                     </div>
                 </div>
             </section>
@@ -772,10 +722,40 @@
 
     <script>
         // ==========================================
-        // AUTH GUARD (CRITICAL - at top of script)
+        // HELPERS
+        // ==========================================
+        function formatNaira(amount) {
+            return '₦' + Number(amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function timeAgo(dateStr) {
+            const now = new Date();
+            const then = new Date(dateStr);
+            const diff = Math.floor((now - then) / 1000);
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 172800) return 'Yesterday';
+            return Math.floor(diff / 86400) + ' days ago';
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                task: 'fas fa-check-circle',
+                collab: 'fas fa-handshake',
+                bonus: 'fas fa-gift',
+                signup_bonus: 'fas fa-gift',
+                withdrawal: 'fas fa-arrow-down',
+                bazaar: 'fas fa-shopping-bag',
+                royalty: 'fas fa-music',
+            };
+            return icons[type] || 'fas fa-coins';
+        }
+
+        // ==========================================
+        // AUTH GUARD + PAGE INIT
         // ==========================================
         async function initPage() {
-            // Allow any logged-in user — we handle pending state ourselves
             const result = await requireAuth('any');
             if (!result) return;
             const { profile } = result;
@@ -784,20 +764,172 @@
             const initial = fullName.charAt(0).toUpperCase();
             document.getElementById('avatarInitial').textContent = initial;
 
-            // Update welcome message now that we have the name
             const hour = new Date().getHours();
             let greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
             document.getElementById('welcomeMessage').textContent = `${greeting}, ${fullName}! 👋`;
 
-            // If not approved, show the pending overlay — block all feature clicks
             const isApproved = profile.is_approved === true || profile.status === 'approved';
             if (!isApproved && !profile.is_admin) {
                 showPendingOverlay();
             }
+
+            // ---- GIVE ₦12,000 SIGNUP BONUS if first time ----
+            await checkAndGrantSignupBonus(profile);
+
+            // ---- LOAD WALLET BALANCES ----
+            await loadWallet(profile.id);
+
+            // ---- LOAD RECENT ACTIVITY ----
+            await loadActivity(profile.id);
         }
 
+        // ==========================================
+        // SIGNUP BONUS — runs once per user
+        // ==========================================
+        async function checkAndGrantSignupBonus(profile) {
+            // Check if bonus already given (bonus_granted flag on profile)
+            if (profile.bonus_granted) return;
+
+            try {
+                // Insert ₦12,000 signup bonus into transactions table
+                const { error: txError } = await _supabase
+                    .from('transactions')
+                    .insert({
+                        user_id: profile.id,
+                        type: 'signup_bonus',
+                        description: '🎁 Welcome bonus',
+                        amount: 12000,
+                        created_at: new Date().toISOString()
+                    });
+
+                if (txError) {
+                    console.error('Bonus insert error:', txError);
+                    return;
+                }
+
+                // Also update wallet balance
+                await _supabase
+                    .from('wallets')
+                    .upsert({
+                        user_id: profile.id,
+                        bonus_balance: 12000,
+                        collab_earnings: 0,
+                        task_earnings: 0,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+
+                // Mark bonus as granted so it never fires again
+                await _supabase
+                    .from('profiles')
+                    .update({ bonus_granted: true })
+                    .eq('id', profile.id);
+
+            } catch (err) {
+                console.error('Signup bonus error:', err);
+            }
+        }
+
+        // ==========================================
+        // LOAD WALLET BALANCES FROM SUPABASE
+        // ==========================================
+        async function loadWallet(userId) {
+            try {
+                const { data, error } = await _supabase
+                    .from('wallets')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (error || !data) {
+                    // No wallet row yet — show zeroes
+                    updateWalletUI(0, 0, 0);
+                    return;
+                }
+
+                updateWalletUI(
+                    data.collab_earnings || 0,
+                    data.task_earnings || 0,
+                    data.bonus_balance || 0
+                );
+            } catch (err) {
+                console.error('Wallet load error:', err);
+                updateWalletUI(0, 0, 0);
+            }
+        }
+
+        function updateWalletUI(collab, tasks, bonus) {
+            const total = collab + tasks + bonus;
+
+            const collabEl = document.getElementById('collabEarnings');
+            const taskEl = document.getElementById('taskEarnings');
+            const bonusEl = document.getElementById('bonusBalance');
+            const totalEl = document.getElementById('totalBalance');
+
+            collabEl.textContent = formatNaira(collab);
+            collabEl.dataset.amount = collab;
+            taskEl.textContent = formatNaira(tasks);
+            taskEl.dataset.amount = tasks;
+            bonusEl.textContent = formatNaira(bonus);
+            bonusEl.dataset.amount = bonus;
+            totalEl.textContent = formatNaira(total);
+        }
+
+        // ==========================================
+        // LOAD RECENT ACTIVITY FROM SUPABASE
+        // ==========================================
+        async function loadActivity(userId) {
+            const list = document.getElementById('activityList');
+
+            try {
+                const { data, error } = await _supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                list.innerHTML = '';
+
+                if (error) {
+                    list.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af;font-size:14px;">Could not load activity.</div>';
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;padding:32px;color:#9ca3af;font-size:14px;">No activity yet. Complete tasks to start earning!</div>';
+                    return;
+                }
+
+                data.forEach(tx => {
+                    const isPositive = tx.amount >= 0;
+                    const iconClass = getActivityIcon(tx.type);
+                    const item = document.createElement('div');
+                    item.className = 'activity-item';
+                    item.innerHTML = `
+                        <div class="activity-icon ${isPositive ? 'positive' : 'negative'}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-description">${tx.description || tx.type}</div>
+                            <div class="activity-time">${timeAgo(tx.created_at)}</div>
+                        </div>
+                        <div class="activity-amount ${isPositive ? 'positive' : 'negative'}">
+                            ${isPositive ? '+' : ''}${formatNaira(tx.amount)}
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error('Activity load error:', err);
+                list.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af;font-size:14px;">Could not load activity.</div>';
+            }
+        }
+
+        // ==========================================
+        // PENDING OVERLAY
+        // ==========================================
         function showPendingOverlay() {
-            // Intercept all action card clicks
             document.querySelectorAll('.action-card, .nav-item:not(:first-child)').forEach(el => {
                 el.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -806,7 +938,6 @@
                 }, true);
             });
 
-            // Show a banner at top of main content
             const banner = document.createElement('div');
             banner.id = 'pendingBanner';
             banner.innerHTML = `
@@ -826,88 +957,54 @@
         }
 
         // ==========================================
-        // DOM CONTENT LOADED
+        // DOM READY
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             initPage();
-            
+
             // Set current date
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const today = new Date().toLocaleDateString('en-US', options);
-            document.getElementById('currentDate').textContent = today;
-            
-            // Update greeting based on time of day
-            const hour = new Date().getHours();
-            let greeting = 'Good morning';
-            if (hour >= 12 && hour < 18) {
-                greeting = 'Good afternoon';
-            } else if (hour >= 18) {
-                greeting = 'Good evening';
-            }
-            
-            const userName = document.getElementById('userName').textContent || 'User';
-            document.getElementById('welcomeMessage').textContent = `${greeting}, ${userName}! 👋`;
-            
-            // User dropdown toggle
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+
+            // User dropdown
             const userAvatarBtn = document.getElementById('userAvatarBtn');
             const userDropdown = document.getElementById('userDropdown');
-            
             userAvatarBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 userDropdown.classList.toggle('active');
             });
-            
-            document.addEventListener('click', () => {
-                userDropdown.classList.remove('active');
-            });
-            
-            // Wallet card toggle (hide/show balance)
-            const walletToggles = document.querySelectorAll('.wallet-card-toggle');
+            document.addEventListener('click', () => userDropdown.classList.remove('active'));
+
+            // Wallet card hide/show toggle
             const cardStates = { card1: false, card2: false, card3: false };
-            
-            walletToggles.forEach(toggle => {
+            document.querySelectorAll('.wallet-card-toggle').forEach(toggle => {
                 toggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     const cardKey = toggle.dataset.card;
-                    const amountElement = toggle.closest('.wallet-card').querySelector('.wallet-card-amount');
-                    const originalAmount = amountElement.dataset.amount;
-                    
+                    const amountEl = toggle.closest('.wallet-card').querySelector('.wallet-card-amount');
                     cardStates[cardKey] = !cardStates[cardKey];
-                    
                     if (cardStates[cardKey]) {
-                        // Show hidden state
-                        amountElement.textContent = '••••••';
-                        amountElement.classList.add('hidden');
+                        amountEl.dataset.savedAmount = amountEl.textContent;
+                        amountEl.textContent = '••••••';
+                        amountEl.classList.add('hidden');
                         toggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
                     } else {
-                        // Show amount
-                        amountElement.textContent = `$${originalAmount}`;
-                        amountElement.classList.remove('hidden');
+                        amountEl.textContent = amountEl.dataset.savedAmount || amountEl.textContent;
+                        amountEl.classList.remove('hidden');
                         toggle.innerHTML = '<i class="fas fa-eye"></i>';
                     }
                 });
             });
-            
-            // Sign out functionality
-            const signOutBtn = document.getElementById('signOutBtn');
-            signOutBtn.addEventListener('click', async () => {
+
+            // Sign out
+            document.getElementById('signOutBtn').addEventListener('click', async () => {
                 if (typeof logout === 'function') {
                     await logout();
                 } else {
-                    // Fallback if logout function not available
                     window.location.href = 'login.html';
                 }
             });
         });
-
-        // Create userName element if it doesn't exist (for welcome message update)
-        if (!document.getElementById('userName')) {
-            const tempDiv = document.createElement('span');
-            tempDiv.id = 'userName';
-            tempDiv.style.display = 'none';
-            tempDiv.textContent = 'User';
-            document.body.appendChild(tempDiv);
-        }
     </script>
 </body>
 </html>
