@@ -1,3 +1,5 @@
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -750,6 +752,74 @@
                 royalty: 'fas fa-music',
             };
             return icons[type] || 'fas fa-coins';
+        }
+
+        // ==========================================
+        // DAILY VIDEO & AUDIO REDIRECT (20 links, recycling)
+        // ==========================================
+        const YOUTUBE_LINKS = [
+            'https://www.youtube.com/shorts/P0GIv8x2ofE',
+            'https://www.youtube.com/shorts/8sFJsjIUUQE',
+            'https://www.youtube.com/shorts/6ENVSeme2H8',
+            'https://www.youtube.com/shorts/h1e02qDMya8',
+            'https://www.youtube.com/watch?v=pKBF2AzNjA4',
+            'https://www.youtube.com/shorts/aNf9ErWc4oI',
+            'https://www.youtube.com/shorts/tldanEqkb2Y',
+            'https://www.youtube.com/shorts/j-GTdLI4Zfc',
+            'https://www.youtube.com/watch?v=ZU0f8_C5Pm0',
+            'https://www.youtube.com/shorts/IhOmjtI7IWY',
+            'https://www.youtube.com/shorts/VHIMPwhFn1Q',
+            'https://www.youtube.com/shorts/JEHtUnORZKo',
+            'https://www.youtube.com/watch?v=U3h1jSgVChc',
+            'https://www.youtube.com/shorts/CqucCRWeguc',
+            'https://www.youtube.com/watch?v=oeqwB8YXHDA',
+            'https://www.youtube.com/watch?v=uSsHQzveObo',
+            'https://www.youtube.com/watch?v=R1BHj1eXxRA',
+            'https://www.youtube.com/watch?v=8Jg3VlxsVqg',
+            'https://www.youtube.com/watch?v=TgarwUxpem4',
+            'https://www.youtube.com/watch?v=RRnmRBVdsdw'
+        ];
+
+        const AUDIOMACK_LINKS = [
+            'https://audiomack.com/wizkid/song/essence-2',
+            'https://audiomack.com/heisrema/song/calm-down-2',
+            'https://audiomack.com/burna-boy/song/last-last-africa',
+            'https://audiomack.com/sugaking1/song/692c427a73335',
+            'https://audiomack.com/mulla-ray/song/highway',
+            'https://audiomack.com/jtk-5/song/jo',
+            'https://audiomack.com/djbabygolo-golo-nation/song/nigerian-afrobeat-summer',
+            'https://audiomack.com/afrobeat-music/song/feel-the-groove',
+            'https://audiomack.com/djbabygolo-golo-nation/song/afrobeats-night-vibes',
+            'https://audiomack.com/afrobeat-music/song/exclusive-afrobeat-track',
+            'https://audiomack.com/afrobeat-music/song/chill-afro-ride',
+            'https://audiomack.com/afrobeat-music/song/feel-good-afro',
+            'https://audiomack.com/afrobeat-music/song/national-beat',
+            'https://audiomack.com/djbabygolo-golo-nation/song/weekend-afrobeat',
+            'https://audiomack.com/afrobeat-music/song/uptown-afro-vibes',
+            'https://audiomack.com/djbabygolo-golo-nation/song/feel-the-afro',
+            'https://audiomack.com/saycome/song/1-billion-kuwait',
+            'https://audiomack.com/jaemallybeatz/song/libido-afro-fusion-type-beat-2024',
+            'https://audiomack.com/search?q=naija%20afrobeat',
+            'https://audiomack.com/search?q=naija%20hits'
+        ];
+
+        function getDailyIndex() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 0);
+            const diff = now - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay);
+            return dayOfYear % 20;
+        }
+
+        function openDailyVideo() {
+            const idx = getDailyIndex();
+            window.open(YOUTUBE_LINKS[idx], '_blank');
+        }
+
+        function openDailyAudio() {
+            const idx = getDailyIndex();
+            window.open(AUDIOMACK_LINKS[idx], '_blank');
         }
 
         // ==========================================
