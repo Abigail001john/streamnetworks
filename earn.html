@@ -178,11 +178,11 @@
 
     <!-- DAILY TASKS HEADER -->
     <div class="section-title">&#127775; Daily Tasks</div>
-    <div class="section-sub">Complete every day to earn &#8358;. Resets at midnight.</div>
+    <div class="section-sub">Complete tasks to earn &#8358;. Each task unlocks again 24 hours after you complete it.</div>
 
     <div class="reset-banner">
         <div>
-            <div class="reset-label">&#128337; Resets in</div>
+            <div class="reset-label">&#128337; Next task unlocks in</div>
             <div class="reset-timer" id="resetTimer">--:--:--</div>
         </div>
         <div style="font-size:32px;">&#9203;</div>
@@ -348,7 +348,17 @@ let savedAmts = {};
 // ═══════════════════════════════════════════════════
 const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
 
+// Still used for daily_content date queries
 function todayStr() { return new Date().toISOString().slice(0,10); }
+
+// 24-hour rolling check: true if completed within last 24h
+function isWithin24h(isoString) {
+    if(!isoString) return false;
+    return (Date.now() - new Date(isoString).getTime()) < 86400000;
+}
+
+// Stores { task_type: ISO timestamp } of completions loaded from DB
+let taskCompletionTimes = {};
 
 function timeAgo(d) {
     const s = Math.floor((Date.now()-new Date(d))/1000);
@@ -375,18 +385,33 @@ function markDoneBtn(btn, label='\u2713 Done Today') {
 }
 
 // ═══════════════════════════════════════════════════
-// COUNTDOWN
+// COUNTDOWN — counts to when the SOONEST task unlocks (24h after completion)
 // ═══════════════════════════════════════════════════
 function startCountdown() {
     function update() {
-        const now = new Date();
-        const midnight = new Date(now); midnight.setHours(24,0,0,0);
-        const diff = Math.floor((midnight-now)/1000);
-        const h = String(Math.floor(diff/3600)).padStart(2,'0');
-        const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
-        const s = String(diff%60).padStart(2,'0');
         const el = document.getElementById('resetTimer');
-        if(el) el.textContent = h+':'+m+':'+s;
+        if(!el) return;
+
+        // Find the earliest completion time among still-locked tasks
+        const times = Object.values(taskCompletionTimes).map(t => new Date(t).getTime());
+        if(times.length === 0) {
+            el.textContent = '--:--:--';
+            return;
+        }
+
+        // Soonest unlock = earliest completion + 24h
+        const soonest = Math.min(...times) + 86400000;
+        const diff = Math.max(0, Math.floor((soonest - Date.now()) / 1000));
+
+        if(diff === 0) {
+            el.textContent = '00:00:00';
+            return;
+        }
+
+        const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const s = String(diff % 60).padStart(2, '0');
+        el.textContent = h + ':' + m + ':' + s;
     }
     update(); setInterval(update, 1000);
 }
@@ -416,29 +441,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ═══════════════════════════════════════════════════
-// LOAD TODAY'S COMPLETIONS
+// LOAD TODAY'S COMPLETIONS — 24-hour rolling window
 // ═══════════════════════════════════════════════════
 async function loadTodayCompletions() {
     try {
+        // Fetch completions from last 25 hours to be safe
+        const since = new Date(Date.now() - 90000000).toISOString(); // 25h ago
         const {data} = await _supabase
             .from('daily_completions')
-            .select('task_type')
+            .select('task_type, created_at')
             .eq('user_id', currentUserId)
-            .eq('completed_date', todayStr());
-        (data||[]).forEach(r => completedToday.add(r.task_type));
+            .gte('created_at', since)
+            .order('created_at', {ascending: false});
+
+        completedToday = new Set();
+        taskCompletionTimes = {};
+
+        (data||[]).forEach(r => {
+            if(isWithin24h(r.created_at)) {
+                // Only mark done if not already recorded (keep most recent)
+                if(!taskCompletionTimes[r.task_type]) {
+                    taskCompletionTimes[r.task_type] = r.created_at;
+                }
+                completedToday.add(r.task_type);
+            }
+        });
     } catch(e) { console.error(e); }
 }
 
 // ═══════════════════════════════════════════════════
-// RECORD DAILY EARN
+// RECORD DAILY EARN — stores ISO timestamp for 24h tracking
 // ═══════════════════════════════════════════════════
 async function recordDailyEarn(taskType, amount, desc) {
-    // 1. Insert daily_completions
+    const now = new Date().toISOString();
+
+    // 1. Insert daily_completions with full timestamp
     const {error:e1} = await _supabase.from('daily_completions').insert({
         user_id: currentUserId,
         task_type: taskType,
-        completed_date: todayStr(),
-        created_at: new Date().toISOString()
+        completed_date: todayStr(),   // kept for admin queries
+        created_at: now
     });
     if(e1) throw e1;
 
@@ -448,7 +490,7 @@ async function recordDailyEarn(taskType, amount, desc) {
         type: 'daily_task',
         description: desc,
         amount: amount,
-        created_at: new Date().toISOString()
+        created_at: now
     });
     if(e2) throw e2;
 
@@ -457,10 +499,13 @@ async function recordDailyEarn(taskType, amount, desc) {
     await _supabase.from('wallets').upsert({
         user_id: currentUserId,
         task_earnings: (w?.task_earnings||0)+amount,
-        updated_at: new Date().toISOString()
+        updated_at: now
     },{onConflict:'user_id'});
 
+    // 4. Update local 24h tracking
     completedToday.add(taskType);
+    taskCompletionTimes[taskType] = now;
+
     await Promise.all([loadStats(), loadHistory()]);
 }
 
@@ -561,8 +606,9 @@ function setupVideoTask() {
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         try {
             // Double-check not already done
+            const since24h = new Date(Date.now() - 86400000).toISOString();
             const {data:ex} = await _supabase.from('daily_completions').select('id')
-                .eq('user_id',currentUserId).eq('task_type','daily_video').eq('completed_date',todayStr()).maybeSingle();
+                .eq('user_id',currentUserId).eq('task_type','daily_video').gte('created_at',since24h).maybeSingle();
             if(ex) { markDoneBtn(document.getElementById('videoBtn')); return; }
 
             await recordDailyEarn('daily_video', 1000, 'Daily reward: Video watch');
@@ -606,8 +652,9 @@ function setupAudioTask() {
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         try {
+            const since24h = new Date(Date.now() - 86400000).toISOString();
             const {data:ex} = await _supabase.from('daily_completions').select('id')
-                .eq('user_id',currentUserId).eq('task_type','daily_audio').eq('completed_date',todayStr()).maybeSingle();
+                .eq('user_id',currentUserId).eq('task_type','daily_audio').gte('created_at',since24h).maybeSingle();
             if(ex) { markDoneBtn(document.getElementById('audioBtn')); return; }
 
             await recordDailyEarn('daily_audio', 500, 'Daily reward: Audio listen');
@@ -671,8 +718,9 @@ function setupFileTask() {
                 // Wait 2s then record
                 setTimeout(async () => {
                     try {
+                        const since24h = new Date(Date.now() - 86400000).toISOString();
                         const {data:ex} = await _supabase.from('daily_completions').select('id')
-                            .eq('user_id',currentUserId).eq('task_type','daily_file_download').eq('completed_date',todayStr()).maybeSingle();
+                            .eq('user_id',currentUserId).eq('task_type','daily_file_download').gte('created_at',since24h).maybeSingle();
                         if(ex) { markDoneBtn(document.getElementById('fileBtn')); return; }
 
                         await recordDailyEarn('daily_file_download', 1050, 'Daily reward: File download');
