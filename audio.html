@@ -1,6 +1,4 @@
-
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -270,6 +268,8 @@
     </nav>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
     const TRACKS = [
         { artist: 'Wizkid',          song: 'Essence (ft. Tems)',               url: 'https://audiomack.com/wizkid/song/essence-2' },
@@ -294,6 +294,33 @@
         { artist: 'Naija Hits',      song: 'Search Picks',                      url: 'https://audiomack.com/search?q=naija%20hits' },
     ];
 
+    const AUDIO_EARN_AMOUNT = 500;
+    const LISTEN_REQUIRED_SECONDS = 60; // 60s listening required before claim enables
+    let currentUserId = null;
+    let taskAlreadyDone = false;
+    let listenTimer = null;
+    let listenSeconds = 0;
+    let listenStarted = false;
+
+    function todayStr() { return new Date().toISOString().slice(0,10); }
+    function fmt(n) { return '₦' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+    function showToast(msg, type='success') {
+        let c = document.getElementById('audioToastContainer');
+        if(!c) {
+            c = document.createElement('div');
+            c.id = 'audioToastContainer';
+            c.style.cssText = 'position:fixed;top:70px;right:14px;z-index:9999;max-width:300px;';
+            document.body.appendChild(c);
+        }
+        const t = document.createElement('div');
+        const color = type==='success' ? '#8b5cf6' : '#ef4444';
+        t.style.cssText = `background:#1a1040;color:#fff;border-left:4px solid ${color};border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.5);`;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 4000);
+    }
+
     function getDayIndex() {
         const now = new Date();
         const start = new Date(now.getFullYear(), 0, 0);
@@ -302,24 +329,175 @@
     }
 
     function getEmbedUrl(trackUrl) {
-        // Audiomack embed: replace audiomack.com with audiomack.com/player/
-        // Format: https://audiomack.com/player/artist/song/slug
+        // Skip search URLs — use embed player for song pages only
+        if(trackUrl.includes('/search')) return null;
         const path = trackUrl.replace('https://audiomack.com/', '');
         return `https://audiomack.com/player/${path}`;
+    }
+
+    function startListenTimer() {
+        if(listenTimer || taskAlreadyDone) return;
+        listenStarted = true;
+        listenTimer = setInterval(() => {
+            listenSeconds++;
+            updateClaimButton();
+        }, 1000);
+    }
+
+    function updateClaimButton() {
+        const btn = document.getElementById('audioClaimBtn');
+        if(!btn || taskAlreadyDone) return;
+        const remaining = Math.max(0, LISTEN_REQUIRED_SECONDS - listenSeconds);
+        if(remaining > 0) {
+            btn.textContent = `⏳ Listen for ${remaining}s more to claim...`;
+            btn.disabled = true;
+        } else {
+            btn.textContent = `✅ Completed — Claim ${fmt(AUDIO_EARN_AMOUNT)}`;
+            btn.disabled = false;
+            btn.style.background = 'linear-gradient(135deg,#8b5cf6,#6d28d9)';
+            btn.style.cursor = 'pointer';
+            if(listenTimer) { clearInterval(listenTimer); listenTimer = null; }
+        }
+    }
+
+    function showEarnPanel(alreadyDone, completedAt) {
+        let panel = document.getElementById('earnPanel');
+        if(!panel) {
+            panel = document.createElement('div');
+            panel.id = 'earnPanel';
+            panel.style.cssText = 'background:linear-gradient(135deg,#1a1040,#150d35);border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid rgba(139,92,246,0.3);';
+            // Insert after now-playing card
+            const nowPlaying = document.querySelector('.now-playing-card');
+            nowPlaying.parentNode.insertBefore(panel, nowPlaying.nextSibling);
+        }
+
+        if(alreadyDone) {
+            taskAlreadyDone = true;
+            const completedTime = new Date(completedAt).getTime();
+            const unlockTime = completedTime + 86400000;
+
+            function renderCooldown() {
+                const diff = Math.max(0, Math.floor((unlockTime - Date.now()) / 1000));
+                const h = String(Math.floor(diff/3600)).padStart(2,'0');
+                const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+                const s = String(diff%60).padStart(2,'0');
+                panel.innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">✅</div>
+                        <div style="font-size:16px;font-weight:700;color:#a78bfa;margin-bottom:6px;">Completed!</div>
+                        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:14px;">You earned ${fmt(AUDIO_EARN_AMOUNT)} for listening today.</div>
+                        <div style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px;">
+                            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;">⏱ Next audio unlocks in</div>
+                            <div id="audioCountdown" style="font-size:22px;font-weight:800;color:#a78bfa;font-variant-numeric:tabular-nums;">${diff===0?'Unlocked!':h+':'+m+':'+s}</div>
+                        </div>
+                        <a href="earn.html" style="display:block;margin-top:14px;background:rgba(255,255,255,0.08);color:#fff;border-radius:10px;padding:12px;font-size:13px;font-weight:600;text-decoration:none;text-align:center;">← Back to Earn</a>
+                    </div>`;
+                if(diff > 0) setTimeout(()=>{ const el=document.getElementById('audioCountdown'); if(el) renderCooldown(); }, 1000);
+            }
+            renderCooldown();
+        } else {
+            panel.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#fff;">🎵 Listen & Earn</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.5);">Listen to today's track to earn</div>
+                    </div>
+                    <div style="font-size:20px;font-weight:800;color:#a78bfa;">${fmt(AUDIO_EARN_AMOUNT)}</div>
+                </div>
+                <button id="audioClaimBtn" disabled
+                    style="width:100%;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;transition:all 0.3s;">
+                    ⏳ Start listening to unlock reward...
+                </button>
+                <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Press play above, then your reward unlocks automatically</div>`;
+
+            // Start timer when user interacts with the audio embed
+            document.querySelector('.now-playing-card').addEventListener('click', () => {
+                if(!listenStarted) {
+                    startListenTimer();
+                    updateClaimButton();
+                }
+            });
+            // Auto-start after 3s (embed may autoplay)
+            setTimeout(() => {
+                startListenTimer();
+                updateClaimButton();
+            }, 3000);
+
+            document.getElementById('audioClaimBtn').addEventListener('click', claimAudioEarning);
+        }
+    }
+
+    async function claimAudioEarning() {
+        const btn = document.getElementById('audioClaimBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+
+        try {
+            const since24h = new Date(Date.now() - 86400000).toISOString();
+            const {data:ex} = await _supabase.from('daily_completions').select('id')
+                .eq('user_id', currentUserId).eq('task_type','daily_audio').gte('created_at',since24h).maybeSingle();
+            if(ex) {
+                showToast('Already claimed today!');
+                showEarnPanel(true, ex.created_at || new Date().toISOString());
+                return;
+            }
+
+            const now = new Date().toISOString();
+            await _supabase.from('daily_completions').insert({
+                user_id: currentUserId, task_type: 'daily_audio',
+                completed_date: todayStr(), created_at: now
+            });
+            await _supabase.from('transactions').insert({
+                user_id: currentUserId, type: 'daily_task',
+                description: 'Daily reward: Audio listen', amount: AUDIO_EARN_AMOUNT, created_at: now
+            });
+            const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id',currentUserId).maybeSingle();
+            await _supabase.from('wallets').upsert({
+                user_id: currentUserId,
+                task_earnings: (w?.task_earnings||0) + AUDIO_EARN_AMOUNT,
+                updated_at: now
+            },{onConflict:'user_id'});
+
+            showToast(`🎉 You earned ${fmt(AUDIO_EARN_AMOUNT)} for listening!`);
+            showEarnPanel(true, now);
+
+        } catch(err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.textContent = `✅ Completed — Claim ${fmt(AUDIO_EARN_AMOUNT)}`;
+            showToast('Something went wrong. Try again.', 'error');
+        }
     }
 
     function loadTrack(idx) {
         const track = TRACKS[idx];
         document.getElementById('npArtist').textContent = track.artist;
         document.getElementById('npSong').textContent = track.song;
-        document.getElementById('audioFrame').src = getEmbedUrl(track.url);
+
+        const embedUrl = getEmbedUrl(track.url);
+        const frame = document.getElementById('audioFrame');
+        if(embedUrl) {
+            frame.src = embedUrl;
+            frame.style.display = 'block';
+        } else {
+            // Search URL fallback — show link
+            frame.style.display = 'none';
+            let fallback = document.getElementById('audioFallback');
+            if(!fallback) {
+                fallback = document.createElement('div');
+                fallback.id = 'audioFallback';
+                fallback.style.cssText = 'padding:16px;text-align:center;';
+                frame.parentNode.appendChild(fallback);
+            }
+            fallback.innerHTML = `<a href="${track.url}" target="_blank" style="color:#a78bfa;font-size:13px;font-weight:600;">🎵 Open ${track.song} on Audiomack</a>`;
+        }
 
         document.querySelectorAll('.track-item').forEach((el, i) => {
             el.classList.toggle('active', i === idx);
         });
     }
 
-    function init() {
+    async function init() {
         const todayIdx = getDayIndex();
 
         document.getElementById('dayPill').textContent = `Day ${todayIdx + 1}`;
@@ -342,6 +520,27 @@
         });
 
         loadTrack(todayIdx);
+
+        // Auth & check completion
+        try {
+            const result = await requireAuth('approved');
+            if(!result) return;
+            currentUserId = result.profile.id;
+
+            const since24h = new Date(Date.now() - 86400000).toISOString();
+            const {data:completion} = await _supabase.from('daily_completions').select('created_at')
+                .eq('user_id', currentUserId).eq('task_type','daily_audio').gte('created_at',since24h)
+                .order('created_at',{ascending:false}).limit(1).maybeSingle();
+
+            if(completion) {
+                showEarnPanel(true, completion.created_at);
+            } else {
+                showEarnPanel(false, null);
+            }
+        } catch(e) {
+            console.error('Auth/check error:', e);
+            showEarnPanel(false, null);
+        }
     }
 
     init();
