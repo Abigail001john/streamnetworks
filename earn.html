@@ -514,27 +514,33 @@ async function recordDailyEarn(taskType, amount, desc) {
 // ═══════════════════════════════════════════════════
 async function loadDailyVideo() {
     try {
-        const {data} = await _supabase
-            .from('daily_content')
-            .select('*')
-            .eq('type', 'video')
-            .eq('active_date', todayStr())
-            .maybeSingle();
-
         const btn = document.getElementById('videoBtn');
-        if(!data || !data.url) {
-            btn.textContent = 'No Video Today';
-            btn.className = 'task-btn btn-coming-soon';
-            btn.disabled = true;
+
+        // Only show "Done Today" if user already completed within 24h
+        if(completedToday.has('daily_video')) {
+            markDoneBtn(btn, '✓ No Video Today');
+            btn.title = 'Come back after 24 hours';
             return;
         }
-        // Store video URL on card for later
-        document.getElementById('videoCard').dataset.url = data.url;
-        document.getElementById('videoCard').dataset.videoId = extractYTId(data.url);
 
-        if(completedToday.has('daily_video')) {
-            markDoneBtn(btn);
-        }
+        // Try to load from DB (optional - videos are built into video.html)
+        try {
+            const {data} = await _supabase
+                .from('daily_content')
+                .select('*')
+                .eq('type', 'video')
+                .eq('active_date', todayStr())
+                .maybeSingle();
+            if(data && data.url) {
+                document.getElementById('videoCard').dataset.url = data.url;
+                document.getElementById('videoCard').dataset.videoId = extractYTId(data.url);
+            }
+        } catch(e) { /* DB content optional, video.html has its own playlist */ }
+
+        // Button is always available if not completed
+        btn.disabled = false;
+        btn.textContent = 'Start Task';
+        btn.className = 'task-btn btn-primary';
     } catch(e) { console.error('loadDailyVideo:', e); }
 }
 
@@ -566,7 +572,7 @@ async function loadDailyFile() {
         document.getElementById('fileCard').dataset.filename = data.title || 'Download File';
 
         if(completedToday.has('daily_file_download')) {
-            markDoneBtn(btn);
+            markDoneBtn(btn, '✓ No File Today');
         }
     } catch(e) { console.error('loadDailyFile:', e); }
 }
@@ -578,49 +584,10 @@ function setupVideoTask() {
     const btn = document.getElementById('videoBtn');
     if(btn.disabled) return;
 
-    if(completedToday.has('daily_video')) { markDoneBtn(btn); return; }
+    if(completedToday.has('daily_video')) { markDoneBtn(btn, '✓ No Video Today'); return; }
 
     btn.addEventListener('click', () => {
-        const card = document.getElementById('videoCard');
-        const ytId = card.dataset.videoId;
-        if(!ytId) { showToast('No video available today','error'); return; }
-
-        const embed = document.getElementById('videoEmbed');
-        const frame = document.getElementById('ytFrame');
-        frame.src = 'https://www.youtube.com/embed/'+ytId+'?autoplay=1&rel=0';
-        embed.style.display = 'block';
-        btn.textContent = 'Watching...';
-        btn.className = 'task-btn btn-watching';
-        btn.disabled = true;
-
-        // Enable confirm after 10 seconds
-        setTimeout(() => {
-            const confirmBtn = document.getElementById('videoConfirmBtn');
-            confirmBtn.disabled = false;
-        }, 10000);
-    });
-
-    document.getElementById('videoConfirmBtn').addEventListener('click', async () => {
-        const confirmBtn = document.getElementById('videoConfirmBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        try {
-            // Double-check not already done
-            const since24h = new Date(Date.now() - 86400000).toISOString();
-            const {data:ex} = await _supabase.from('daily_completions').select('id')
-                .eq('user_id',currentUserId).eq('task_type','daily_video').gte('created_at',since24h).maybeSingle();
-            if(ex) { markDoneBtn(document.getElementById('videoBtn')); return; }
-
-            await recordDailyEarn('daily_video', 1000, 'Daily reward: Video watch');
-            markDoneBtn(document.getElementById('videoBtn'));
-            confirmBtn.innerHTML = '\u2713 Reward Claimed!';
-            showToast('\U0001f389 +\u20a61,000 earned for watching!');
-        } catch(e) {
-            console.error(e);
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> I Watched It &mdash; Claim \u20a61,000';
-            showToast('Something went wrong, try again','error');
-        }
+        window.location.href = 'video.html';
     });
 }
 
@@ -629,44 +596,10 @@ function setupVideoTask() {
 // ═══════════════════════════════════════════════════
 function setupAudioTask() {
     const btn = document.getElementById('audioBtn');
-    if(completedToday.has('daily_audio')) { markDoneBtn(btn); return; }
+    if(completedToday.has('daily_audio')) { markDoneBtn(btn, '✓ No Audio Today'); return; }
 
     btn.addEventListener('click', () => {
-        btn.textContent = 'Paste Link Below';
-        btn.className = 'task-btn btn-watching';
-        btn.disabled = true;
-        document.getElementById('musicPlayer').classList.add('active');
-    });
-
-    document.getElementById('musicLoadBtn').addEventListener('click', () => {
-        const link = document.getElementById('musicLinkInput').value.trim();
-        if(!link) { showToast('Please paste a music link first','error'); return; }
-        const audio = document.getElementById('audioEl');
-        audio.src = link;
-        document.getElementById('audioPlayerWrap').style.display = 'block';
-        audio.play().catch(()=>{});
-    });
-
-    document.getElementById('audioConfirmBtn').addEventListener('click', async () => {
-        const confirmBtn = document.getElementById('audioConfirmBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        try {
-            const since24h = new Date(Date.now() - 86400000).toISOString();
-            const {data:ex} = await _supabase.from('daily_completions').select('id')
-                .eq('user_id',currentUserId).eq('task_type','daily_audio').gte('created_at',since24h).maybeSingle();
-            if(ex) { markDoneBtn(document.getElementById('audioBtn')); return; }
-
-            await recordDailyEarn('daily_audio', 500, 'Daily reward: Audio listen');
-            markDoneBtn(document.getElementById('audioBtn'));
-            confirmBtn.innerHTML = '\u2713 Reward Claimed!';
-            showToast('\U0001f389 +\u20a6500 earned for listening!');
-        } catch(e) {
-            console.error(e);
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i>&nbsp; I Listened &mdash; Claim \u20a6500';
-            showToast('Something went wrong, try again','error');
-        }
+        window.location.href = 'audio.html';
     });
 }
 
