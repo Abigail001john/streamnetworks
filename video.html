@@ -1,6 +1,4 @@
-
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -282,6 +280,8 @@
     </nav>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
     const YOUTUBE_LINKS = [
         { url: 'https://www.youtube.com/shorts/P0GIv8x2ofE',  type: 'Short', label: 'FW Short #1' },
@@ -306,6 +306,33 @@
         { url: 'https://www.youtube.com/watch?v=RRnmRBVdsdw', type: 'Video', label: 'FW Video #20' },
     ];
 
+    const VIDEO_EARN_AMOUNT = 1000;
+    let currentUserId = null;
+    let taskAlreadyDone = false;
+    let watchTimer = null;
+    let watchSeconds = 0;
+    const WATCH_REQUIRED_SECONDS = 30; // require 30s watch before claim button enables
+
+    function todayStr() { return new Date().toISOString().slice(0,10); }
+    function isWithin24h(iso) { return iso && (Date.now() - new Date(iso).getTime()) < 86400000; }
+    function fmt(n) { return '₦' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+    function showToast(msg, type='success') {
+        let c = document.getElementById('videoToastContainer');
+        if(!c) {
+            c = document.createElement('div');
+            c.id = 'videoToastContainer';
+            c.style.cssText = 'position:fixed;top:70px;right:14px;z-index:9999;max-width:300px;';
+            document.body.appendChild(c);
+        }
+        const t = document.createElement('div');
+        const color = type==='success' ? '#10b981' : '#ef4444';
+        t.style.cssText = `background:#1a1a1a;color:#fff;border-left:4px solid ${color};border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.4);animation:slideIn 0.3s ease;`;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 4000);
+    }
+
     function getDayIndex() {
         const now = new Date();
         const start = new Date(now.getFullYear(), 0, 0);
@@ -314,13 +341,147 @@
     }
 
     function getEmbedUrl(url) {
-        // Shorts
         const shortsMatch = url.match(/shorts\/([a-zA-Z0-9_-]+)/);
-        if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0`;
-        // Regular watch
+        if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0&enablejsapi=1`;
         const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
-        if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&rel=0`;
+        if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&rel=0&enablejsapi=1`;
         return url;
+    }
+
+    function startWatchTimer() {
+        if(watchTimer) return;
+        watchTimer = setInterval(() => {
+            watchSeconds++;
+            updateClaimButton();
+        }, 1000);
+    }
+
+    function updateClaimButton() {
+        const btn = document.getElementById('claimBtn');
+        if(!btn || taskAlreadyDone) return;
+        const remaining = Math.max(0, WATCH_REQUIRED_SECONDS - watchSeconds);
+        if(remaining > 0) {
+            btn.textContent = `⏳ Watch for ${remaining}s more to claim...`;
+            btn.disabled = true;
+        } else {
+            btn.textContent = `✅ Completed — Claim ${fmt(VIDEO_EARN_AMOUNT)}`;
+            btn.disabled = false;
+            btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            if(watchTimer) { clearInterval(watchTimer); watchTimer = null; }
+        }
+    }
+
+    function showEarnPanel(alreadyDone, completedAt) {
+        let panel = document.getElementById('earnPanel');
+        if(!panel) {
+            panel = document.createElement('div');
+            panel.id = 'earnPanel';
+            panel.style.cssText = 'background:#1a1a1a;border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1);';
+            const mainContent = document.querySelector('.main-content');
+            const videoWrapper = document.getElementById('videoWrapper');
+            mainContent.insertBefore(panel, videoWrapper.nextSibling.nextSibling); // after video info
+        }
+
+        if(alreadyDone) {
+            // Show 24h countdown
+            taskAlreadyDone = true;
+            const completedTime = new Date(completedAt).getTime();
+            const unlockTime = completedTime + 86400000;
+
+            function renderCooldown() {
+                const diff = Math.max(0, Math.floor((unlockTime - Date.now()) / 1000));
+                const h = String(Math.floor(diff/3600)).padStart(2,'0');
+                const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+                const s = String(diff%60).padStart(2,'0');
+                panel.innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">✅</div>
+                        <div style="font-size:16px;font-weight:700;color:#10b981;margin-bottom:6px;">Completed!</div>
+                        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:14px;">You earned ${fmt(VIDEO_EARN_AMOUNT)} for watching today's video.</div>
+                        <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px;">
+                            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;">⏱ Next video unlocks in</div>
+                            <div id="videoCountdown" style="font-size:22px;font-weight:800;color:#ef4444;font-variant-numeric:tabular-nums;">${diff===0?'Unlocked!':h+':'+m+':'+s}</div>
+                        </div>
+                        <a href="earn.html" style="display:block;margin-top:14px;background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:600;text-decoration:none;text-align:center;">← Back to Earn</a>
+                    </div>`;
+                if(diff > 0) setTimeout(()=>{ const el=document.getElementById('videoCountdown'); if(el) renderCooldown(); }, 1000);
+            }
+            renderCooldown();
+        } else {
+            // Show claim button
+            panel.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#fff;">🎬 Watch & Earn</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.5);">Watch today's video to earn</div>
+                    </div>
+                    <div style="font-size:20px;font-weight:800;color:#f59e0b;">${fmt(VIDEO_EARN_AMOUNT)}</div>
+                </div>
+                <button id="claimBtn" disabled
+                    style="width:100%;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;transition:all 0.3s;">
+                    ⏳ Watch for ${WATCH_REQUIRED_SECONDS}s more to claim...
+                </button>
+                <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.35);text-align:center;">Reward is added automatically after watching</div>`;
+
+            // Start watching when video loads
+            document.getElementById('videoFrame').addEventListener('load', () => {
+                startWatchTimer();
+            });
+            // Also start on click/interaction
+            document.getElementById('videoWrapper').addEventListener('click', () => {
+                startWatchTimer();
+            });
+            // Start immediately in case iframe already loaded
+            setTimeout(startWatchTimer, 2000);
+
+            document.getElementById('claimBtn').addEventListener('click', claimVideoEarning);
+        }
+    }
+
+    async function claimVideoEarning() {
+        const btn = document.getElementById('claimBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+
+        try {
+            // Check not already done
+            const since24h = new Date(Date.now() - 86400000).toISOString();
+            const {data:ex} = await _supabase.from('daily_completions').select('id')
+                .eq('user_id', currentUserId).eq('task_type','daily_video').gte('created_at',since24h).maybeSingle();
+            if(ex) {
+                showToast('Already claimed today!');
+                showEarnPanel(true, ex.created_at || new Date().toISOString());
+                return;
+            }
+
+            const now = new Date().toISOString();
+            // Insert completion record
+            await _supabase.from('daily_completions').insert({
+                user_id: currentUserId, task_type: 'daily_video',
+                completed_date: todayStr(), created_at: now
+            });
+            // Insert transaction
+            await _supabase.from('transactions').insert({
+                user_id: currentUserId, type: 'daily_task',
+                description: 'Daily reward: Video watch', amount: VIDEO_EARN_AMOUNT, created_at: now
+            });
+            // Update wallet
+            const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id',currentUserId).maybeSingle();
+            await _supabase.from('wallets').upsert({
+                user_id: currentUserId,
+                task_earnings: (w?.task_earnings||0) + VIDEO_EARN_AMOUNT,
+                updated_at: now
+            },{onConflict:'user_id'});
+
+            showToast(`🎉 You earned ${fmt(VIDEO_EARN_AMOUNT)} for watching!`);
+            showEarnPanel(true, now);
+
+        } catch(err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.textContent = `✅ Completed — Claim ${fmt(VIDEO_EARN_AMOUNT)}`;
+            showToast('Something went wrong. Try again.', 'error');
+        }
     }
 
     function loadVideo(idx) {
@@ -335,16 +496,14 @@
         document.getElementById('videoTitle').textContent = item.label;
         document.getElementById('videoType').textContent = isShort ? 'YouTube Short' : 'YouTube Video';
 
-        // Highlight active in playlist
         document.querySelectorAll('.playlist-item').forEach((el, i) => {
             el.classList.toggle('active', i === idx);
         });
     }
 
-    function init() {
+    async function init() {
         const todayIdx = getDayIndex();
 
-        // Day label
         document.getElementById('dayPill').textContent = `Day ${todayIdx + 1}`;
         document.getElementById('dayText').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
         document.getElementById('videoDate').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
@@ -366,8 +525,30 @@
             playlist.appendChild(el);
         });
 
-        // Load today's video
         loadVideo(todayIdx);
+
+        // Auth & check completion
+        try {
+            const result = await requireAuth('approved');
+            if(!result) return;
+            currentUserId = result.profile.id;
+
+            // Check 24h completion
+            const since24h = new Date(Date.now() - 86400000).toISOString();
+            const {data:completion} = await _supabase.from('daily_completions').select('created_at')
+                .eq('user_id', currentUserId).eq('task_type','daily_video').gte('created_at',since24h)
+                .order('created_at',{ascending:false}).limit(1).maybeSingle();
+
+            if(completion) {
+                showEarnPanel(true, completion.created_at);
+            } else {
+                showEarnPanel(false, null);
+            }
+        } catch(e) {
+            console.error('Auth/check error:', e);
+            // Show panel anyway so user can see the video
+            showEarnPanel(false, null);
+        }
     }
 
     init();
