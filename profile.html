@@ -494,6 +494,131 @@
         left: 0;
       }
     }
+
+    /* CHANGE PASSWORD MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .modal-close {
+      background: #f3f4f6;
+      border: none;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #6b7280;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: #e5e7eb; }
+    .pw-form-group { margin-bottom: 16px; }
+    .pw-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .pw-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-input-wrap i.pw-icon {
+      position: absolute;
+      left: 12px;
+      color: #9ca3af;
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .pw-input {
+      width: 100%;
+      padding: 12px 40px 12px 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #1f2937;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .pw-input:focus {
+      border-color: #2dd4bf;
+      box-shadow: 0 0 0 3px rgba(45,212,191,0.1);
+    }
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 15px;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+    .pw-toggle:hover { color: #2dd4bf; }
+    .pw-strength {
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      display: none;
+    }
+    .pw-strength.weak { color: #ef4444; display: block; }
+    .pw-strength.fair { color: #f59e0b; display: block; }
+    .pw-strength.strong { color: #10b981; display: block; }
+    .pw-error {
+      font-size: 12px;
+      color: #ef4444;
+      margin-top: 6px;
+      display: none;
+    }
+    .pw-error.show { display: block; }
+    .pw-save-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2dd4bf, #1ba498);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+      margin-top: 4px;
+    }
+    .pw-save-btn:hover:not(:disabled) { opacity: 0.9; }
+    .pw-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -641,6 +766,38 @@
     </div>
   </div>
 
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal-overlay" id="pwModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">🔑 Change Password</span>
+        <button class="modal-close" id="pwModalClose"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="pw-form-group">
+        <label class="pw-label" for="pwNew">New Password</label>
+        <div class="pw-input-wrap">
+          <i class="fas fa-lock pw-icon"></i>
+          <input type="password" id="pwNew" class="pw-input" placeholder="Enter new password">
+          <button class="pw-toggle" type="button" onclick="togglePw('pwNew', this)"><i class="fas fa-eye"></i></button>
+        </div>
+        <div class="pw-strength" id="pwStrength"></div>
+      </div>
+
+      <div class="pw-form-group">
+        <label class="pw-label" for="pwConfirm">Confirm New Password</label>
+        <div class="pw-input-wrap">
+          <i class="fas fa-lock pw-icon"></i>
+          <input type="password" id="pwConfirm" class="pw-input" placeholder="Re-enter new password">
+          <button class="pw-toggle" type="button" onclick="togglePw('pwConfirm', this)"><i class="fas fa-eye"></i></button>
+        </div>
+        <div class="pw-error" id="pwMatchError">Passwords do not match.</div>
+      </div>
+
+      <button class="pw-save-btn" id="pwSaveBtn">Update Password</button>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a href="dashboard.html" class="nav-item">
@@ -775,11 +932,67 @@
         btn.disabled = false;
       });
 
-      // Change password
-      document.getElementById('changePasswordBtn').addEventListener('click', async () => {
-        const { error } = await _supabase.auth.resetPasswordForEmail(profile.email);
-        if (error) showToast('Error: ' + error.message, 'error');
-        else showToast('Password reset email sent!', 'success');
+      // Change password — opens modal, no email needed
+      document.getElementById('changePasswordBtn').addEventListener('click', () => {
+        document.getElementById('pwNew').value = '';
+        document.getElementById('pwConfirm').value = '';
+        document.getElementById('pwStrength').className = 'pw-strength';
+        document.getElementById('pwStrength').textContent = '';
+        document.getElementById('pwMatchError').classList.remove('show');
+        document.getElementById('pwModal').classList.add('active');
+        setTimeout(() => document.getElementById('pwNew').focus(), 100);
+      });
+
+      document.getElementById('pwModalClose').addEventListener('click', () => {
+        document.getElementById('pwModal').classList.remove('active');
+      });
+
+      document.getElementById('pwModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('pwModal'))
+          document.getElementById('pwModal').classList.remove('active');
+      });
+
+      // Password strength indicator
+      document.getElementById('pwNew').addEventListener('input', () => {
+        const val = document.getElementById('pwNew').value;
+        const el = document.getElementById('pwStrength');
+        if (!val) { el.className = 'pw-strength'; el.textContent = ''; return; }
+        if (val.length < 6) { el.className = 'pw-strength weak'; el.textContent = '⚠ Too short (min 6 characters)'; }
+        else if (val.length < 10 || !/[0-9]/.test(val)) { el.className = 'pw-strength fair'; el.textContent = '● Fair — add numbers for stronger password'; }
+        else { el.className = 'pw-strength strong'; el.textContent = '✓ Strong password'; }
+      });
+
+      // Save new password directly via Supabase updateUser
+      document.getElementById('pwSaveBtn').addEventListener('click', async () => {
+        const newPw = document.getElementById('pwNew').value;
+        const confirmPw = document.getElementById('pwConfirm').value;
+        const matchErr = document.getElementById('pwMatchError');
+        const saveBtn = document.getElementById('pwSaveBtn');
+
+        matchErr.classList.remove('show');
+
+        if (!newPw || newPw.length < 6) {
+          showToast('Password must be at least 6 characters', 'error'); return;
+        }
+        if (newPw !== confirmPw) {
+          matchErr.classList.add('show'); return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Updating...';
+
+        const { error } = await _supabase.auth.updateUser({ password: newPw });
+
+        if (error) {
+          showToast('Error: ' + error.message, 'error');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Update Password';
+        } else {
+          showToast('✓ Password updated successfully!', 'success');
+          document.getElementById('pwModal').classList.remove('active');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Update Password';
+        }
       });
 
       // Sign out
@@ -824,6 +1037,13 @@
         document.getElementById('statTotalEarned').textContent = '$0';
       }
     });
+    // Show/hide password toggle
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      btn.innerHTML = isText ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    }
   </script>
 </body>
 </html>
