@@ -1330,13 +1330,33 @@
       if(amtStr === null) return;
       const amount = parseFloat(amtStr);
       if(isNaN(amount) || amount === 0) { showToast('Invalid amount', 'error'); return; }
-      const desc = prompt('Reason / description:') || 'Admin adjustment';
+
+      const which = prompt('Which balance to adjust?\n\n1 = Task Earnings\n2 = Collab Earnings\n3 = Bonus Balance\n\nType 1, 2, or 3:');
+      if(!['1','2','3'].includes(which)) { showToast('Invalid selection', 'error'); return; }
+
+      const colMap = { '1': 'task_earnings', '2': 'collab_earnings', '3': 'bonus_balance' };
+      const col = colMap[which];
+      const colLabel = { '1': 'Task Earnings', '2': 'Collab Earnings', '3': 'Bonus Balance' }[which];
+
       try {
         const now = new Date().toISOString();
-        await _supabase.from('transactions').insert({ user_id: userId, type: 'admin_adjustment', description: desc, amount: amount, created_at: now });
-        const { data: w } = await _supabase.from('wallets').select('task_earnings').eq('user_id', userId).maybeSingle();
-        await _supabase.from('wallets').upsert({ user_id: userId, task_earnings: Math.max(0, (w?.task_earnings||0) + amount), updated_at: now }, {onConflict: 'user_id'});
-        showToast('Balance adjusted by \u20a6' + amount + ' for ' + userName + ' \u2705', 'success');
+        // Fetch ONLY the target column
+        const { data: w, error: fetchErr } = await _supabase
+          .from('wallets').select(col).eq('user_id', userId).maybeSingle();
+        if(fetchErr) throw fetchErr;
+
+        const current = Number(w?.[col] || 0);
+        const newVal  = Math.max(0, current + amount);
+
+        // Update ONLY the target column — no transaction record inserted
+        const { error: updateErr } = await _supabase
+          .from('wallets')
+          .update({ [col]: newVal, updated_at: now })
+          .eq('user_id', userId);
+        if(updateErr) throw updateErr;
+
+        showToast('\u2705 ' + colLabel + ' adjusted by \u20a6' + amount.toLocaleString() + ' for ' + userName, 'success');
+        // Reload the user view to show updated values
         loginAsUser(userId, userName);
       } catch(e) {
         showToast('Adjustment failed: ' + e.message, 'error');
