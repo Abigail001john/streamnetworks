@@ -1157,14 +1157,13 @@
     }
 
     // ══════════════════════════════════════════════════════
-    // LOGIN AS USER — opens full user dashboard inside admin
+    // LOGIN AS USER — opens full view panel inside admin
+    // wallet columns: task_earnings, collab_earnings, bonus_balance
     // ══════════════════════════════════════════════════════
     async function loginAsUser(userId, userName) {
       closeModal();
-      showToast('Loading ' + userName + '\'s account...', 'success');
-
+      showToast('Loading ' + userName + String.fromCharCode(39) + 's account...', 'success');
       try {
-        // Fetch everything for this user in parallel
         const [
           { data: profile },
           { data: wallet },
@@ -1178,18 +1177,14 @@
           _supabase.from('daily_completions').select('*').eq('user_id', userId).order('created_at', {ascending: false}).limit(30),
           _supabase.from('profiles').select('id, full_name, email, created_at').eq('referred_by', userId)
         ]);
-
         openUserViewPanel(profile, wallet, txs || [], completions || [], refs || []);
       } catch(e) {
         showToast('Error loading user data: ' + e.message, 'error');
       }
     }
 
-    // ══════════════════════════════════════════════════════
-    // USER VIEW PANEL — full account view inside admin
-    // ══════════════════════════════════════════════════════
     function openUserViewPanel(profile, wallet, txs, completions, refs) {
-      const fmt = n => '₦' + Number(n||0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2});
+      const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2});
       const ago = d => {
         const s = Math.floor((Date.now() - new Date(d)) / 1000);
         if(s < 60) return 'Just now';
@@ -1198,203 +1193,122 @@
         return new Date(d).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
       };
 
-      const taskEarn  = Number(wallet?.task_earnings || 0);
-      const refEarn   = Number(wallet?.referral_earnings || 0);
-      const bonusEarn = Number(wallet?.signup_bonus || 0);
-      const totalBal  = taskEarn + refEarn + bonusEarn;
+      // Correct wallet columns
+      const taskEarn   = Number(wallet?.task_earnings   || 0);
+      const collabEarn = Number(wallet?.collab_earnings || 0);
+      const bonusBal   = Number(wallet?.bonus_balance   || 0);
+      const totalBal   = taskEarn + collabEarn + bonusBal;
+
       const initials  = (profile.full_name || profile.email || 'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
       const joined    = new Date(profile.created_at).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
       const isApproved = profile.is_approved === true;
 
-      // Today's completions
       const since24h = Date.now() - 86400000;
       const doneToday = completions.filter(c => new Date(c.created_at).getTime() > since24h).map(c => c.task_type);
-      const videoToday  = doneToday.includes('daily_video');
-      const audioToday  = doneToday.includes('daily_audio');
-      const fileToday   = doneToday.includes('daily_file_download');
+      const videoToday = doneToday.includes('daily_video');
+      const audioToday = doneToday.includes('daily_audio');
+      const fileToday  = doneToday.includes('daily_file_download');
 
-      // Tx rows
       const txRows = txs.length === 0
         ? '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">No transactions yet</td></tr>'
         : txs.map(tx => {
             const pos = Number(tx.amount) >= 0;
-            return `<tr>
-              <td style="padding:10px 12px;font-size:13px;">${tx.description || tx.type}</td>
-              <td style="padding:10px 12px;font-size:13px;font-weight:700;color:${pos?'#10b981':'#ef4444'}">${pos?'+':''}${fmt(tx.amount)}</td>
-              <td style="padding:10px 12px;font-size:12px;color:#94a3b8;">${tx.type}</td>
-              <td style="padding:10px 12px;font-size:12px;color:#94a3b8;">${ago(tx.created_at)}</td>
-            </tr>`;
+            return '<tr style="border-bottom:1px solid #f1f5f9;">'
+              + '<td style="padding:10px 12px;font-size:13px;">' + (tx.description||tx.type) + '</td>'
+              + '<td style="padding:10px 12px;font-size:13px;font-weight:700;color:' + (pos?'#10b981':'#ef4444') + '">' + (pos?'+':'') + fmt(tx.amount) + '</td>'
+              + '<td style="padding:10px 12px;font-size:12px;color:#94a3b8;">' + tx.type + '</td>'
+              + '<td style="padding:10px 12px;font-size:12px;color:#94a3b8;">' + ago(tx.created_at) + '</td>'
+              + '</tr>';
           }).join('');
 
-      // Refs rows
       const refRows = refs.length === 0
-        ? '<div style="color:#94a3b8;font-size:13px;padding:12px 0;">No referrals yet</div>'
-        : refs.map(r => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;">
-            <span>${r.full_name || r.email || 'Unknown'}</span>
-            <span style="color:#94a3b8;">${ago(r.created_at)}</span>
-          </div>`).join('');
+        ? '<div style="color:#94a3b8;font-size:13px;padding:8px 0;">No referrals yet</div>'
+        : refs.map(r => '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;"><span>' + (r.full_name||r.email||'Unknown') + '</span><span style="color:#94a3b8;">' + ago(r.created_at) + '</span></div>').join('');
 
-      // Build panel HTML
+      const safeId   = profile.id;
+      const safeName = (profile.full_name||profile.email||'User').replace(/['"]/g,'');
+      const approveToggle = !isApproved;
+
       const panel = document.getElementById('userViewPanel');
-      panel.innerHTML = `
-        <div style="background:white;min-height:100vh;">
+      panel.innerHTML = '<div style="background:#f1f5f9;min-height:100vh;font-family:Inter,sans-serif;">'
 
-          <!-- PANEL HEADER -->
-          <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <button onclick="closeUserViewPanel()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-arrow-left"></i>
-              </button>
-              <div>
-                <div style="font-size:16px;font-weight:700;">👤 Viewing: ${profile.full_name || profile.email}</div>
-                <div style="font-size:12px;opacity:0.8;">Admin View — you are still logged in as admin</div>
-              </div>
-            </div>
-            <button onclick="closeUserViewPanel()" style="background:white;color:#7c3aed;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">
-              ✕ Close View
-            </button>
-          </div>
+        // Header
+        + '<div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.2);">'
+        + '<div style="display:flex;align-items:center;gap:12px;">'
+        + '<button onclick="closeUserViewPanel()" style="background:rgba(255,255,255,.2);border:none;color:white;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;"><i class=\"fas fa-arrow-left\"></i></button>'
+        + '<div><div style="font-size:16px;font-weight:700;">\u{1F464} Viewing: ' + (profile.full_name||profile.email) + '</div>'
+        + '<div style="font-size:12px;opacity:.75;">Admin View \u2014 you are still logged in as admin</div></div>'
+        + '</div>'
+        + '<button onclick="closeUserViewPanel()" style="background:white;color:#7c3aed;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;">\u2715 Close View</button>'
+        + '</div>'
 
-          <div style="max-width:900px;margin:0 auto;padding:28px 24px;">
+        + '<div style="max-width:900px;margin:0 auto;padding:24px 20px;">'
 
-            <!-- PROFILE CARD -->
-            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;">
-              <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-size:26px;font-weight:700;flex-shrink:0;">${initials}</div>
-              <div style="flex:1;">
-                <div style="font-size:20px;font-weight:700;margin-bottom:4px;">${profile.full_name || 'No name set'}</div>
-                <div style="font-size:14px;color:#64748b;margin-bottom:6px;">${profile.email}</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                  <span style="background:${isApproved?'#f0fdf4':'#fffbeb'};color:${isApproved?'#22c55e':'#f59e0b'};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">${isApproved ? '✓ Approved' : '⏳ Pending'}</span>
-                  <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">@${profile.username || 'no username'}</span>
-                  <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">📅 Joined ${joined}</span>
-                </div>
-              </div>
-              <div style="text-align:right;">
-                <button onclick="toggleApproval('${profile.id}', ${!isApproved}); closeUserViewPanel();" 
-                  style="background:${isApproved?'#fef2f2':'#f0fdf4'};color:${isApproved?'#ef4444':'#22c55e'};border:1.5px solid ${isApproved?'#fecaca':'#bbf7d0'};border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;">
-                  ${isApproved ? '🚫 Revoke Access' : '✅ Approve User'}
-                </button>
-              </div>
-            </div>
+        // Profile card
+        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">'
+        + '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:700;flex-shrink:0;">' + initials + '</div>'
+        + '<div style="flex:1;min-width:180px;">'
+        + '<div style="font-size:19px;font-weight:700;margin-bottom:4px;">' + (profile.full_name||'No name') + '</div>'
+        + '<div style="font-size:13px;color:#64748b;margin-bottom:8px;">' + profile.email + '</div>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+        + '<span style="background:' + (isApproved?'#f0fdf4':'#fffbeb') + ';color:' + (isApproved?'#22c55e':'#f59e0b') + ';padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">' + (isApproved?'\u2713 Approved':'\u23f3 Pending') + '</span>'
+        + '<span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">@' + (profile.username||'no username') + '</span>'
+        + '<span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">\u{1F4C5} ' + joined + '</span>'
+        + '</div></div>'
+        + '</div>'
 
-            <!-- WALLET CARDS -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
-              <div style="background:linear-gradient(135deg,#2dd4bf,#14b8a6);color:white;border-radius:14px;padding:20px;">
-                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">💰 Total Balance</div>
-                <div style="font-size:26px;font-weight:800;">${fmt(totalBal)}</div>
-              </div>
-              <div style="background:linear-gradient(135deg,#10b981,#059669);color:white;border-radius:14px;padding:20px;">
-                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">📋 Task Earnings</div>
-                <div style="font-size:26px;font-weight:800;">${fmt(taskEarn)}</div>
-              </div>
-              <div style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;border-radius:14px;padding:20px;">
-                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">👥 Referral Earnings</div>
-                <div style="font-size:26px;font-weight:800;">${fmt(refEarn)}</div>
-              </div>
-              <div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:14px;padding:20px;">
-                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">🎁 Signup Bonus</div>
-                <div style="font-size:26px;font-weight:800;">${fmt(bonusEarn)}</div>
-              </div>
-            </div>
+        // Wallet cards
+        + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px;">'
+        + '<div style="background:linear-gradient(135deg,#2dd4bf,#14b8a6);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F4B0} Total Balance</div><div style="font-size:28px;font-weight:800;">' + fmt(totalBal) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">All earnings combined</div></div>'
+        + '<div style="background:linear-gradient(135deg,#10b981,#059669);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F4CB} Task Earnings</div><div style="font-size:28px;font-weight:800;">' + fmt(taskEarn) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Video, audio, file tasks</div></div>'
+        + '<div style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F91D} Collab Earnings</div><div style="font-size:28px;font-weight:800;">' + fmt(collabEarn) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Referrals & collaboration</div></div>'
+        + '<div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F381} Bonus Balance</div><div style="font-size:28px;font-weight:800;">' + fmt(bonusBal) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Signup & bonus rewards</div></div>'
+        + '</div>'
 
-            <!-- TODAY'S TASK STATUS -->
-            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
-              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">📅 Today's Task Status (last 24h)</div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-                <div style="background:${videoToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
-                  <div style="font-size:22px;margin-bottom:6px;">🎬</div>
-                  <div style="font-size:13px;font-weight:700;color:${videoToday?'#22c55e':'#ef4444'};">${videoToday?'Completed':'Not done'}</div>
-                  <div style="font-size:11px;color:#64748b;margin-top:2px;">Video Task</div>
-                </div>
-                <div style="background:${audioToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
-                  <div style="font-size:22px;margin-bottom:6px;">🎵</div>
-                  <div style="font-size:13px;font-weight:700;color:${audioToday?'#22c55e':'#ef4444'};">${audioToday?'Completed':'Not done'}</div>
-                  <div style="font-size:11px;color:#64748b;margin-top:2px;">Audio Task</div>
-                </div>
-                <div style="background:${fileToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
-                  <div style="font-size:22px;margin-bottom:6px;">📁</div>
-                  <div style="font-size:13px;font-weight:700;color:${fileToday?'#22c55e':'#ef4444'};">${fileToday?'Completed':'Not done'}</div>
-                  <div style="font-size:11px;color:#64748b;margin-top:2px;">File Task</div>
-                </div>
-              </div>
-            </div>
+        // Today tasks
+        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
+        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F4C5} Today\u2019s Task Status (last 24h)</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">'
+        + '<div style="background:' + (videoToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F3AC}</div><div style="font-size:13px;font-weight:700;color:' + (videoToday?'#22c55e':'#ef4444') + ';">' + (videoToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">Video Task</div></div>'
+        + '<div style="background:' + (audioToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F3B5}</div><div style="font-size:13px;font-weight:700;color:' + (audioToday?'#22c55e':'#ef4444') + ';">' + (audioToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">Audio Task</div></div>'
+        + '<div style="background:' + (fileToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F4C1}</div><div style="font-size:13px;font-weight:700;color:' + (fileToday?'#22c55e':'#ef4444') + ';">' + (fileToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">File Task</div></div>'
+        + '</div></div>'
 
-            <!-- ACCOUNT DETAILS -->
-            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
-              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">🔍 Account Details</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
-                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Phone</div>
-                  <div style="font-size:14px;font-weight:600;">${profile.phone || 'Not set'}</div>
-                </div>
-                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
-                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Location</div>
-                  <div style="font-size:14px;font-weight:600;">${profile.location || 'Not set'}</div>
-                </div>
-                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
-                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Referred By</div>
-                  <div style="font-size:13px;font-weight:600;">${profile.referred_by || 'Direct signup'}</div>
-                </div>
-                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
-                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Total Referrals</div>
-                  <div style="font-size:14px;font-weight:600;color:#22c55e;">${refs.length} referrals</div>
-                </div>
-                <div style="background:#f8fafc;border-radius:10px;padding:12px;grid-column:1/-1;">
-                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">User ID</div>
-                  <div style="font-size:12px;font-weight:500;word-break:break-all;">${profile.id}</div>
-                </div>
-              </div>
-            </div>
+        // Account details
+        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
+        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F50D} Account Details</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Phone</div><div style="font-size:14px;font-weight:600;">' + (profile.phone||'Not set') + '</div></div>'
+        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Location</div><div style="font-size:14px;font-weight:600;">' + (profile.location||'Not set') + '</div></div>'
+        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Referred By</div><div style="font-size:13px;font-weight:600;word-break:break-all;">' + (profile.referred_by||'Direct signup') + '</div></div>'
+        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Total Referrals</div><div style="font-size:14px;font-weight:600;color:#22c55e;">' + refs.length + ' referrals</div></div>'
+        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;grid-column:1/-1;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">User ID</div><div style="font-size:11px;font-weight:500;word-break:break-all;color:#475569;">' + profile.id + '</div></div>'
+        + '</div></div>'
 
-            <!-- REFERRALS -->
-            ${refs.length > 0 ? `
-            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
-              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">👥 Their Referrals (${refs.length})</div>
-              ${refRows}
-            </div>` : ''}
+        // Referrals
+        + (refs.length > 0 ? '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;"><div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F465} Their Referrals (' + refs.length + ')</div>' + refRows + '</div>' : '')
 
-            <!-- TRANSACTIONS TABLE -->
-            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
-              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">💳 Transaction History (${txs.length} records)</div>
-              <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;">
-                  <thead>
-                    <tr style="border-bottom:2px solid #e2e8f0;">
-                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Description</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Amount</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Type</th>
-                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">When</th>
-                    </tr>
-                  </thead>
-                  <tbody style="font-family:'Inter',sans-serif;">
-                    ${txRows}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        // Transactions
+        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
+        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F4B3} Transaction History (' + txs.length + ' records)</div>'
+        + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
+        + '<thead><tr style="border-bottom:2px solid #e2e8f0;">'
+        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Description</th>'
+        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Amount</th>'
+        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Type</th>'
+        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">When</th>'
+        + '</tr></thead><tbody>' + txRows + '</tbody></table></div></div>'
 
-            <!-- ADMIN ACTIONS -->
-            <div style="background:#fff8f0;border:1px solid #fde68a;border-radius:16px;padding:20px;margin-bottom:28px;">
-              <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:#92400e;">⚙️ Admin Actions</div>
-              <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                <button onclick="toggleApproval('${profile.id}', ${!isApproved}); closeUserViewPanel();"
-                  style="flex:1;min-width:140px;padding:12px 16px;background:${isApproved?'#ef4444':'#22c55e'};color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
-                  <i class="fas fa-${isApproved?'ban':'check-circle'}"></i> ${isApproved ? 'Revoke Access' : 'Approve User'}
-                </button>
-                <button onclick="adminAdjustBalance('${profile.id}', '${(profile.full_name||profile.email||'User').replace(/['"]/g,'')}')"
-                  style="flex:1;min-width:140px;padding:12px 16px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
-                  <i class="fas fa-coins"></i> Adjust Balance
-                </button>
-                <button onclick="confirmDeleteUser('${profile.id}', '${(profile.full_name||'this user').replace(/['"]/g,'')}'); closeUserViewPanel();"
-                  style="flex:1;min-width:140px;padding:12px 16px;background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
-                  <i class="fas fa-trash"></i> Delete User
-                </button>
-              </div>
-            </div>
+        // Admin actions
+        + '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:20px;margin-bottom:28px;">'
+        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;color:#92400e;">\u2699\ufe0f Admin Actions</div>'
+        + '<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+        + '<button onclick="toggleApproval(\'' + safeId + '\', ' + approveToggle + '); closeUserViewPanel();" style="flex:1;min-width:130px;padding:12px 16px;background:' + (isApproved?'#ef4444':'#22c55e') + ';color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">' + (isApproved?'\u{1F6AB} Revoke Access':'\u2705 Approve User') + '</button>'
+        + '<button onclick="adminAdjustBalance(\'' + safeId + '\', \'' + safeName + '\')" style="flex:1;min-width:130px;padding:12px 16px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">\u{1FA99} Adjust Balance</button>'
+        + '<button onclick="confirmDeleteUser(\'' + safeId + '\', \'' + safeName + '\'); closeUserViewPanel();" style="flex:1;min-width:130px;padding:12px 16px;background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">\u{1F5D1} Delete User</button>'
+        + '</div></div>'
 
-          </div>
-        </div>
-      `;
+        + '</div></div>';
 
       panel.style.display = 'block';
       panel.scrollTop = 0;
@@ -1412,27 +1326,17 @@
     // ADMIN ADJUST BALANCE
     // ══════════════════════════════════════════════════════
     async function adminAdjustBalance(userId, userName) {
-      const amtStr = prompt(`Adjust balance for ${userName}:\n\nEnter amount (positive to add, negative to deduct):\nExample: 500 or -200`);
+      const amtStr = prompt('Adjust balance for ' + userName + ':\n\nEnter amount (positive to add, negative to deduct):\nExample: 500 or -200');
       if(amtStr === null) return;
       const amount = parseFloat(amtStr);
       if(isNaN(amount) || amount === 0) { showToast('Invalid amount', 'error'); return; }
-
-      const desc = prompt('Reason / description for this adjustment:') || 'Admin adjustment';
-
+      const desc = prompt('Reason / description:') || 'Admin adjustment';
       try {
         const now = new Date().toISOString();
-        await _supabase.from('transactions').insert({
-          user_id: userId, type: 'admin_adjustment',
-          description: desc, amount: amount, created_at: now
-        });
+        await _supabase.from('transactions').insert({ user_id: userId, type: 'admin_adjustment', description: desc, amount: amount, created_at: now });
         const { data: w } = await _supabase.from('wallets').select('task_earnings').eq('user_id', userId).maybeSingle();
-        await _supabase.from('wallets').upsert({
-          user_id: userId,
-          task_earnings: Math.max(0, (w?.task_earnings || 0) + (amount > 0 ? amount : 0)),
-          updated_at: now
-        }, {onConflict: 'user_id'});
-        showToast(`Balance adjusted by ₦${amount} for ${userName} ✅`, 'success');
-        // Reload the view
+        await _supabase.from('wallets').upsert({ user_id: userId, task_earnings: Math.max(0, (w?.task_earnings||0) + amount), updated_at: now }, {onConflict: 'user_id'});
+        showToast('Balance adjusted by \u20a6' + amount + ' for ' + userName + ' \u2705', 'success');
         loginAsUser(userId, userName);
       } catch(e) {
         showToast('Adjustment failed: ' + e.message, 'error');
@@ -1460,7 +1364,7 @@
 
   </script>
 
-  <!-- USER VIEW PANEL (full screen overlay inside admin) -->
+  <!-- USER VIEW PANEL -->
   <div id="userViewPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;overflow-y:auto;background:white;"></div>
 
   <!-- USER DETAIL MODAL -->
