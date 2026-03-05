@@ -1,512 +1,918 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Audio – Earn &#8358;500</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html, body { font-family:'Inter',sans-serif; background:#0a0e1a; color:#fff; min-height:100vh; overflow-x:hidden; }
-        .container { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Audio – Earn &#8358;500</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --purple:#8b5cf6;--purple2:#6d28d9;--green:#22c55e;
+  --bg:#0a0e1a;--card:#12172b;--card2:#1a2035;
+  --text:rgba(255,255,255,0.85);--muted:rgba(255,255,255,0.4);
+}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100vh;overflow-x:hidden;}
+.container{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
 
-        /* NAV */
-        .top-nav {
-            position:fixed; top:0; left:50%; transform:translateX(-50%);
-            width:100%; max-width:480px; height:60px;
-            background:rgba(10,14,26,0.97); backdrop-filter:blur(12px);
-            display:flex; align-items:center; padding:0 16px; gap:14px;
-            border-bottom:1px solid rgba(255,255,255,0.08); z-index:100;
-        }
-        .back-btn { background:rgba(255,255,255,0.1); border:none; color:#fff; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; text-decoration:none; transition:background 0.2s; }
-        .back-btn:hover { background:rgba(255,255,255,0.18); }
-        .nav-title { font-size:17px; font-weight:700; flex:1; }
-        .nav-badge { background:linear-gradient(135deg,#1DB954,#158a3e); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+/* ── NAV ── */
+.top-nav{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;height:60px;
+  background:rgba(10,14,26,0.96);backdrop-filter:blur(16px);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  border-bottom:1px solid rgba(255,255,255,0.07);z-index:200;
+}
+.back-btn{background:rgba(255,255,255,0.08);border:none;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;text-decoration:none;flex-shrink:0;}
+.nav-title{font-size:16px;font-weight:700;flex:1;}
+.earn-badge{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;white-space:nowrap;}
 
-        .main-content { margin-top:60px; padding:20px 16px 100px; flex:1; }
+.main-content{margin-top:60px;padding:16px 16px 110px;flex:1;}
 
-        .day-label { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
-        .day-pill { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; font-size:12px; font-weight:700; padding:5px 14px; border-radius:20px; }
-        .day-text { font-size:13px; color:rgba(255,255,255,0.5); }
+/* ── DAY LABEL ── */
+.day-label{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.day-pill{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.day-text{font-size:12px;color:var(--muted);}
 
-        /* PLAYER CARD */
-        .player-card {
-            background:linear-gradient(135deg,#0d1f14 0%,#0a1a10 100%);
-            border-radius:24px; padding:20px;
-            margin-bottom:16px;
-            box-shadow:0 12px 40px rgba(29,185,84,0.2);
-            border:1px solid rgba(29,185,84,0.2);
-        }
-        .np-label { font-size:11px; font-weight:700; color:#1DB954; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-        .np-dot { width:8px; height:8px; border-radius:50%; background:#1DB954; animation:pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
+/* ── ALBUM ART CARD ── */
+.album-card{
+  background:linear-gradient(160deg,#1e1145 0%,#130e2e 60%,#0d0a20 100%);
+  border-radius:28px;padding:28px 24px 24px;margin-bottom:14px;
+  box-shadow:0 20px 60px rgba(139,92,246,0.3);
+  border:1px solid rgba(139,92,246,0.15);
+  position:relative;overflow:hidden;
+}
+.album-card::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(139,92,246,0.25) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.album-card::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;
+  width:160px;height:160px;
+  background:radial-gradient(circle,rgba(34,197,94,0.12) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
 
-        .track-info-bar { margin-bottom:14px; }
-        .track-info-bar .t-song { font-size:18px; font-weight:800; margin-bottom:3px; }
-        .track-info-bar .t-artist { font-size:13px; color:rgba(255,255,255,0.55); }
+/* ALBUM ART */
+.art-wrap{
+  width:100%;aspect-ratio:1;max-height:220px;
+  border-radius:20px;overflow:hidden;
+  margin-bottom:22px;position:relative;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.art-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s ease;}
+.art-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.6) 100%);
+}
+.art-placeholder{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#2d1b69,#1e1040,#0f0820);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;
+}
+.art-placeholder i{font-size:56px;color:rgba(139,92,246,0.6);}
 
-        /* SPOTIFY EMBED WRAPPER */
-        .spotify-wrap {
-            border-radius:14px; overflow:hidden;
-            margin-bottom:0;
-            background:#000;
-            min-height:152px;
-        }
-        .spotify-wrap iframe {
-            width:100%; border:none; display:block;
-            border-radius:14px;
-        }
+/* VINYL DISC (shown when no thumbnail) */
+.vinyl{
+  width:120px;height:120px;border-radius:50%;
+  background:conic-gradient(#1a1040,#2d1b69,#1a1040,#3b2080,#1a1040);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 40px rgba(139,92,246,0.4);
+  position:relative;
+}
+.vinyl.spin{animation:vinylSpin 3s linear infinite;}
+@keyframes vinylSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.vinyl-center{width:28px;height:28px;border-radius:50%;background:#0a0e1a;position:absolute;}
+.vinyl-label{
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  display:flex;align-items:center;justify-content:center;
+  position:absolute;
+}
+.vinyl-label i{font-size:20px;color:#fff;}
 
-        /* IMPORTANT NOTICE */
-        .spotify-notice {
-            background:rgba(29,185,84,0.08);
-            border:1px solid rgba(29,185,84,0.2);
-            border-radius:12px; padding:12px 14px;
-            margin-top:12px;
-            font-size:12px; color:rgba(255,255,255,0.6); line-height:1.5;
-            display:flex; align-items:flex-start; gap:10px;
-        }
-        .spotify-notice i { color:#1DB954; margin-top:1px; flex-shrink:0; }
+/* TRACK META */
+.track-meta{margin-bottom:20px;}
+.track-name-big{font-size:22px;font-weight:800;letter-spacing:-0.3px;margin-bottom:4px;line-height:1.2;}
+.track-artist-big{font-size:14px;color:rgba(255,255,255,0.55);font-weight:500;}
+.track-day-badge{
+  display:inline-block;margin-top:8px;
+  background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);
+  color:var(--purple);font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:20px;letter-spacing:0.5px;text-transform:uppercase;
+}
 
-        /* LISTEN PROGRESS */
-        .listen-row {
-            display:flex; align-items:center; gap:14px;
-            background:rgba(29,185,84,0.08);
-            border:1px solid rgba(29,185,84,0.2);
-            border-radius:14px; padding:14px 16px;
-            margin-bottom:16px;
-        }
-        .ring-wrap { position:relative; width:50px; height:50px; flex-shrink:0; }
-        .ring-wrap svg { transform:rotate(-90deg); }
-        .r-bg { fill:none; stroke:rgba(29,185,84,0.2); stroke-width:4; }
-        .r-fill { fill:none; stroke:#1DB954; stroke-width:4; stroke-linecap:round; stroke-dasharray:138; stroke-dashoffset:138; transition:stroke-dashoffset 0.9s linear; }
-        .ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:800; color:#1DB954; white-space:nowrap; }
-        .listen-text-title { font-size:13px; font-weight:700; margin-bottom:3px; }
-        .listen-text-sub { font-size:11px; color:rgba(255,255,255,0.4); }
+/* PROGRESS BAR */
+.progress-section{margin-bottom:18px;}
+.progress-bar-outer{
+  width:100%;height:5px;background:rgba(255,255,255,0.1);
+  border-radius:5px;cursor:pointer;position:relative;margin-bottom:8px;
+  -webkit-tap-highlight-color:transparent;
+}
+.progress-bar-inner{
+  height:100%;background:linear-gradient(90deg,var(--purple),#a78bfa);
+  border-radius:5px;width:0%;position:relative;
+  transition:width 0.4s linear;
+}
+.progress-bar-inner::after{
+  content:'';position:absolute;right:-7px;top:-5px;
+  width:15px;height:15px;border-radius:50%;
+  background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,0.8);
+  opacity:0;transition:opacity 0.2s;
+}
+.progress-bar-outer:hover .progress-bar-inner::after{opacity:1;}
+.progress-times{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
 
-        /* EARN PANEL */
-        .earn-panel { background:linear-gradient(135deg,#0d1f14,#0a1a10); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(29,185,84,0.25); }
-        .earn-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-        .earn-lbl { font-size:13px; font-weight:700; }
-        .earn-lbl-sub { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
-        .earn-amt { font-size:22px; font-weight:800; color:#1DB954; }
+/* CONTROLS */
+.controls-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.ctrl{
+  background:none;border:none;color:rgba(255,255,255,0.45);
+  font-size:19px;cursor:pointer;width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:all 0.2s;-webkit-tap-highlight-color:transparent;
+}
+.ctrl:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.ctrl:active{transform:scale(0.9);}
+.play-big{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  border:none;color:#fff;font-size:26px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 28px rgba(139,92,246,0.55);
+  transition:all 0.2s;-webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.play-big::before{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid rgba(139,92,246,0.3);
+  animation:playRing 2s ease-in-out infinite;
+}
+@keyframes playRing{0%,100%{transform:scale(1);opacity:0.6;}50%{transform:scale(1.08);opacity:0.2;}}
+.play-big:hover{transform:scale(1.07);box-shadow:0 10px 34px rgba(139,92,246,0.7);}
+.play-big:active{transform:scale(0.95);}
+.play-big.playing{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 28px rgba(34,197,94,0.5);}
+.play-big.playing::before{border-color:rgba(34,197,94,0.3);}
 
-        .claim-btn { width:100%; padding:15px; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.3); border:none; border-radius:12px; font-size:14px; font-weight:600; cursor:not-allowed; font-family:inherit; transition:all 0.4s; }
-        .claim-btn.ready { background:linear-gradient(135deg,#1DB954,#158a3e); color:#fff; cursor:pointer; box-shadow:0 6px 20px rgba(29,185,84,0.4); animation:glow 2s ease-in-out infinite; }
-        @keyframes glow { 0%,100%{box-shadow:0 6px 20px rgba(29,185,84,0.35);} 50%{box-shadow:0 6px 32px rgba(29,185,84,0.65);} }
+/* VOLUME */
+.volume-row{display:flex;align-items:center;gap:10px;}
+.volume-row i{font-size:13px;color:var(--muted);}
+.vol-range{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:4px;border-radius:4px;background:rgba(255,255,255,0.12);
+  outline:none;cursor:pointer;
+}
+.vol-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--purple);cursor:pointer;}
 
-        /* DONE STATE */
-        .done-card { text-align:center; }
-        .done-icon { font-size:40px; margin-bottom:10px; }
-        .done-title { font-size:18px; font-weight:800; color:#1DB954; margin-bottom:6px; }
-        .done-sub { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:16px; }
-        .cd-box { background:rgba(29,185,84,0.1); border:1px solid rgba(29,185,84,0.25); border-radius:12px; padding:14px; margin-bottom:14px; }
-        .cd-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:4px; }
-        .cd-val { font-size:26px; font-weight:800; color:#1DB954; font-variant-numeric:tabular-nums; }
-        .back-earn-link { display:block; background:rgba(255,255,255,0.07); color:#fff; border-radius:10px; padding:12px; font-size:13px; font-weight:600; text-decoration:none; text-align:center; }
+/* HIDDEN YOUTUBE CONTAINER */
+#ytContainer{
+  position:fixed;bottom:-9999px;left:-9999px;
+  width:1px;height:1px;overflow:hidden;pointer-events:none;
+  z-index:-1;
+}
 
-        /* RECYCLE */
-        .recycle-notice { background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-        .recycle-text { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5; }
-        .recycle-text strong { color:#fff; }
+/* ── LISTEN RING CARD ── */
+.listen-card{
+  background:var(--card);border-radius:18px;
+  padding:16px;margin-bottom:14px;
+  border:1px solid rgba(139,92,246,0.15);
+  display:flex;align-items:center;gap:14px;
+}
+.ring-svg-wrap{position:relative;width:56px;height:56px;flex-shrink:0;}
+.ring-svg-wrap svg{transform:rotate(-90deg);}
+.r-bg{fill:none;stroke:rgba(139,92,246,0.15);stroke-width:4.5;}
+.r-fill{fill:none;stroke:var(--purple);stroke-width:4.5;stroke-linecap:round;
+  stroke-dasharray:151;stroke-dashoffset:151;transition:stroke-dashoffset 0.9s linear;}
+.ring-inner-text{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:11px;font-weight:800;color:var(--purple);white-space:nowrap;text-align:center;
+}
+.listen-info-col{}
+.listen-info-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.listen-info-sub{font-size:11px;color:var(--muted);line-height:1.4;}
 
-        /* TRACKLIST */
-        .section-title { font-size:13px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
-        .tracklist { display:flex; flex-direction:column; gap:8px; }
-        .track-item { background:rgba(255,255,255,0.04); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all 0.2s; border:1.5px solid transparent; }
-        .track-item:hover { background:rgba(29,185,84,0.1); border-color:rgba(29,185,84,0.3); }
-        .track-item.active { background:rgba(29,185,84,0.13); border-color:#1DB954; }
-        .t-num { width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:rgba(255,255,255,0.4); flex-shrink:0; }
-        .track-item.active .t-num { background:#1DB954; color:#fff; }
-        .t-info { flex:1; min-width:0; }
-        .t-name { font-size:13px; font-weight:600; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .t-artist { font-size:11px; color:rgba(255,255,255,0.4); }
-        .t-today { font-size:10px; font-weight:700; background:#1DB954; color:#fff; padding:2px 8px; border-radius:10px; flex-shrink:0; }
+/* ── EARN PANEL ── */
+.earn-panel{
+  background:var(--card);border-radius:18px;padding:18px;
+  margin-bottom:14px;border:1px solid rgba(139,92,246,0.15);
+}
+.earn-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.earn-top-left .earn-label{font-size:14px;font-weight:700;}
+.earn-top-left .earn-sublabel{font-size:11px;color:var(--muted);margin-top:2px;}
+.earn-amount-display{font-size:26px;font-weight:900;color:var(--purple);}
 
-        /* BOTTOM NAV */
-        .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; height:72px; background:rgba(10,14,26,0.97); backdrop-filter:blur(12px); display:flex; align-items:center; border-top:1px solid rgba(255,255,255,0.08); z-index:100; }
-        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-decoration:none; color:rgba(255,255,255,0.35); font-size:10px; font-weight:500; transition:color 0.2s; padding:8px 0; }
-        .nav-item.active { color:#1DB954; }
-        .nav-item i { font-size:20px; }
+.claim-btn{
+  width:100%;padding:15px;border:none;border-radius:14px;
+  font-size:14px;font-weight:700;cursor:not-allowed;
+  font-family:inherit;transition:all 0.35s;
+  background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.28);
+}
+.claim-btn.ready{
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  color:#fff;cursor:pointer;
+  box-shadow:0 8px 24px rgba(139,92,246,0.45);
+  animation:claimPulse 2s ease-in-out infinite;
+}
+@keyframes claimPulse{0%,100%{box-shadow:0 8px 24px rgba(139,92,246,0.45);}50%{box-shadow:0 8px 36px rgba(139,92,246,0.75);}}
+.claim-btn.ready:hover{transform:translateY(-2px);}
+.claim-btn.ready:active{transform:translateY(0);}
 
-        /* TOAST */
-        #toastBox { position:fixed; top:70px; right:14px; z-index:9999; max-width:300px; }
-        .t-toast { background:#0d1f14; color:#fff; border-left:4px solid #1DB954; border-radius:10px; padding:12px 16px; margin-bottom:10px; font-size:13px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.5); transition:opacity 0.3s; }
-        .t-toast.err { border-color:#ef4444; }
-    </style>
+/* ── DONE STATE ── */
+.done-wrap{text-align:center;padding:4px 0;}
+.done-emoji{font-size:48px;margin-bottom:10px;}
+.done-title{font-size:20px;font-weight:800;color:var(--green);margin-bottom:6px;}
+.done-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.cd-box{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:14px;padding:16px;margin-bottom:14px;}
+.cd-lbl{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.cd-val{font-size:28px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums;}
+.back-earn-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:rgba(255,255,255,0.07);color:#fff;border-radius:12px;
+  padding:13px;font-size:13px;font-weight:600;text-decoration:none;
+  transition:background 0.2s;
+}
+.back-earn-btn:hover{background:rgba(255,255,255,0.12);}
+
+/* ── RECYCLE NOTICE ── */
+.recycle-notice{
+  background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);
+  border-radius:14px;padding:13px 15px;
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.recycle-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.recycle-text strong{color:#fff;}
+
+/* ── TRACKLIST ── */
+.section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.tracklist{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+.track-row{
+  background:rgba(255,255,255,0.035);border-radius:14px;
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:all 0.2s;border:1.5px solid transparent;
+  -webkit-tap-highlight-color:transparent;
+}
+.track-row:hover{background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.25);}
+.track-row.active{background:rgba(139,92,246,0.14);border-color:var(--purple);}
+.track-row.playing-now{background:rgba(34,197,94,0.1);border-color:var(--green);}
+.t-num-box{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--muted);flex-shrink:0;
+}
+.track-row.active .t-num-box,.track-row.playing-now .t-num-box{background:var(--purple);color:#fff;}
+.track-row.playing-now .t-num-box{background:var(--green);}
+.t-info-col{flex:1;min-width:0;}
+.t-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-art{font-size:11px;color:var(--muted);}
+.t-today-tag{font-size:10px;font-weight:700;background:var(--purple);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;}
+.t-playing-tag{font-size:10px;font-weight:700;background:var(--green);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;height:72px;
+  background:rgba(10,14,26,0.97);backdrop-filter:blur(16px);
+  display:flex;align-items:center;
+  border-top:1px solid rgba(255,255,255,0.07);z-index:200;
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:rgba(255,255,255,0.3);font-size:10px;font-weight:500;transition:color 0.2s;padding:8px 0;}
+.nav-item.active{color:var(--purple);}
+.nav-item i{font-size:20px;}
+
+/* MINI NOW-PLAYING BAR (above bottom nav) */
+.mini-bar{
+  position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 32px);max-width:448px;
+  background:linear-gradient(135deg,#1e1145,#130e2e);
+  border-radius:16px;padding:10px 16px;
+  display:none;align-items:center;gap:12px;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.5);
+  border:1px solid rgba(139,92,246,0.2);z-index:199;
+}
+.mini-bar.visible{display:flex;}
+.mini-disc{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mini-disc.spin{animation:vinylSpin 2s linear infinite;}
+.mini-disc i{font-size:14px;}
+.mini-info{flex:1;min-width:0;}
+.mini-song{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mini-artist{font-size:10px;color:var(--muted);}
+.mini-play{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:4px;}
+
+/* TOAST */
+#toastWrap{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;width:calc(100%-32px);max-width:420px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
+.toast{background:#1e1a3a;color:#fff;border-left:4px solid var(--purple);border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,0.5);animation:toastIn 0.3s ease;pointer-events:none;max-width:420px;width:90%;}
+.toast.success{border-color:var(--green);}
+.toast.error{border-color:#ef4444;}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+
+/* LOADING STATE */
+.yt-loading{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(139,92,246,0.08);border-radius:12px;
+  padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted);
+}
+.spin-icon{animation:iconSpin 1s linear infinite;display:inline-block;}
+@keyframes iconSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+</style>
 </head>
 <body>
-<div id="toastBox"></div>
-<div class="container">
 
-    <nav class="top-nav">
-        <a href="earn.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <div class="nav-title">&#127925; Daily Audio</div>
-        <span class="nav-badge"><i class="fab fa-spotify"></i> EARN &#8358;500</span>
-    </nav>
+<!-- TOAST CONTAINER -->
+<div id="toastWrap"></div>
 
-    <div class="main-content">
-
-        <div class="day-label">
-            <span class="day-pill" id="dayPill">Day 1</span>
-            <span class="day-text" id="dayText">Today's featured track</span>
-        </div>
-
-        <!-- PLAYER CARD -->
-        <div class="player-card">
-            <div class="np-label"><span class="np-dot"></span> Now Playing on Spotify</div>
-            <div class="track-info-bar">
-                <div class="t-song" id="npSong">Loading...</div>
-                <div class="t-artist" id="npArtist"></div>
-            </div>
-            <!-- Spotify Embed — real music, plays directly -->
-            <div class="spotify-wrap">
-                <iframe id="spotifyFrame"
-                    src=""
-                    height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy">
-                </iframe>
-            </div>
-            <div class="spotify-notice">
-                <i class="fab fa-spotify"></i>
-                <span>Press <strong>Play</strong> on the Spotify player above. Your 60-second timer starts automatically when you play the song.</span>
-            </div>
-        </div>
-
-        <!-- LISTEN RING -->
-        <div class="listen-row" id="listenRow">
-            <div class="ring-wrap">
-                <svg width="50" height="50" viewBox="0 0 50 50">
-                    <circle class="r-bg" cx="25" cy="25" r="22"/>
-                    <circle class="r-fill" id="rFill" cx="25" cy="25" r="22"/>
-                </svg>
-                <div class="ring-center" id="ringCenter">60s</div>
-            </div>
-            <div>
-                <div class="listen-text-title" id="listenTitle">&#9654; Press play on the Spotify player</div>
-                <div class="listen-text-sub" id="listenSub">Timer starts when you press play above</div>
-            </div>
-        </div>
-
-        <!-- EARN PANEL -->
-        <div class="earn-panel" id="earnPanel">
-            <div class="earn-header">
-                <div>
-                    <div class="earn-lbl">&#127925; Listen &amp; Earn</div>
-                    <div class="earn-lbl-sub">Listen for 60 seconds to claim</div>
-                </div>
-                <div class="earn-amt">&#8358;500</div>
-            </div>
-            <button class="claim-btn" id="claimBtn" disabled>
-                &#9203; Play the track above to start timer&hellip;
-            </button>
-        </div>
-
-        <!-- RECYCLE NOTICE -->
-        <div class="recycle-notice">
-            <span style="font-size:22px;">&#128260;</span>
-            <div class="recycle-text"><strong>Daily Rotation Active</strong><br>New Spotify track every day. After 20 days, playlist recycles.</div>
-        </div>
-
-        <!-- TRACKLIST -->
-        <div class="section-title">All 20 Tracks</div>
-        <div class="tracklist" id="tracklist"></div>
-
-    </div>
-
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
-        <a href="wish-hub.html" class="nav-item"><i class="fas fa-star"></i><span>Wish Hub</span></a>
-        <a href="earn.html" class="nav-item"><i class="fas fa-coins"></i><span>Earn</span></a>
-        <a href="video.html" class="nav-item"><i class="fas fa-play"></i><span>Video</span></a>
-        <a href="audio.html" class="nav-item active"><i class="fas fa-headphones"></i><span>Audio</span></a>
-    </nav>
+<!-- HIDDEN YOUTUBE PLAYER - real audio, invisible to user -->
+<div id="ytContainer">
+  <div id="ytPlayer"></div>
 </div>
 
+<div class="container">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <a href="earn.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    <div class="nav-title">&#127925; Daily Audio</div>
+    <span class="earn-badge">EARN &#8358;500</span>
+  </nav>
+
+  <div class="main-content">
+
+    <!-- DAY LABEL -->
+    <div class="day-label">
+      <span class="day-pill" id="dayPill">Day 1</span>
+      <span class="day-text" id="dayText">Today's featured track</span>
+    </div>
+
+    <!-- ALBUM ART CARD -->
+    <div class="album-card">
+      <div class="np-label" id="npLabel">
+        <span class="np-dot" id="npDot"></span>
+        <span id="npLabelText">Select a track to play</span>
+      </div>
+
+      <!-- ALBUM ART -->
+      <div class="art-wrap" id="artWrap">
+        <div class="art-placeholder" id="artPlaceholder">
+          <div class="vinyl" id="vinylDisc">
+            <div class="vinyl-center"></div>
+            <div class="vinyl-label"><i class="fas fa-music"></i></div>
+          </div>
+        </div>
+        <img id="artImg" class="art-img" style="display:none;" alt="Album art">
+        <div class="art-overlay"></div>
+      </div>
+
+      <!-- TRACK META -->
+      <div class="track-meta">
+        <div class="track-name-big" id="npSong">Tap a track below</div>
+        <div class="track-artist-big" id="npArtist">Choose from the playlist</div>
+        <span class="track-day-badge" id="npDayBadge">Today's Track</span>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="progress-section">
+        <div class="progress-bar-outer" id="progBar">
+          <div class="progress-bar-inner" id="progFill"></div>
+        </div>
+        <div class="progress-times">
+          <span id="curTime">0:00</span>
+          <span id="totTime">0:00</span>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls-row">
+        <button class="ctrl" id="btnPrev" title="Previous"><i class="fas fa-step-backward"></i></button>
+        <button class="ctrl" id="btnRewind" title="-10s"><i class="fas fa-undo" style="font-size:15px;"></i><span style="font-size:9px;margin-left:1px;">10</span></button>
+        <button class="play-big" id="btnPlay"><i class="fas fa-play" id="playIcon"></i></button>
+        <button class="ctrl" id="btnForward" title="+10s"><i class="fas fa-redo" style="font-size:15px;"></i><span style="font-size:9px;margin-left:1px;">10</span></button>
+        <button class="ctrl" id="btnNext" title="Next"><i class="fas fa-step-forward"></i></button>
+      </div>
+
+      <!-- VOLUME -->
+      <div class="volume-row">
+        <i class="fas fa-volume-off"></i>
+        <input type="range" class="vol-range" id="volRange" min="0" max="100" value="80">
+        <i class="fas fa-volume-up"></i>
+      </div>
+    </div>
+
+    <!-- LISTEN PROGRESS RING -->
+    <div class="listen-card" id="listenCard">
+      <div class="ring-svg-wrap">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="r-bg" cx="28" cy="28" r="24"/>
+          <circle class="r-fill" id="rFill" cx="28" cy="28" r="24"/>
+        </svg>
+        <div class="ring-inner-text" id="ringText">60s</div>
+      </div>
+      <div class="listen-info-col">
+        <div class="listen-info-title" id="listenTitle">&#9654;&#65039; Press play to start earning</div>
+        <div class="listen-info-sub" id="listenSub">Listen for 60 seconds — timer only runs while playing</div>
+      </div>
+    </div>
+
+    <!-- EARN PANEL -->
+    <div class="earn-panel" id="earnPanel">
+      <div class="earn-top">
+        <div class="earn-top-left">
+          <div class="earn-label">&#127925; Listen &amp; Earn</div>
+          <div class="earn-sublabel">Anti-cheat: timer stops when you pause</div>
+        </div>
+        <div class="earn-amount-display">&#8358;500</div>
+      </div>
+      <button class="claim-btn" id="claimBtn" disabled>
+        &#9203; Play music to start timer&hellip;
+      </button>
+    </div>
+
+    <!-- RECYCLE NOTICE -->
+    <div class="recycle-notice">
+      <span style="font-size:20px;">&#128260;</span>
+      <div class="recycle-text"><strong>Daily Rotation</strong><br>New track every day. 20-day cycle then repeats.</div>
+    </div>
+
+    <!-- TRACKLIST -->
+    <div class="section-title">All 20 Tracks</div>
+    <div class="tracklist" id="tracklist"></div>
+
+  </div>
+
+  <!-- MINI NOW-PLAYING BAR -->
+  <div class="mini-bar" id="miniBar">
+    <div class="mini-disc" id="miniDisc"><i class="fas fa-music"></i></div>
+    <div class="mini-info">
+      <div class="mini-song" id="miniSong">—</div>
+      <div class="mini-artist" id="miniArtist">—</div>
+    </div>
+    <button class="mini-play" id="miniPlayBtn"><i class="fas fa-play" id="miniIcon"></i></button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="wish-hub.html" class="nav-item"><i class="fas fa-star"></i><span>Wish Hub</span></a>
+    <a href="earn.html" class="nav-item"><i class="fas fa-coins"></i><span>Earn</span></a>
+    <a href="video.html" class="nav-item"><i class="fas fa-play"></i><span>Video</span></a>
+    <a href="audio.html" class="nav-item active"><i class="fas fa-headphones"></i><span>Audio</span></a>
+  </nav>
+</div>
+
+<!-- YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-// =========================================================
-// TRACKS — Real Spotify track IDs (actual Nigerian songs)
-// Spotify embed plays 30s preview free, full song needs login
-// =========================================================
+// ═══════════════════════════════════════════
+// TRACKS — Real Nigerian songs on YouTube
+// YouTube video IDs (official music videos)
+// ═══════════════════════════════════════════
 const TRACKS = [
-    { artist:'Wizkid ft. Tems',  song:'Essence',              spotifyId:'5RqSsdzTNPX1uCMHbB8MOR' },
-    { artist:'Rema',             song:'Calm Down',             spotifyId:'0WtM2NBus58OAOQba97qAk' },
-    { artist:'Burna Boy',        song:'Last Last',             spotifyId:'3qSJD2hjDDMKlNSgkFfmhT' },
-    { artist:'Asake',            song:'Organise',              spotifyId:'6zd9CArRijbGPnDBaijHFO' },
-    { artist:'Davido',           song:'Stand Strong',          spotifyId:'2jXUCCKbsSt9hcPL2Vcysk' },
-    { artist:'Fireboy DML',      song:'Peru',                  spotifyId:'1nUYo8sq5Oukgx3eTwMPPs' },
-    { artist:'Omah Lay',         song:'Understand',            spotifyId:'3eEHFRuB7qNSPBYlGBMqcS' },
-    { artist:'Ckay',             song:'Love Nwantiti',         spotifyId:'6cRa7Yf9MFO46KmGqIFPIV' },
-    { artist:'Ayra Starr',       song:'19 & Dangerous',        spotifyId:'1NG6jSXCnpHFzFiXFbGpXS' },
-    { artist:'Kizz Daniel',      song:'Buga ft. Tekno',        spotifyId:'5SkqPnFMKh46NbZ7jIRcqI' },
-    { artist:'Tems',             song:'Free Mind',             spotifyId:'5rSyVURQbgqiLM3lOvb2eK' },
-    { artist:'Zinoleesky',       song:'Loving You',            spotifyId:'4kWZUMkFEsibHnPQTEsPaK' },
-    { artist:'Olamide',          song:'Infinity ft. Omah Lay', spotifyId:'5pSBnGPbNxcKyOmjLkBxZL' },
-    { artist:'Joeboy',           song:'Alcohol',               spotifyId:'2FZrUMNFKfn7Ldk1nPl9gD' },
-    { artist:'Tiwa Savage',      song:'Somebody\'s Son',       spotifyId:'2kCHlXbFmEXHlDSXM7wBsT' },
-    { artist:'Simi',             song:'Duduke',                spotifyId:'6eMBjZjm0FRvxI5Qk1HSuv' },
-    { artist:'Pheelz ft. BNXN',  song:'Finesse',               spotifyId:'4wSQHGMqMCrTCpnj0iJA6s' },
-    { artist:'Portable',         song:'Zazu Zeh',              spotifyId:'4M5kgVWzEmYy0yk3jOhEbJ' },
-    { artist:'Flavour',          song:'Shake ft. Chidinma',    spotifyId:'3Hvu5cPUTa3VBGrZnNiMGp' },
-    { artist:'Yemi Alade',       song:'Johnny',                spotifyId:'7GmjBqiPDlVJnPeTuEMfhO' },
+  { song:'Essence',              artist:'Wizkid ft. Tems',  yt:'WcLJZAkmI9o', thumb:'https://i.ytimg.com/vi/WcLJZAkmI9o/hqdefault.jpg' },
+  { song:'Calm Down',            artist:'Rema',             yt:'Os6gLKIaWaY', thumb:'https://i.ytimg.com/vi/Os6gLKIaWaY/hqdefault.jpg' },
+  { song:'Last Last',            artist:'Burna Boy',        yt:'hJN7fxMNRO0', thumb:'https://i.ytimg.com/vi/hJN7fxMNRO0/hqdefault.jpg' },
+  { song:'Peru',                 artist:'Fireboy DML',      yt:'g6aQeF6ZJXI', thumb:'https://i.ytimg.com/vi/g6aQeF6ZJXI/hqdefault.jpg' },
+  { song:'Love Nwantiti',        artist:'Ckay',             yt:'6JqEJMnbyW4', thumb:'https://i.ytimg.com/vi/6JqEJMnbyW4/hqdefault.jpg' },
+  { song:'Free Mind',            artist:'Tems',             yt:'jBQKSy3Ee2U', thumb:'https://i.ytimg.com/vi/jBQKSy3Ee2U/hqdefault.jpg' },
+  { song:'Buga',                 artist:'Kizz Daniel ft. Tekno', yt:'O_Fy58e9T3M', thumb:'https://i.ytimg.com/vi/O_Fy58e9T3M/hqdefault.jpg' },
+  { song:'Duduke',               artist:'Simi',             yt:'kNNwPGBg0GE', thumb:'https://i.ytimg.com/vi/kNNwPGBg0GE/hqdefault.jpg' },
+  { song:'19 & Dangerous',       artist:'Ayra Starr',       yt:'cbqG5RRqkXs', thumb:'https://i.ytimg.com/vi/cbqG5RRqkXs/hqdefault.jpg' },
+  { song:'Zazu Zeh',             artist:'Portable',         yt:'aPZElrXFbKY', thumb:'https://i.ytimg.com/vi/aPZElrXFbKY/hqdefault.jpg' },
+  { song:'Finesse',              artist:'Pheelz ft. BNXN',  yt:'M8AuvuuOhxA', thumb:'https://i.ytimg.com/vi/M8AuvuuOhxA/hqdefault.jpg' },
+  { song:'Alcohol',              artist:'Joeboy',           yt:'xoT1hWTTlgw', thumb:'https://i.ytimg.com/vi/xoT1hWTTlgw/hqdefault.jpg' },
+  { song:'Infinity',             artist:'Olamide ft. Omah Lay', yt:'hiqn-Dmhyps', thumb:'https://i.ytimg.com/vi/hiqn-Dmhyps/hqdefault.jpg' },
+  { song:'Loving You',           artist:'Zinoleesky',       yt:'GCxaHnVe-PM', thumb:'https://i.ytimg.com/vi/GCxaHnVe-PM/hqdefault.jpg' },
+  { song:'Understand',           artist:'Omah Lay',         yt:'X4KCf-i5lu0', thumb:'https://i.ytimg.com/vi/X4KCf-i5lu0/hqdefault.jpg' },
+  { song:'Organise',             artist:'Asake',            yt:'xYlPbkSzFZI', thumb:'https://i.ytimg.com/vi/xYlPbkSzFZI/hqdefault.jpg' },
+  { song:'Somebody\'s Son',      artist:'Tiwa Savage',      yt:'jExQxU3s-W4', thumb:'https://i.ytimg.com/vi/jExQxU3s-W4/hqdefault.jpg' },
+  { song:'Shake',                artist:'Flavour ft. Chidinma', yt:'FalCvvbJuMk', thumb:'https://i.ytimg.com/vi/FalCvvbJuMk/hqdefault.jpg' },
+  { song:'Johnny',               artist:'Yemi Alade',       yt:'N3bEMJ5RFNY', thumb:'https://i.ytimg.com/vi/N3bEMJ5RFNY/hqdefault.jpg' },
+  { song:'Stand Strong',         artist:'Davido ft. Mavins',yt:'3gLIE0QBKQM', thumb:'https://i.ytimg.com/vi/3gLIE0QBKQM/hqdefault.jpg' },
 ];
 
-// =========================================================
-// CONFIG & STATE
-// =========================================================
-const REQUIRED_SEC  = 60;
-const EARN_AMOUNT   = 500;
-const CIRCUMFERENCE = 138;
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const REQUIRED_SECS = 60;
+const EARN_AMT      = 500;
+const CIRC          = 150.8; // 2*PI*24
 
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let ytPlayer      = null;
+let ytReady       = false;
 let currentIdx    = 0;
-let currentUserId = null;
-let taskDone      = false;
-let claimed       = false;
+let isPlaying     = false;
 let listenSecs    = 0;
 let listenTimer   = null;
-let timerStarted  = false;
+let taskDone      = false;
+let claimed       = false;
+let userId        = null;
+let progressTimer = null;
 
-// =========================================================
-// UTILS
-// =========================================================
-function fmtMoney(n){ return '\u20a6'+Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2}); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function getDayIndex(){
-    const now=new Date(), start=new Date(now.getFullYear(),0,0);
-    return Math.floor((now-start)/86400000)%20;
-}
-function toast(msg,type='ok'){
-    const box=document.getElementById('toastBox');
-    const el=document.createElement('div');
-    el.className='t-toast'+(type==='err'?' err':'');
-    el.textContent=msg;
-    box.appendChild(el);
-    setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},4500);
-}
-
-// =========================================================
-// LOAD TRACK — swap Spotify embed
-// =========================================================
-function loadTrack(idx){
-    currentIdx = idx;
-    const t = TRACKS[idx];
-    document.getElementById('npSong').textContent   = t.song;
-    document.getElementById('npArtist').textContent = t.artist;
-
-    // Build Spotify embed URL
-    const embedUrl = `https://open.spotify.com/embed/track/${t.spotifyId}?utm_source=generator&theme=0`;
-    document.getElementById('spotifyFrame').src = embedUrl;
-
-    // Update tracklist highlight
-    document.querySelectorAll('.track-item').forEach((el,i)=>{
-        el.classList.toggle('active', i===idx);
-        el.querySelector('.t-num').innerHTML = i===idx
-            ? '<i class="fas fa-headphones" style="font-size:11px;"></i>'
-            : String(i+1);
-    });
-
-    // Reset listen timer when switching tracks
-    if(timerStarted && !taskDone) {
-        stopTimer();
-        listenSecs = 0;
-        timerStarted = false;
-        updateRing();
-        // Restart timer after short delay (new track needs to load)
-        setTimeout(()=>{
-            startTimer();
-        }, 2000);
+// ═══════════════════════════════════════════
+// YOUTUBE IFRAME API CALLBACK
+// ═══════════════════════════════════════════
+function onYouTubeIframeAPIReady(){
+  ytPlayer = new YT.Player('ytPlayer', {
+    height:'1', width:'1',
+    videoId: TRACKS[0].yt,
+    playerVars:{
+      autoplay:0, controls:0, disablekb:1,
+      fs:0, iv_load_policy:3, modestbranding:1,
+      rel:0, showinfo:0, playsinline:1
+    },
+    events:{
+      onReady: onPlayerReady,
+      onStateChange: onPlayerStateChange,
+      onError: onPlayerError
     }
+  });
 }
 
-// =========================================================
-// TIMER — starts when user interacts, runs continuously
-// Since Spotify embed doesn't expose play events to JS,
-// we start the timer on first user click and keep it going
-// =========================================================
-function startTimer(){
-    if(listenTimer || taskDone || claimed) return;
-    timerStarted = true;
-    listenTimer = setInterval(()=>{
-        listenSecs++;
-        updateRing();
-        if(listenSecs >= REQUIRED_SEC){
-            stopTimer();
-            unlockClaim();
-        }
-    }, 1000);
-    document.getElementById('listenTitle').textContent = '\u23f1 Timer running — keep listening!';
-    document.getElementById('listenSub').textContent   = 'Do not close this page';
+function onPlayerReady(){
+  ytReady = true;
+  ytPlayer.setVolume(80);
 }
 
-function stopTimer(){
-    if(listenTimer){ clearInterval(listenTimer); listenTimer=null; }
+function onPlayerStateChange(e){
+  const S = YT.PlayerState;
+  if(e.data === S.PLAYING){
+    setPlaying(true);
+  } else if(e.data === S.PAUSED || e.data === S.BUFFERING){
+    setPlaying(false);
+  } else if(e.data === S.ENDED){
+    // Auto next
+    loadTrack((currentIdx+1) % TRACKS.length, true);
+  }
 }
 
+function onPlayerError(e){
+  // Video blocked/unavailable — skip to next
+  setTimeout(()=> loadTrack((currentIdx+1)%TRACKS.length, isPlaying), 1000);
+  toast('Track unavailable, skipping…','error');
+}
+
+// ═══════════════════════════════════════════
+// PLAY / PAUSE STATE
+// ═══════════════════════════════════════════
+function setPlaying(state){
+  isPlaying = state;
+
+  // Big play button
+  const btn = document.getElementById('btnPlay');
+  const icon = document.getElementById('playIcon');
+  if(state){
+    btn.classList.add('playing');
+    icon.className = 'fas fa-pause';
+  } else {
+    btn.classList.remove('playing');
+    icon.className = 'fas fa-play';
+  }
+
+  // Vinyl disc spin
+  document.getElementById('vinylDisc').classList.toggle('spin', state);
+  document.getElementById('miniDisc').classList.toggle('spin', state);
+
+  // Mini bar icon
+  document.getElementById('miniIcon').className = state ? 'fas fa-pause' : 'fas fa-play';
+
+  // NP label
+  document.getElementById('npLabelText').textContent = state ? 'Now Playing' : 'Paused';
+
+  // Listen timer — ANTI-CHEAT: only runs while actually playing
+  if(state){
+    startListenTimer();
+    startProgressLoop();
+  } else {
+    stopListenTimer();
+    stopProgressLoop();
+  }
+}
+
+// ═══════════════════════════════════════════
+// LOAD TRACK
+// ═══════════════════════════════════════════
+function loadTrack(idx, autoplay=false){
+  currentIdx = idx;
+  const t = TRACKS[idx];
+
+  // Update UI
+  document.getElementById('npSong').textContent   = t.song;
+  document.getElementById('npArtist').textContent = t.artist;
+  document.getElementById('miniSong').textContent  = t.song;
+  document.getElementById('miniArtist').textContent = t.artist;
+
+  // Album thumbnail from YouTube
+  const img = document.getElementById('artImg');
+  const placeholder = document.getElementById('artPlaceholder');
+  img.src = t.thumb;
+  img.onload = ()=>{ img.style.display='block'; placeholder.style.display='none'; };
+  img.onerror = ()=>{ img.style.display='none'; placeholder.style.display='flex'; };
+
+  // Reset progress bar
+  document.getElementById('progFill').style.width = '0%';
+  document.getElementById('curTime').textContent  = '0:00';
+  document.getElementById('totTime').textContent  = '0:00';
+
+  // Load into YouTube player
+  if(ytReady){
+    if(autoplay){
+      ytPlayer.loadVideoById(t.yt);
+    } else {
+      ytPlayer.cueVideoById(t.yt);
+    }
+    ytPlayer.setVolume(document.getElementById('volRange').value);
+  }
+
+  // Update tracklist highlight
+  document.querySelectorAll('.track-row').forEach((el,i)=>{
+    el.classList.toggle('active', i===idx);
+    el.classList.remove('playing-now');
+    const numBox = el.querySelector('.t-num-box');
+    const tag = el.querySelector('.t-today-tag,.t-playing-tag');
+    if(tag) tag.remove();
+    if(i===idx){
+      numBox.innerHTML='<i class="fas fa-headphones" style="font-size:11px;"></i>';
+    } else {
+      numBox.textContent = String(i+1);
+    }
+  });
+
+  document.getElementById('miniBar').classList.add('visible');
+}
+
+// ═══════════════════════════════════════════
+// PROGRESS BAR LOOP
+// ═══════════════════════════════════════════
+function startProgressLoop(){
+  stopProgressLoop();
+  progressTimer = setInterval(()=>{
+    if(!ytReady || !ytPlayer.getDuration) return;
+    const cur = ytPlayer.getCurrentTime()||0;
+    const dur = ytPlayer.getDuration()||0;
+    const pct = dur>0 ? (cur/dur)*100 : 0;
+    document.getElementById('progFill').style.width = pct+'%';
+    document.getElementById('curTime').textContent  = fmtTime(cur);
+    document.getElementById('totTime').textContent  = fmtTime(dur);
+  }, 500);
+}
+function stopProgressLoop(){
+  if(progressTimer){clearInterval(progressTimer);progressTimer=null;}
+}
+
+// ═══════════════════════════════════════════
+// LISTEN TIMER — ANTI-CHEAT
+// Only ticks when YouTube is ACTUALLY playing
+// Pausing stops the timer — cannot cheat!
+// ═══════════════════════════════════════════
+function startListenTimer(){
+  if(listenTimer||taskDone||claimed) return;
+  listenTimer = setInterval(()=>{
+    listenSecs++;
+    updateRing();
+    if(listenSecs >= REQUIRED_SECS){
+      stopListenTimer();
+      unlockClaim();
+    }
+  }, 1000);
+}
+function stopListenTimer(){
+  if(listenTimer){clearInterval(listenTimer);listenTimer=null;}
+}
 function updateRing(){
-    const pct = Math.min(listenSecs/REQUIRED_SEC, 1);
-    document.getElementById('rFill').style.strokeDashoffset = CIRCUMFERENCE - (pct*CIRCUMFERENCE);
-    const rem = Math.max(0, REQUIRED_SEC-listenSecs);
-    document.getElementById('ringCenter').textContent = listenSecs>=REQUIRED_SEC ? '\u2713' : rem+'s';
-    if(listenSecs>0 && listenSecs<REQUIRED_SEC){
-        document.getElementById('listenTitle').textContent = '\u23f1 '+rem+'s remaining — keep going!';
-        document.getElementById('listenSub').textContent   = 'Listening confirmed — almost there!';
-    } else if(listenSecs>=REQUIRED_SEC){
-        document.getElementById('rFill').style.stroke = '#22c55e';
-        document.getElementById('listenTitle').textContent = '\u2705 60 seconds complete!';
-        document.getElementById('listenSub').textContent   = 'Claim your reward below now!';
-    }
-}
+  const pct = Math.min(listenSecs/REQUIRED_SECS, 1);
+  const offset = CIRC - (pct * CIRC);
+  document.getElementById('rFill').style.strokeDashoffset = offset;
+  const rem = Math.max(0, REQUIRED_SECS - listenSecs);
+  document.getElementById('ringText').textContent = listenSecs>=REQUIRED_SECS ? '\u2713' : rem+'s';
 
+  const btn = document.getElementById('claimBtn');
+  if(listenSecs === 0){
+    document.getElementById('listenTitle').textContent = '\u25b6\ufe0f Press play to start earning';
+    document.getElementById('listenSub').textContent   = 'Listen for 60 seconds \u2014 timer only runs while playing';
+    btn.textContent = '\u23f3 Play music to start timer\u2026';
+  } else if(listenSecs < REQUIRED_SECS){
+    document.getElementById('listenTitle').textContent = '\u23f1 '+rem+'s remaining \u2014 keep going!';
+    document.getElementById('listenSub').textContent   = 'Timer pauses when you pause the music';
+    btn.textContent = '\u23f3 Listen for '+rem+' more seconds\u2026';
+  } else {
+    document.getElementById('rFill').style.stroke = 'var(--green)';
+    document.getElementById('ringText').textContent = '\u2713';
+    document.getElementById('listenTitle').textContent = '\u2705 60 seconds complete!';
+    document.getElementById('listenSub').textContent   = 'Claim your \u20a6500 reward below!';
+  }
+}
 function unlockClaim(){
-    if(taskDone||claimed) return;
-    const btn = document.getElementById('claimBtn');
-    btn.disabled = false;
-    btn.classList.add('ready');
-    btn.textContent = '\u2705 Claim \u20a6500 Reward Now!';
-    toast('\ud83c\udf89 You\'ve listened for 60 seconds! Claim your reward!');
+  if(taskDone||claimed) return;
+  const btn = document.getElementById('claimBtn');
+  btn.disabled = false;
+  btn.classList.add('ready');
+  btn.textContent = '\ud83c\udf89 Claim \u20a6500 Reward Now!';
+  toast('\ud83c\udf89 60 seconds reached! Tap to claim your \u20a6500!','success');
 }
 
-// =========================================================
-// START TIMER WHEN USER TAPS THE SPOTIFY PLAYER AREA
-// =========================================================
-document.querySelector('.player-card').addEventListener('click', ()=>{
-    if(!timerStarted && !taskDone && !claimed){
-        startTimer();
+// ═══════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════
+document.getElementById('btnPlay').addEventListener('click',()=>{
+  if(!ytReady) return;
+  if(isPlaying){
+    ytPlayer.pauseVideo();
+  } else {
+    // If no video loaded yet, load today's track
+    if(!ytPlayer.getVideoData || !ytPlayer.getVideoData().video_id){
+      loadTrack(currentIdx, true);
+    } else {
+      ytPlayer.playVideo();
     }
-}, { once: false });
-
-// Also auto-start after 4 seconds as fallback
-// (some Spotify embeds autoplay on mobile)
-setTimeout(()=>{
-    if(!timerStarted && !taskDone && !claimed){
-        startTimer();
-    }
-}, 4000);
-
-// =========================================================
-// CLAIM REWARD
-// =========================================================
-document.getElementById('claimBtn').addEventListener('click', async()=>{
-    const btn = document.getElementById('claimBtn');
-    if(btn.disabled || claimed) return;
-    btn.disabled = true;
-    btn.textContent = '\u23f3 Processing\u2026';
-
-    try {
-        const since = new Date(Date.now()-86400000).toISOString();
-        const {data:ex} = await _supabase.from('daily_completions').select('id')
-            .eq('user_id',currentUserId).eq('task_type','daily_audio')
-            .gte('created_at',since).maybeSingle();
-        if(ex){ showDone(ex.created_at||new Date().toISOString()); return; }
-
-        const now = new Date().toISOString();
-        await _supabase.from('daily_completions').insert({
-            user_id:currentUserId, task_type:'daily_audio',
-            completed_date:todayStr(), created_at:now
-        });
-        await _supabase.from('transactions').insert({
-            user_id:currentUserId, type:'daily_task',
-            description:'Daily reward: Audio listen',
-            amount:EARN_AMOUNT, created_at:now
-        });
-        const {data:w} = await _supabase.from('wallets')
-            .select('task_earnings').eq('user_id',currentUserId).maybeSingle();
-        await _supabase.from('wallets').upsert({
-            user_id:currentUserId,
-            task_earnings:(w?.task_earnings||0)+EARN_AMOUNT,
-            updated_at:now
-        },{onConflict:'user_id'});
-
-        claimed = true;
-        toast('\ud83c\udf89 You earned '+fmtMoney(EARN_AMOUNT)+'! Well done!');
-        showDone(now);
-
-    } catch(err){
-        console.error(err);
-        btn.disabled = false;
-        btn.textContent = '\u2705 Claim \u20a6500 Reward Now!';
-        toast('Something went wrong, try again','err');
-    }
+  }
 });
 
-// =========================================================
-// DONE / COOLDOWN STATE
-// =========================================================
+document.getElementById('btnPrev').addEventListener('click',()=>{
+  loadTrack((currentIdx-1+TRACKS.length)%TRACKS.length, isPlaying);
+});
+document.getElementById('btnNext').addEventListener('click',()=>{
+  loadTrack((currentIdx+1)%TRACKS.length, isPlaying);
+});
+document.getElementById('btnRewind').addEventListener('click',()=>{
+  if(ytReady) ytPlayer.seekTo(Math.max(0,(ytPlayer.getCurrentTime()||0)-10), true);
+});
+document.getElementById('btnForward').addEventListener('click',()=>{
+  if(ytReady) ytPlayer.seekTo((ytPlayer.getCurrentTime()||0)+10, true);
+});
+
+// Mini bar play button
+document.getElementById('miniPlayBtn').addEventListener('click',()=>{
+  document.getElementById('btnPlay').click();
+});
+
+// Volume
+document.getElementById('volRange').addEventListener('input',e=>{
+  if(ytReady) ytPlayer.setVolume(parseInt(e.target.value));
+});
+
+// Progress bar click to seek
+document.getElementById('progBar').addEventListener('click',e=>{
+  if(!ytReady) return;
+  const dur = ytPlayer.getDuration()||0;
+  if(!dur) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX-rect.left)/rect.width;
+  ytPlayer.seekTo(pct*dur, true);
+});
+
+// ═══════════════════════════════════════════
+// CLAIM REWARD
+// ═══════════════════════════════════════════
+document.getElementById('claimBtn').addEventListener('click', async()=>{
+  const btn = document.getElementById('claimBtn');
+  if(btn.disabled||claimed) return;
+  btn.disabled=true;
+  btn.textContent='\u23f3 Processing\u2026';
+
+  try {
+    const since = new Date(Date.now()-86400000).toISOString();
+    const {data:ex} = await _supabase.from('daily_completions').select('id')
+      .eq('user_id',userId).eq('task_type','daily_audio')
+      .gte('created_at',since).maybeSingle();
+    if(ex){ showDone(ex.created_at||new Date().toISOString()); return; }
+
+    const now = new Date().toISOString();
+    await _supabase.from('daily_completions').insert({
+      user_id:userId, task_type:'daily_audio',
+      completed_date:new Date().toISOString().slice(0,10), created_at:now
+    });
+    await _supabase.from('transactions').insert({
+      user_id:userId, type:'daily_task',
+      description:'Daily reward: Audio listen', amount:EARN_AMT, created_at:now
+    });
+    const {data:w} = await _supabase.from('wallets')
+      .select('task_earnings').eq('user_id',userId).maybeSingle();
+    await _supabase.from('wallets').upsert({
+      user_id:userId,
+      task_earnings:(w?.task_earnings||0)+EARN_AMT,
+      updated_at:now
+    },{onConflict:'user_id'});
+
+    claimed=true;
+    toast('\ud83c\udf89 \u20a6'+EARN_AMT.toLocaleString()+' added to your wallet!','success');
+    showDone(now);
+
+  } catch(err){
+    console.error(err);
+    btn.disabled=false;
+    btn.classList.add('ready');
+    btn.textContent='\ud83c\udf89 Claim \u20a6500 Reward Now!';
+    toast('Something went wrong. Try again.','error');
+  }
+});
+
+// ═══════════════════════════════════════════
+// DONE STATE
+// ═══════════════════════════════════════════
 function showDone(completedAt){
-    taskDone = true;
-    stopTimer();
-    document.getElementById('listenRow').style.display='none';
+  taskDone=true;
+  stopListenTimer();
+  stopProgressLoop();
+  if(ytReady) ytPlayer.pauseVideo();
+  document.getElementById('listenCard').style.display='none';
 
-    const unlock = new Date(completedAt).getTime()+86400000;
-    const panel  = document.getElementById('earnPanel');
+  const unlock = new Date(completedAt).getTime()+86400000;
+  const panel  = document.getElementById('earnPanel');
 
-    function tick(){
-        const diff = Math.max(0,Math.floor((unlock-Date.now())/1000));
-        const h=String(Math.floor(diff/3600)).padStart(2,'0');
-        const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
-        const s=String(diff%60).padStart(2,'0');
-        panel.innerHTML=`
-            <div class="done-card">
-                <div class="done-icon">\u2705</div>
-                <div class="done-title">Completed!</div>
-                <div class="done-sub">You earned ${fmtMoney(EARN_AMOUNT)} for today's audio task.</div>
-                <div class="cd-box">
-                    <div class="cd-label">\u23f1 Next audio task unlocks in</div>
-                    <div class="cd-val" id="cdVal">${diff===0?'Ready now!':h+':'+m+':'+s}</div>
-                </div>
-                <a href="earn.html" class="back-earn-link">\u2190 Back to Earn</a>
-            </div>`;
-        if(diff>0) setTimeout(()=>{ if(document.getElementById('cdVal')) tick(); },1000);
-    }
-    tick();
+  function tick(){
+    const diff=Math.max(0,Math.floor((unlock-Date.now())/1000));
+    const h=String(Math.floor(diff/3600)).padStart(2,'0');
+    const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
+    const s=String(diff%60).padStart(2,'0');
+    panel.innerHTML=`
+      <div class="done-wrap">
+        <div class="done-emoji">\u2705</div>
+        <div class="done-title">Completed!</div>
+        <div class="done-sub">You earned \u20a6${EARN_AMT.toLocaleString()}.00 for today's audio task.</div>
+        <div class="cd-box">
+          <div class="cd-lbl">\u23f1 Next audio task unlocks in</div>
+          <div class="cd-val" id="cdVal">${diff===0?'Ready now!':h+':'+m+':'+s}</div>
+        </div>
+        <a href="earn.html" class="back-earn-btn"><i class="fas fa-arrow-left"></i> Back to Earn</a>
+      </div>`;
+    if(diff>0) setTimeout(()=>{ if(document.getElementById('cdVal')) tick(); },1000);
+  }
+  tick();
 }
 
-// =========================================================
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function fmtTime(s){
+  if(!s||isNaN(s)) return '0:00';
+  return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);
+}
+function getDayIndex(){
+  const n=new Date(),st=new Date(n.getFullYear(),0,0);
+  return Math.floor((n-st)/86400000)%20;
+}
+function toast(msg,type='ok'){
+  const box=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className='toast '+(type==='success'?'success':type==='error'?'error':'');
+  el.textContent=msg;
+  box.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.4s';setTimeout(()=>el.remove(),400);},4500);
+}
+
+// ═══════════════════════════════════════════
 // INIT
-// =========================================================
+// ═══════════════════════════════════════════
 async function init(){
-    const idx = getDayIndex();
-    document.getElementById('dayPill').textContent = 'Day '+(idx+1);
-    document.getElementById('dayText').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const idx=getDayIndex();
+  document.getElementById('dayPill').textContent='Day '+(idx+1);
+  document.getElementById('dayText').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
-    // Build tracklist
-    const list = document.getElementById('tracklist');
-    TRACKS.forEach((t,i)=>{
-        const el = document.createElement('div');
-        el.className = 'track-item'+(i===idx?' active':'');
-        el.innerHTML=`
-            <div class="t-num">${i===idx?'<i class="fas fa-headphones" style="font-size:11px;"></i>':i+1}</div>
-            <div class="t-info">
-                <div class="t-name">${t.song}</div>
-                <div class="t-artist">${t.artist}</div>
-            </div>
-            ${i===idx?'<span class="t-today">TODAY</span>':''}
-        `;
-        el.addEventListener('click',()=> loadTrack(i));
-        list.appendChild(el);
+  // Build tracklist
+  const list=document.getElementById('tracklist');
+  TRACKS.forEach((t,i)=>{
+    const el=document.createElement('div');
+    el.className='track-row'+(i===idx?' active':'');
+    el.innerHTML=`
+      <div class="t-num-box">${i===idx?'<i class="fas fa-headphones" style="font-size:11px;"></i>':i+1}</div>
+      <div class="t-info-col">
+        <div class="t-name">${t.song}</div>
+        <div class="t-art">${t.artist}</div>
+      </div>
+      ${i===idx?'<span class="t-today-tag">TODAY</span>':''}
+    `;
+    el.addEventListener('click',()=>{
+      loadTrack(i, true);
     });
+    list.appendChild(el);
+  });
 
-    // Load today's track
-    loadTrack(idx);
+  // Pre-load today's track (no autoplay — mobile requires gesture)
+  currentIdx=idx;
+  loadTrack(idx, false);
 
-    // Auth & check if already completed today
-    try {
-        const result = await requireAuth('approved');
-        if(!result) return;
-        currentUserId = result.profile.id;
+  // Auth + check completion
+  try {
+    const result=await requireAuth('approved');
+    if(!result) return;
+    userId=result.profile.id;
 
-        const since = new Date(Date.now()-86400000).toISOString();
-        const {data:done} = await _supabase.from('daily_completions').select('created_at')
-            .eq('user_id',currentUserId).eq('task_type','daily_audio')
-            .gte('created_at',since).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    const since=new Date(Date.now()-86400000).toISOString();
+    const {data:done}=await _supabase.from('daily_completions').select('created_at')
+      .eq('user_id',userId).eq('task_type','daily_audio')
+      .gte('created_at',since).order('created_at',{ascending:false}).limit(1).maybeSingle();
 
-        if(done) showDone(done.created_at);
-
-    } catch(e){ console.error('Auth:',e); }
+    if(done) showDone(done.created_at);
+  } catch(e){ console.error('Auth:',e); }
 }
 
 init();
