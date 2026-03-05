@@ -3,214 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio – FW</title>
+    <title>Daily Audio – Earn N500</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%; height: 100%;
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0e1a;
-            color: #ffffff;
-            overflow-x: hidden;
-        }
-        .container {
-            width: 100%; max-width: 480px;
-            margin: 0 auto;
-            background-color: #0a0e1a;
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body { font-family:'Inter',sans-serif; background:#0a0e1a; color:#fff; min-height:100vh; overflow-x:hidden; }
+        .container { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
 
-        /* TOP NAV */
         .top-nav {
-            position: fixed; top: 0; left: 0; right: 0;
-            max-width: 480px; margin: 0 auto; width: 100%;
-            height: 60px;
-            background: rgba(10,14,26,0.95);
-            backdrop-filter: blur(12px);
-            display: flex; align-items: center;
-            padding: 0 16px; gap: 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            z-index: 100;
+            position:fixed; top:0; left:50%; transform:translateX(-50%);
+            width:100%; max-width:480px; height:60px;
+            background:rgba(10,14,26,0.97); backdrop-filter:blur(12px);
+            display:flex; align-items:center; padding:0 16px; gap:14px;
+            border-bottom:1px solid rgba(255,255,255,0.08); z-index:100;
         }
-        .back-btn {
-            background: rgba(255,255,255,0.1);
-            border: none; color: #fff;
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 16px;
-            transition: background 0.2s;
-            text-decoration: none;
-        }
-        .back-btn:hover { background: rgba(255,255,255,0.2); }
-        .nav-title { font-size: 17px; font-weight: 700; flex: 1; }
-        .nav-badge {
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            color: #fff; font-size: 11px; font-weight: 700;
-            padding: 4px 10px; border-radius: 20px;
-        }
+        .back-btn { background:rgba(255,255,255,0.1); border:none; color:#fff; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; text-decoration:none; }
+        .nav-title { font-size:17px; font-weight:700; flex:1; }
+        .nav-badge { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
 
-        /* MAIN */
-        .main-content {
-            margin-top: 60px;
-            padding: 20px 16px 100px;
-            flex: 1;
-        }
+        .main-content { margin-top:60px; padding:20px 16px 100px; flex:1; }
 
-        /* DAY LABEL */
-        .day-label {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 20px;
-        }
-        .day-pill {
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            color: #fff; font-size: 12px; font-weight: 700;
-            padding: 5px 14px; border-radius: 20px;
-        }
-        .day-text { font-size: 13px; color: rgba(255,255,255,0.5); }
+        .day-label { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+        .day-pill { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; font-size:12px; font-weight:700; padding:5px 14px; border-radius:20px; }
+        .day-text { font-size:13px; color:rgba(255,255,255,0.5); }
 
-        /* NOW PLAYING CARD */
-        .now-playing-card {
-            background: linear-gradient(135deg, #1a1040 0%, #150d35 100%);
-            border-radius: 24px;
-            padding: 24px 20px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 12px 40px rgba(139,92,246,0.2);
-            border: 1px solid rgba(139,92,246,0.2);
-            position: relative;
-            overflow: hidden;
+        .player-card {
+            background:linear-gradient(135deg,#1a1040 0%,#150d35 100%);
+            border-radius:24px; padding:24px 20px 20px; margin-bottom:16px;
+            box-shadow:0 12px 40px rgba(139,92,246,0.25);
+            border:1px solid rgba(139,92,246,0.25); position:relative; overflow:hidden;
         }
-        .now-playing-card::before {
-            content: '';
-            position: absolute; top: -40px; right: -40px;
-            width: 160px; height: 160px;
-            background: radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .np-label {
-            font-size: 11px; font-weight: 700;
-            color: #a78bfa; text-transform: uppercase;
-            letter-spacing: 1.5px; margin-bottom: 14px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .np-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #a78bfa;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%,100% { opacity:1; transform:scale(1); }
-            50% { opacity:0.5; transform:scale(0.8); }
-        }
-        .np-artist { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-        .np-song { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+        .player-card::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:radial-gradient(circle,rgba(139,92,246,0.3) 0%,transparent 70%); border-radius:50%; }
+        .np-label { font-size:11px; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+        .np-dot { width:8px; height:8px; border-radius:50%; background:#a78bfa; animation:pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
 
-        /* AUDIOMACK EMBED */
-        .audio-embed {
-            width: 100%; border-radius: 14px;
-            overflow: hidden; background: #1a1a2e;
-            min-height: 200px;
-        }
-        .audio-embed iframe {
-            width: 100%; border: none; display: block;
-            border-radius: 14px;
-        }
+        .album-art { width:100%; height:170px; background:linear-gradient(135deg,#2d1b69,#1a0a4a); border-radius:16px; margin-bottom:18px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+        .album-disc { width:120px; height:120px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9,#4c1d95); display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(139,92,246,0.5); transition:all 0.3s; }
+        .album-disc.spinning { animation:spin 3s linear infinite; }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        .album-disc i { font-size:38px; color:rgba(255,255,255,0.9); }
+        .disc-center { position:absolute; width:22px; height:22px; border-radius:50%; background:#0a0e1a; }
 
-        /* RECYCLE NOTICE */
-        .recycle-notice {
-            background: rgba(139,92,246,0.1);
-            border: 1px solid rgba(139,92,246,0.25);
-            border-radius: 14px;
-            padding: 14px 16px;
-            display: flex; align-items: center; gap: 12px;
-            margin-bottom: 20px;
-        }
-        .recycle-icon { font-size: 22px; }
-        .recycle-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
-        .recycle-text strong { color: #fff; }
+        .track-title { font-size:20px; font-weight:800; margin-bottom:4px; }
+        .track-sub { font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:20px; }
+
+        .progress-wrap { margin-bottom:14px; }
+        .prog-bg { width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:5px; cursor:pointer; position:relative; }
+        .prog-fill { height:100%; background:linear-gradient(90deg,#8b5cf6,#a78bfa); border-radius:5px; width:0%; transition:width 0.5s linear; position:relative; }
+        .prog-fill::after { content:''; position:absolute; right:-6px; top:-4px; width:13px; height:13px; border-radius:50%; background:#a78bfa; box-shadow:0 0 8px rgba(167,139,250,0.7); }
+        .prog-times { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-top:8px; }
+
+        .controls { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:16px; }
+        .ctrl-btn { background:none; border:none; color:rgba(255,255,255,0.5); font-size:20px; cursor:pointer; width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all 0.2s; }
+        .ctrl-btn:hover { color:#fff; background:rgba(255,255,255,0.08); }
+        .play-btn { width:62px; height:62px; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 24px rgba(139,92,246,0.5); transition:all 0.2s; }
+        .play-btn:hover { transform:scale(1.06); }
+        .play-btn:active { transform:scale(0.96); }
+
+        .vol-row { display:flex; align-items:center; gap:10px; }
+        .vol-row i { color:rgba(255,255,255,0.4); font-size:13px; }
+        .vol-slider { flex:1; -webkit-appearance:none; height:4px; border-radius:4px; background:rgba(255,255,255,0.15); outline:none; cursor:pointer; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#8b5cf6; cursor:pointer; }
+
+        /* LISTEN RING */
+        .listen-row { display:flex; align-items:center; gap:14px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.2); border-radius:14px; padding:14px 16px; margin-bottom:16px; }
+        .ring-wrap { position:relative; width:50px; height:50px; flex-shrink:0; }
+        .ring-wrap svg { transform:rotate(-90deg); }
+        .r-bg { fill:none; stroke:rgba(139,92,246,0.2); stroke-width:4; }
+        .r-fill { fill:none; stroke:#8b5cf6; stroke-width:4; stroke-linecap:round; stroke-dasharray:138; stroke-dashoffset:138; transition:stroke-dashoffset 0.8s linear; }
+        .ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:800; color:#a78bfa; white-space:nowrap; }
+        .listen-text-title { font-size:13px; font-weight:700; margin-bottom:3px; }
+        .listen-text-sub { font-size:11px; color:rgba(255,255,255,0.4); }
+
+        /* EARN PANEL */
+        .earn-panel { background:linear-gradient(135deg,#1a1040,#150d35); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(139,92,246,0.3); }
+        .earn-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+        .earn-label { font-size:13px; font-weight:700; }
+        .earn-label-sub { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .earn-amount { font-size:22px; font-weight:800; color:#a78bfa; }
+
+        .claim-btn { width:100%; padding:15px; background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.3); border:none; border-radius:12px; font-size:14px; font-weight:600; cursor:not-allowed; font-family:inherit; transition:all 0.4s; }
+        .claim-btn.ready { background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; cursor:pointer; box-shadow:0 6px 20px rgba(139,92,246,0.4); animation:glow 2s ease-in-out infinite; }
+        @keyframes glow { 0%,100%{box-shadow:0 6px 20px rgba(139,92,246,0.4);} 50%{box-shadow:0 6px 30px rgba(139,92,246,0.7);} }
+
+        /* DONE STATE */
+        .done-card { text-align:center; }
+        .done-icon { font-size:40px; margin-bottom:10px; }
+        .done-title { font-size:18px; font-weight:800; color:#a78bfa; margin-bottom:6px; }
+        .done-sub { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:16px; }
+        .cd-box { background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.25); border-radius:12px; padding:14px; margin-bottom:14px; }
+        .cd-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:4px; }
+        .cd-val { font-size:26px; font-weight:800; color:#a78bfa; font-variant-numeric:tabular-nums; }
+        .back-btn-earn { display:block; background:rgba(255,255,255,0.07); color:#fff; border-radius:10px; padding:12px; font-size:13px; font-weight:600; text-decoration:none; text-align:center; }
+
+        /* RECYCLE */
+        .recycle-notice { background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+        .recycle-text { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5; }
+        .recycle-text strong { color:#fff; }
 
         /* TRACKLIST */
-        .section-title {
-            font-size: 14px; font-weight: 700;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase; letter-spacing: 1px;
-            margin-bottom: 14px;
-        }
-        .tracklist { display: flex; flex-direction: column; gap: 10px; }
-        .track-item {
-            background: rgba(255,255,255,0.04);
-            border-radius: 14px;
-            padding: 14px 16px;
-            display: flex; align-items: center; gap: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1.5px solid transparent;
-        }
-        .track-item:hover, .track-item.active {
-            background: rgba(139,92,246,0.12);
-            border-color: #8b5cf6;
-        }
-        .track-num {
-            width: 30px; height: 30px; border-radius: 50%;
-            background: rgba(255,255,255,0.08);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700;
-            color: rgba(255,255,255,0.5); flex-shrink: 0;
-        }
-        .track-item.active .track-num { background: #8b5cf6; color: #fff; }
-        .track-item.active .track-num i { display: block; }
-        .track-info { flex: 1; min-width: 0; }
-        .track-name {
-            font-size: 13px; font-weight: 600;
-            color: #fff; margin-bottom: 3px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .track-artist { font-size: 11px; color: rgba(255,255,255,0.4); }
-        .track-today {
-            font-size: 10px; font-weight: 700;
-            background: #8b5cf6; color: #fff;
-            padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
-        }
+        .section-title { font-size:13px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+        .tracklist { display:flex; flex-direction:column; gap:8px; }
+        .track-item { background:rgba(255,255,255,0.04); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all 0.2s; border:1.5px solid transparent; }
+        .track-item:hover { background:rgba(139,92,246,0.1); border-color:rgba(139,92,246,0.3); }
+        .track-item.active { background:rgba(139,92,246,0.15); border-color:#8b5cf6; }
+        .t-num { width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:rgba(255,255,255,0.4); flex-shrink:0; }
+        .track-item.active .t-num { background:#8b5cf6; color:#fff; }
+        .t-info { flex:1; min-width:0; }
+        .t-name { font-size:13px; font-weight:600; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .t-artist { font-size:11px; color:rgba(255,255,255,0.4); }
+        .t-today { font-size:10px; font-weight:700; background:#8b5cf6; color:#fff; padding:2px 8px; border-radius:10px; flex-shrink:0; }
 
         /* BOTTOM NAV */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            max-width: 480px; margin: 0 auto;
-            height: 72px;
-            background: rgba(10,14,26,0.97);
-            backdrop-filter: blur(12px);
-            display: flex; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            z-index: 100;
-        }
-        .nav-item {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 4px; text-decoration: none;
-            color: rgba(255,255,255,0.4);
-            font-size: 10px; font-weight: 500;
-            transition: color 0.2s; padding: 8px 0;
-        }
-        .nav-item.active { color: #8b5cf6; }
-        .nav-icon { font-size: 20px; }
+        .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; height:72px; background:rgba(10,14,26,0.97); backdrop-filter:blur(12px); display:flex; align-items:center; border-top:1px solid rgba(255,255,255,0.08); z-index:100; }
+        .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-decoration:none; color:rgba(255,255,255,0.35); font-size:10px; font-weight:500; transition:color 0.2s; padding:8px 0; }
+        .nav-item.active { color:#8b5cf6; }
+        .nav-item i { font-size:20px; }
+
+        /* TOAST */
+        #toastBox { position:fixed; top:70px; right:14px; z-index:9999; max-width:300px; }
+        .t-toast { background:#1a1040; color:#fff; border-left:4px solid #8b5cf6; border-radius:10px; padding:12px 16px; margin-bottom:10px; font-size:13px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.5); transition:opacity 0.3s; }
+        .t-toast.err { border-color:#ef4444; }
     </style>
 </head>
 <body>
+<div id="toastBox"></div>
 <div class="container">
 
-    <!-- TOP NAV -->
     <nav class="top-nav">
-        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <div class="nav-title">🎵 Daily Audio</div>
-        <span class="nav-badge">EARN ₦500</span>
+        <a href="earn.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="nav-title">&#127925; Daily Audio</div>
+        <span class="nav-badge">EARN &#8358;500</span>
     </nav>
 
-    <!-- MAIN -->
     <div class="main-content">
 
         <div class="day-label">
@@ -218,22 +146,81 @@
             <span class="day-text" id="dayText">Today's featured track</span>
         </div>
 
-        <!-- NOW PLAYING CARD -->
-        <div class="now-playing-card">
+        <!-- PLAYER CARD -->
+        <div class="player-card">
             <div class="np-label"><span class="np-dot"></span> Now Playing</div>
-            <div class="np-artist" id="npArtist">Loading…</div>
-            <div class="np-song" id="npSong"></div>
-            <div class="audio-embed" id="audioEmbed">
-                <iframe id="audioFrame" src="" height="200" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:14px;"></iframe>
+
+            <div class="album-art">
+                <div class="album-disc" id="albumDisc">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="disc-center"></div>
             </div>
+
+            <div class="track-title" id="npSong">Tap a track to start</div>
+            <div class="track-sub" id="npArtist">Select from playlist below</div>
+
+            <!-- NATIVE AUDIO ELEMENT — plays directly, no iframe needed -->
+            <audio id="audioEl" preload="metadata"></audio>
+
+            <div class="progress-wrap">
+                <div class="prog-bg" id="progBg">
+                    <div class="prog-fill" id="progFill"></div>
+                </div>
+                <div class="prog-times">
+                    <span id="curTime">0:00</span>
+                    <span id="totTime">0:00</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="ctrl-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                <button class="play-btn" id="playBtn"><i class="fas fa-play" id="playIcon"></i></button>
+                <button class="ctrl-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+            </div>
+
+            <div class="vol-row">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.01" value="1">
+                <i class="fas fa-volume-up"></i>
+            </div>
+        </div>
+
+        <!-- LISTEN RING PROGRESS -->
+        <div class="listen-row" id="listenRow">
+            <div class="ring-wrap">
+                <svg width="50" height="50" viewBox="0 0 50 50">
+                    <circle class="r-bg" cx="25" cy="25" r="22"/>
+                    <circle class="r-fill" id="rFill" cx="25" cy="25" r="22"/>
+                </svg>
+                <div class="ring-center" id="ringCenter">0s</div>
+            </div>
+            <div>
+                <div class="listen-text-title" id="listenTitle">&#9201; Press play to start earning</div>
+                <div class="listen-text-sub" id="listenSub">Listen for 60 seconds to unlock your &#8358;500 reward</div>
+            </div>
+        </div>
+
+        <!-- EARN PANEL -->
+        <div class="earn-panel" id="earnPanel">
+            <div class="earn-header">
+                <div>
+                    <div class="earn-label">&#127925; Listen &amp; Earn</div>
+                    <div class="earn-label-sub">60 seconds of listening required</div>
+                </div>
+                <div class="earn-amount">&#8358;500</div>
+            </div>
+            <button class="claim-btn" id="claimBtn" disabled>
+                &#9203; Listen for 60s to unlock reward&hellip;
+            </button>
         </div>
 
         <!-- RECYCLE NOTICE -->
         <div class="recycle-notice">
-            <span class="recycle-icon">🔄</span>
+            <span style="font-size:22px;">&#128260;</span>
             <div class="recycle-text">
                 <strong>Daily Rotation Active</strong><br>
-                New track every day. After 20 days, the playlist recycles automatically.
+                New track every day. After 20 days, playlist recycles automatically.
             </div>
         </div>
 
@@ -243,299 +230,337 @@
 
     </div>
 
-    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
-            <span>Home</span>
-        </a>
-        <a href="wish-hub.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-star"></i></div>
-            <span>Wish Hub</span>
-        </a>
-        <a href="earn.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-coins"></i></div>
-            <span>Earn</span>
-        </a>
-        <a href="video.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-play"></i></div>
-            <span>Video</span>
-        </a>
-        <a href="audio.html" class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-headphones"></i></div>
-            <span>Audio</span>
-        </a>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="wish-hub.html" class="nav-item"><i class="fas fa-star"></i><span>Wish Hub</span></a>
+        <a href="earn.html" class="nav-item"><i class="fas fa-coins"></i><span>Earn</span></a>
+        <a href="video.html" class="nav-item"><i class="fas fa-play"></i><span>Video</span></a>
+        <a href="audio.html" class="nav-item active"><i class="fas fa-headphones"></i><span>Audio</span></a>
     </nav>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-    // YouTube video IDs — embeds work everywhere, no blocking
-    const TRACKS = [
-        { artist: 'Wizkid',         song: 'Essence ft. Tems',              vid: 'WcLJZAkmI9o' },
-        { artist: 'Rema',           song: 'Calm Down',                     vid: 'Os6gLKIaWaY' },
-        { artist: 'Burna Boy',      song: 'Last Last',                     vid: 'hJN7fxMNRO0' },
-        { artist: 'Asake',          song: 'Organise',                      vid: 'xYlPbkSzFZI' },
-        { artist: 'Davido',         song: 'Stand Strong ft. Mavins',       vid: '3gLIE0QBKQM' },
-        { artist: 'Fireboy DML',    song: 'Peru',                          vid: 'g6aQeF6ZJXI' },
-        { artist: 'Omah Lay',       song: 'Understand',                    vid: 'X4KCf-i5lu0' },
-        { artist: 'Ckay',           song: 'Love Nwantiti',                 vid: '6JqEJMnbyW4' },
-        { artist: 'Ayra Starr',     song: '19 & Dangerous',                vid: 'cbqG5RRqkXs' },
-        { artist: 'Kizz Daniel',    song: 'Buga ft. Tekno',                vid: 'O_Fy58e9T3M' },
-        { artist: 'Tems',           song: 'Free Mind',                     vid: 'jBQKSy3Ee2U' },
-        { artist: 'Zinoleesky',     song: 'Loving You',                    vid: 'GCxaHnVe-PM' },
-        { artist: 'Portable',       song: 'Zazu Zeh',                      vid: 'aPZElrXFbKY' },
-        { artist: 'Olamide',        song: 'Infinity ft. Omah Lay',         vid: 'hiqn-Dmhyps' },
-        { artist: 'Joeboy',         song: 'Alcohol',                       vid: 'xoT1hWTTlgw' },
-        { artist: 'Tiwa Savage',    song: 'Somebody's Son',               vid: 'jExQxU3s-W4' },
-        { artist: 'Simi',           song: 'Duduke',                        vid: 'kNNwPGBg0GE' },
-        { artist: 'Flavour',        song: 'Shake',                         vid: 'FalCvvbJuMk' },
-        { artist: 'Pheelz',         song: 'Finesse ft. BNXN',              vid: 'M8AuvuuOhxA' },
-        { artist: 'BNXN',           song: 'Gwara Gwara',                   vid: 'NpZlVCcPVbQ' },
-    ];
+// =========================================================
+// TRACKS — Direct MP3 sources, no iframe needed, no DRM
+// SoundHelix = royalty-free music that always works
+// Replace these src URLs anytime with your own MP3 links
+// =========================================================
+const TRACKS = [
+    { artist:'Wizkid ft. Tems',  song:'Afrobeat Special 1',    src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'  },
+    { artist:'Rema',             song:'Calm Vibes',             src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'  },
+    { artist:'Burna Boy',        song:'African Giant Beat',     src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'  },
+    { artist:'Asake',            song:'Street Energy',          src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'  },
+    { artist:'Davido',           song:'Feel The Music',         src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'  },
+    { artist:'Fireboy DML',      song:'Afro Rhythm',            src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'  },
+    { artist:'Omah Lay',         song:'City Nights',            src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'  },
+    { artist:'Ckay',             song:'Lagos Love',             src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'  },
+    { artist:'Ayra Starr',       song:'Shine On',               src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'  },
+    { artist:'Kizz Daniel',      song:'Afrobeat Banger',        src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3' },
+    { artist:'Tems',             song:'Soul Journey',           src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3' },
+    { artist:'Zinoleesky',       song:'Naija Sound',            src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3' },
+    { artist:'Olamide',          song:'Street Anthem',          src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3' },
+    { artist:'Joeboy',           song:'Smooth Feels',           src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3' },
+    { artist:'Tiwa Savage',      song:'Afro Queen',             src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3' },
+    { artist:'Simi',             song:'Heart Song',             src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3' },
+    { artist:'Pheelz',           song:'Vibe Check',             src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'  },
+    { artist:'BNXN',             song:'Lagos Nights',           src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'  },
+    { artist:'Portable',         song:'Street Flex',            src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'  },
+    { artist:'Flavour',          song:'Afro Classic',           src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'  },
+];
 
-    const AUDIO_EARN_AMOUNT = 500;
-    const LISTEN_REQUIRED_SECONDS = 60; // 60s listening required before claim enables
-    let currentUserId = null;
-    let taskAlreadyDone = false;
-    let listenTimer = null;
-    let listenSeconds = 0;
-    let listenStarted = false;
+// =========================================================
+// CONFIG
+// =========================================================
+const REQUIRED_SEC  = 60;
+const EARN_AMOUNT   = 500;
+const CIRCUMFERENCE = 138; // 2 * Math.PI * 22
 
-    function todayStr() { return new Date().toISOString().slice(0,10); }
-    function fmt(n) { return '₦' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+// =========================================================
+// STATE
+// =========================================================
+let currentIdx    = 0;
+let currentUserId = null;
+let taskDone      = false;
+let claimed       = false;
+let isPlaying     = false;
+let listenSecs    = 0;
+let listenTimer   = null;
 
-    function showToast(msg, type='success') {
-        let c = document.getElementById('audioToastContainer');
-        if(!c) {
-            c = document.createElement('div');
-            c.id = 'audioToastContainer';
-            c.style.cssText = 'position:fixed;top:70px;right:14px;z-index:9999;max-width:300px;';
-            document.body.appendChild(c);
+// =========================================================
+// DOM REFS
+// =========================================================
+const audioEl   = document.getElementById('audioEl');
+const playBtn   = document.getElementById('playBtn');
+const playIcon  = document.getElementById('playIcon');
+const albumDisc = document.getElementById('albumDisc');
+const claimBtn  = document.getElementById('claimBtn');
+const rFill     = document.getElementById('rFill');
+const ringCenter= document.getElementById('ringCenter');
+
+// =========================================================
+// UTILS
+// =========================================================
+function fmtMoney(n){ return '\u20a6'+Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2}); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtTime(s){
+    if(!s||isNaN(s)) return '0:00';
+    const m=Math.floor(s/60), sec=Math.floor(s%60);
+    return m+':'+(sec<10?'0':'')+sec;
+}
+function getDayIndex(){
+    const now=new Date(), start=new Date(now.getFullYear(),0,0);
+    return Math.floor((now-start)/86400000)%20;
+}
+function toast(msg,type='ok'){
+    const box=document.getElementById('toastBox');
+    const el=document.createElement('div');
+    el.className='t-toast'+(type==='err'?' err':'');
+    el.textContent=msg;
+    box.appendChild(el);
+    setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},4000);
+}
+
+// =========================================================
+// LOAD TRACK
+// =========================================================
+function loadTrack(idx, play=false){
+    currentIdx=idx;
+    const t=TRACKS[idx];
+    document.getElementById('npSong').textContent   = t.song;
+    document.getElementById('npArtist').textContent = t.artist;
+    audioEl.src = t.src;
+    audioEl.load();
+    if(play) audioEl.play().catch(()=>{});
+
+    document.querySelectorAll('.track-item').forEach((el,i)=>{
+        el.classList.toggle('active',i===idx);
+        el.querySelector('.t-num').innerHTML = i===idx
+            ? '<i class="fas fa-volume-up" style="font-size:11px;"></i>'
+            : String(i+1);
+    });
+}
+
+// =========================================================
+// AUDIO EVENTS
+// =========================================================
+audioEl.addEventListener('play',()=>{
+    isPlaying=true;
+    playIcon.className='fas fa-pause';
+    albumDisc.classList.add('spinning');
+    startListenTimer();
+});
+audioEl.addEventListener('pause',()=>{
+    isPlaying=false;
+    playIcon.className='fas fa-play';
+    albumDisc.classList.remove('spinning');
+    stopListenTimer();
+});
+audioEl.addEventListener('ended',()=>{
+    loadTrack((currentIdx+1)%TRACKS.length, true);
+});
+audioEl.addEventListener('timeupdate',()=>{
+    const pct=audioEl.duration?(audioEl.currentTime/audioEl.duration)*100:0;
+    document.getElementById('progFill').style.width=pct+'%';
+    document.getElementById('curTime').textContent=fmtTime(audioEl.currentTime);
+    document.getElementById('totTime').textContent=fmtTime(audioEl.duration);
+});
+audioEl.addEventListener('error',()=>{
+    toast('Track loading... trying next','err');
+    setTimeout(()=>loadTrack((currentIdx+1)%TRACKS.length,isPlaying),1500);
+});
+
+// Progress bar seek
+document.getElementById('progBg').addEventListener('click',e=>{
+    if(!audioEl.duration) return;
+    const r=e.currentTarget.getBoundingClientRect();
+    audioEl.currentTime=((e.clientX-r.left)/r.width)*audioEl.duration;
+});
+
+// Volume
+document.getElementById('volSlider').addEventListener('input',e=>{
+    audioEl.volume=parseFloat(e.target.value);
+});
+
+// Controls
+playBtn.addEventListener('click',()=>{
+    if(audioEl.src && audioEl.src!==window.location.href){
+        audioEl.paused ? audioEl.play().catch(()=>toast('Tap play again','err')) : audioEl.pause();
+    } else {
+        loadTrack(currentIdx,true);
+    }
+});
+document.getElementById('prevBtn').addEventListener('click',()=>loadTrack((currentIdx-1+TRACKS.length)%TRACKS.length,isPlaying));
+document.getElementById('nextBtn').addEventListener('click',()=>loadTrack((currentIdx+1)%TRACKS.length,isPlaying));
+
+// =========================================================
+// LISTEN TIMER — only counts while audio is ACTUALLY playing
+// Users cannot cheat by leaving the page open without playing
+// =========================================================
+function startListenTimer(){
+    if(listenTimer||taskDone||claimed) return;
+    listenTimer=setInterval(()=>{
+        listenSecs++;
+        updateRing();
+        if(listenSecs>=REQUIRED_SEC){
+            stopListenTimer();
+            unlockClaim();
         }
-        const t = document.createElement('div');
-        const color = type==='success' ? '#8b5cf6' : '#ef4444';
-        t.style.cssText = `background:#1a1040;color:#fff;border-left:4px solid ${color};border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.5);`;
-        t.textContent = msg;
-        c.appendChild(t);
-        setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 4000);
+    },1000);
+}
+function stopListenTimer(){
+    if(listenTimer){clearInterval(listenTimer);listenTimer=null;}
+}
+function updateRing(){
+    const pct=Math.min(listenSecs/REQUIRED_SEC,1);
+    rFill.style.strokeDashoffset=CIRCUMFERENCE-(pct*CIRCUMFERENCE);
+    const rem=Math.max(0,REQUIRED_SEC-listenSecs);
+    if(listenSecs<REQUIRED_SEC){
+        ringCenter.textContent=rem+'s';
+        document.getElementById('listenTitle').textContent='\u23f1 '+rem+'s remaining';
+        document.getElementById('listenSub').textContent='Keep listening — reward unlocks soon!';
+    } else {
+        ringCenter.textContent='\u2713';
+        document.getElementById('listenTitle').textContent='\u2705 Listening complete!';
+        document.getElementById('listenSub').textContent='Claim your \u20a6500 reward below';
+        rFill.style.stroke='#22c55e';
     }
+}
+function unlockClaim(){
+    if(taskDone||claimed) return;
+    claimBtn.disabled=false;
+    claimBtn.classList.add('ready');
+    claimBtn.textContent='\u2705 Claim \u20a6500 Reward Now!';
+    toast('\ud83c\udf89 60 seconds reached! Claim your reward!');
+}
 
-    function getDayIndex() {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), 0, 0);
-        const dayOfYear = Math.floor((now - start) / 86400000);
-        return dayOfYear % 20;
-    }
+// =========================================================
+// CLAIM
+// =========================================================
+claimBtn.addEventListener('click', async()=>{
+    if(claimBtn.disabled||claimed) return;
+    claimBtn.disabled=true;
+    claimBtn.textContent='\u23f3 Processing\u2026';
 
-    function getEmbedUrl(track) {
-        // YouTube embed — works everywhere, no iframe blocking
-        return `https://www.youtube.com/embed/${track.vid}?autoplay=0&rel=0&modestbranding=1`;
-    }
+    try {
+        const since=new Date(Date.now()-86400000).toISOString();
+        const {data:ex}=await _supabase.from('daily_completions').select('id')
+            .eq('user_id',currentUserId).eq('task_type','daily_audio')
+            .gte('created_at',since).maybeSingle();
+        if(ex){ showDone(ex.created_at||new Date().toISOString()); return; }
 
-    function startListenTimer() {
-        if(listenTimer || taskAlreadyDone) return;
-        listenStarted = true;
-        listenTimer = setInterval(() => {
-            listenSeconds++;
-            updateClaimButton();
-        }, 1000);
-    }
-
-    function updateClaimButton() {
-        const btn = document.getElementById('audioClaimBtn');
-        if(!btn || taskAlreadyDone) return;
-        const remaining = Math.max(0, LISTEN_REQUIRED_SECONDS - listenSeconds);
-        if(remaining > 0) {
-            btn.textContent = `⏳ Listen for ${remaining}s more to claim...`;
-            btn.disabled = true;
-        } else {
-            btn.textContent = `✅ Completed — Claim ${fmt(AUDIO_EARN_AMOUNT)}`;
-            btn.disabled = false;
-            btn.style.background = 'linear-gradient(135deg,#8b5cf6,#6d28d9)';
-            btn.style.cursor = 'pointer';
-            if(listenTimer) { clearInterval(listenTimer); listenTimer = null; }
-        }
-    }
-
-    function showEarnPanel(alreadyDone, completedAt) {
-        let panel = document.getElementById('earnPanel');
-        if(!panel) {
-            panel = document.createElement('div');
-            panel.id = 'earnPanel';
-            panel.style.cssText = 'background:linear-gradient(135deg,#1a1040,#150d35);border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid rgba(139,92,246,0.3);';
-            // Insert after now-playing card
-            const nowPlaying = document.querySelector('.now-playing-card');
-            nowPlaying.parentNode.insertBefore(panel, nowPlaying.nextSibling);
-        }
-
-        if(alreadyDone) {
-            taskAlreadyDone = true;
-            const completedTime = new Date(completedAt).getTime();
-            const unlockTime = completedTime + 86400000;
-
-            function renderCooldown() {
-                const diff = Math.max(0, Math.floor((unlockTime - Date.now()) / 1000));
-                const h = String(Math.floor(diff/3600)).padStart(2,'0');
-                const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
-                const s = String(diff%60).padStart(2,'0');
-                panel.innerHTML = `
-                    <div style="text-align:center;">
-                        <div style="font-size:32px;margin-bottom:8px;">✅</div>
-                        <div style="font-size:16px;font-weight:700;color:#a78bfa;margin-bottom:6px;">Completed!</div>
-                        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:14px;">You earned ${fmt(AUDIO_EARN_AMOUNT)} for listening today.</div>
-                        <div style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px;">
-                            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;">⏱ Next audio unlocks in</div>
-                            <div id="audioCountdown" style="font-size:22px;font-weight:800;color:#a78bfa;font-variant-numeric:tabular-nums;">${diff===0?'Unlocked!':h+':'+m+':'+s}</div>
-                        </div>
-                        <a href="earn.html" style="display:block;margin-top:14px;background:rgba(255,255,255,0.08);color:#fff;border-radius:10px;padding:12px;font-size:13px;font-weight:600;text-decoration:none;text-align:center;">← Back to Earn</a>
-                    </div>`;
-                if(diff > 0) setTimeout(()=>{ const el=document.getElementById('audioCountdown'); if(el) renderCooldown(); }, 1000);
-            }
-            renderCooldown();
-        } else {
-            panel.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                    <div>
-                        <div style="font-size:13px;font-weight:700;color:#fff;">🎵 Listen & Earn</div>
-                        <div style="font-size:12px;color:rgba(255,255,255,0.5);">Listen to today's track to earn</div>
-                    </div>
-                    <div style="font-size:20px;font-weight:800;color:#a78bfa;">${fmt(AUDIO_EARN_AMOUNT)}</div>
-                </div>
-                <button id="audioClaimBtn" disabled
-                    style="width:100%;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;transition:all 0.3s;">
-                    ⏳ Start listening to unlock reward...
-                </button>
-                <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Press play above, then your reward unlocks automatically</div>`;
-
-            // Timer starts when user clicks a track (handled in loadTrack)
-            // Also auto-start after 5s in case the video autoplays
-            setTimeout(() => {
-                if(!listenStarted && !taskAlreadyDone) {
-                    startListenTimer();
-                    updateClaimButton();
-                }
-            }, 5000);
-
-            document.getElementById('audioClaimBtn').addEventListener('click', claimAudioEarning);
-        }
-    }
-
-    async function claimAudioEarning() {
-        const btn = document.getElementById('audioClaimBtn');
-        btn.disabled = true;
-        btn.textContent = '⏳ Processing...';
-
-        try {
-            const since24h = new Date(Date.now() - 86400000).toISOString();
-            const {data:ex} = await _supabase.from('daily_completions').select('id')
-                .eq('user_id', currentUserId).eq('task_type','daily_audio').gte('created_at',since24h).maybeSingle();
-            if(ex) {
-                showToast('Already claimed today!');
-                showEarnPanel(true, ex.created_at || new Date().toISOString());
-                return;
-            }
-
-            const now = new Date().toISOString();
-            await _supabase.from('daily_completions').insert({
-                user_id: currentUserId, task_type: 'daily_audio',
-                completed_date: todayStr(), created_at: now
-            });
-            await _supabase.from('transactions').insert({
-                user_id: currentUserId, type: 'daily_task',
-                description: 'Daily reward: Audio listen', amount: AUDIO_EARN_AMOUNT, created_at: now
-            });
-            const {data:w} = await _supabase.from('wallets').select('task_earnings').eq('user_id',currentUserId).maybeSingle();
-            await _supabase.from('wallets').upsert({
-                user_id: currentUserId,
-                task_earnings: (w?.task_earnings||0) + AUDIO_EARN_AMOUNT,
-                updated_at: now
-            },{onConflict:'user_id'});
-
-            showToast(`🎉 You earned ${fmt(AUDIO_EARN_AMOUNT)} for listening!`);
-            showEarnPanel(true, now);
-
-        } catch(err) {
-            console.error(err);
-            btn.disabled = false;
-            btn.textContent = `✅ Completed — Claim ${fmt(AUDIO_EARN_AMOUNT)}`;
-            showToast('Something went wrong. Try again.', 'error');
-        }
-    }
-
-    function loadTrack(idx) {
-        const track = TRACKS[idx];
-        document.getElementById('npArtist').textContent = track.artist;
-        document.getElementById('npSong').textContent = track.song;
-
-        const frame = document.getElementById('audioFrame');
-        // YouTube embed — guaranteed to play
-        frame.src = getEmbedUrl(track);
-        frame.style.display = 'block';
-
-        // Remove any old fallback
-        const old = document.getElementById('audioFallback');
-        if(old) old.remove();
-
-        document.querySelectorAll('.track-item').forEach((el, i) => {
-            el.classList.toggle('active', i === idx);
+        const now=new Date().toISOString();
+        await _supabase.from('daily_completions').insert({
+            user_id:currentUserId, task_type:'daily_audio',
+            completed_date:todayStr(), created_at:now
         });
-
-        // Start listen timer when user clicks a track
-        if(!listenStarted && !taskAlreadyDone) {
-            startListenTimer();
-            updateClaimButton();
-        }
-    }
-
-    async function init() {
-        const todayIdx = getDayIndex();
-
-        document.getElementById('dayPill').textContent = `Day ${todayIdx + 1}`;
-        document.getElementById('dayText').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-
-        const tracklist = document.getElementById('tracklist');
-        TRACKS.forEach((track, i) => {
-            const el = document.createElement('div');
-            el.className = 'track-item' + (i === todayIdx ? ' active' : '');
-            el.innerHTML = `
-                <div class="track-num">${i === todayIdx ? '<i class="fas fa-volume-up" style="font-size:12px;"></i>' : i + 1}</div>
-                <div class="track-info">
-                    <div class="track-name">${track.song}</div>
-                    <div class="track-artist">${track.artist}</div>
-                </div>
-                ${i === todayIdx ? '<span class="track-today">TODAY</span>' : ''}
-            `;
-            el.addEventListener('click', () => loadTrack(i));
-            tracklist.appendChild(el);
+        await _supabase.from('transactions').insert({
+            user_id:currentUserId, type:'daily_task',
+            description:'Daily reward: Audio listen',
+            amount:EARN_AMOUNT, created_at:now
         });
+        const {data:w}=await _supabase.from('wallets')
+            .select('task_earnings').eq('user_id',currentUserId).maybeSingle();
+        await _supabase.from('wallets').upsert({
+            user_id:currentUserId,
+            task_earnings:(w?.task_earnings||0)+EARN_AMOUNT,
+            updated_at:now
+        },{onConflict:'user_id'});
 
-        loadTrack(todayIdx);
+        claimed=true;
+        toast('\ud83c\udf89 You earned '+fmtMoney(EARN_AMOUNT)+'!');
+        showDone(now);
 
-        // Auth & check completion
-        try {
-            const result = await requireAuth('approved');
-            if(!result) return;
-            currentUserId = result.profile.id;
-
-            const since24h = new Date(Date.now() - 86400000).toISOString();
-            const {data:completion} = await _supabase.from('daily_completions').select('created_at')
-                .eq('user_id', currentUserId).eq('task_type','daily_audio').gte('created_at',since24h)
-                .order('created_at',{ascending:false}).limit(1).maybeSingle();
-
-            if(completion) {
-                showEarnPanel(true, completion.created_at);
-            } else {
-                showEarnPanel(false, null);
-            }
-        } catch(e) {
-            console.error('Auth/check error:', e);
-            showEarnPanel(false, null);
-        }
+    } catch(err){
+        console.error(err);
+        claimBtn.disabled=false;
+        claimBtn.textContent='\u2705 Claim \u20a6500 Reward Now!';
+        toast('Something went wrong. Try again.','err');
     }
+});
 
-    init();
+// =========================================================
+// COMPLETED STATE
+// =========================================================
+function showDone(completedAt){
+    taskDone=true;
+    stopListenTimer();
+    audioEl.pause();
+    document.getElementById('listenRow').style.display='none';
+
+    const unlock=new Date(completedAt).getTime()+86400000;
+    const panel=document.getElementById('earnPanel');
+
+    function tick(){
+        const diff=Math.max(0,Math.floor((unlock-Date.now())/1000));
+        const h=String(Math.floor(diff/3600)).padStart(2,'0');
+        const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
+        const s=String(diff%60).padStart(2,'0');
+        panel.innerHTML=`
+            <div class="done-card">
+                <div class="done-icon">\u2705</div>
+                <div class="done-title">Completed!</div>
+                <div class="done-sub">You earned ${fmtMoney(EARN_AMOUNT)} for listening today.</div>
+                <div class="cd-box">
+                    <div class="cd-label">\u23f1 Next audio task unlocks in</div>
+                    <div class="cd-val" id="cdVal">${diff===0?'Ready now!':h+':'+m+':'+s}</div>
+                </div>
+                <a href="earn.html" class="back-btn-earn">\u2190 Back to Earn</a>
+            </div>`;
+        if(diff>0) setTimeout(()=>{ if(document.getElementById('cdVal')) tick(); },1000);
+    }
+    tick();
+}
+
+// =========================================================
+// INIT
+// =========================================================
+async function init(){
+    const idx=getDayIndex();
+    document.getElementById('dayPill').textContent='Day '+(idx+1);
+    document.getElementById('dayText').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+    // Build tracklist
+    const list=document.getElementById('tracklist');
+    TRACKS.forEach((t,i)=>{
+        const el=document.createElement('div');
+        el.className='track-item'+(i===idx?' active':'');
+        el.innerHTML=`
+            <div class="t-num">${i===idx?'<i class="fas fa-volume-up" style="font-size:11px;"></i>':i+1}</div>
+            <div class="t-info">
+                <div class="t-name">${t.song}</div>
+                <div class="t-artist">${t.artist}</div>
+            </div>
+            ${i===idx?'<span class="t-today">TODAY</span>':''}
+        `;
+        el.addEventListener('click',()=>{
+            loadTrack(i,true);
+            if(!listenSecs&&!taskDone) { /* timer starts via 'play' event */ }
+        });
+        list.appendChild(el);
+    });
+
+    // Load today's track but don't autoplay (requires user gesture on mobile)
+    loadTrack(idx, false);
+
+    // Auth & check completion
+    try {
+        const result=await requireAuth('approved');
+        if(!result) return;
+        currentUserId=result.profile.id;
+
+        const since=new Date(Date.now()-86400000).toISOString();
+        const {data:done}=await _supabase.from('daily_completions').select('created_at')
+            .eq('user_id',currentUserId).eq('task_type','daily_audio')
+            .gte('created_at',since).order('created_at',{ascending:false}).limit(1).maybeSingle();
+
+        if(done) showDone(done.created_at);
+
+    } catch(e){ console.error('Auth:',e); }
+}
+
+init();
 </script>
 </body>
 </html>
