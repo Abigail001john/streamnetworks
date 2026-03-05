@@ -170,11 +170,11 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
 }
 .vol-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--purple);cursor:pointer;}
 
-/* HIDDEN YOUTUBE CONTAINER */
+/* HIDDEN YOUTUBE CONTAINER - FIXED FOR MOBILE PLAYBACK */
 #ytContainer{
-  position:fixed;bottom:-9999px;left:-9999px;
-  width:1px;height:1px;overflow:hidden;pointer-events:none;
-  z-index:-1;
+  position:fixed;top:-1000px;left:-1000px;
+  width:300px;height:300px; /* Cannot be 1x1 or browsers block playback */
+  opacity: 0; pointer-events:none; z-index:-1;
 }
 
 /* ── LISTEN RING CARD ── */
@@ -312,29 +312,23 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
 .toast.error{border-color:#ef4444;}
 @keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
 
-/* LOADING STATE */
-.yt-loading{
-  display:flex;align-items:center;gap:10px;
-  background:rgba(139,92,246,0.08);border-radius:12px;
-  padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted);
-}
-.spin-icon{animation:iconSpin 1s linear infinite;display:inline-block;}
-@keyframes iconSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+/* NP LABEL */
+.np-label{display:none;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--purple);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;}
+.np-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulseDot 1.5s infinite;}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.8);}}
+
 </style>
 </head>
 <body>
 
-<!-- TOAST CONTAINER -->
 <div id="toastWrap"></div>
 
-<!-- HIDDEN YOUTUBE PLAYER - real audio, invisible to user -->
 <div id="ytContainer">
   <div id="ytPlayer"></div>
 </div>
 
 <div class="container">
 
-  <!-- TOP NAV -->
   <nav class="top-nav">
     <a href="earn.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
     <div class="nav-title">&#127925; Daily Audio</div>
@@ -343,20 +337,17 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
 
   <div class="main-content">
 
-    <!-- DAY LABEL -->
     <div class="day-label">
       <span class="day-pill" id="dayPill">Day 1</span>
       <span class="day-text" id="dayText">Today's featured track</span>
     </div>
 
-    <!-- ALBUM ART CARD -->
     <div class="album-card">
       <div class="np-label" id="npLabel">
         <span class="np-dot" id="npDot"></span>
-        <span id="npLabelText">Select a track to play</span>
+        <span id="npLabelText">Now Playing</span>
       </div>
 
-      <!-- ALBUM ART -->
       <div class="art-wrap" id="artWrap">
         <div class="art-placeholder" id="artPlaceholder">
           <div class="vinyl" id="vinylDisc">
@@ -368,14 +359,12 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
         <div class="art-overlay"></div>
       </div>
 
-      <!-- TRACK META -->
       <div class="track-meta">
         <div class="track-name-big" id="npSong">Tap a track below</div>
         <div class="track-artist-big" id="npArtist">Choose from the playlist</div>
         <span class="track-day-badge" id="npDayBadge">Today's Track</span>
       </div>
 
-      <!-- PROGRESS BAR -->
       <div class="progress-section">
         <div class="progress-bar-outer" id="progBar">
           <div class="progress-bar-inner" id="progFill"></div>
@@ -386,7 +375,6 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
         </div>
       </div>
 
-      <!-- CONTROLS -->
       <div class="controls-row">
         <button class="ctrl" id="btnPrev" title="Previous"><i class="fas fa-step-backward"></i></button>
         <button class="ctrl" id="btnRewind" title="-10s"><i class="fas fa-undo" style="font-size:15px;"></i><span style="font-size:9px;margin-left:1px;">10</span></button>
@@ -395,7 +383,6 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
         <button class="ctrl" id="btnNext" title="Next"><i class="fas fa-step-forward"></i></button>
       </div>
 
-      <!-- VOLUME -->
       <div class="volume-row">
         <i class="fas fa-volume-off"></i>
         <input type="range" class="vol-range" id="volRange" min="0" max="100" value="80">
@@ -403,7 +390,6 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
       </div>
     </div>
 
-    <!-- LISTEN PROGRESS RING -->
     <div class="listen-card" id="listenCard">
       <div class="ring-svg-wrap">
         <svg width="56" height="56" viewBox="0 0 56 56">
@@ -418,7 +404,6 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
       </div>
     </div>
 
-    <!-- EARN PANEL -->
     <div class="earn-panel" id="earnPanel">
       <div class="earn-top">
         <div class="earn-top-left">
@@ -432,19 +417,16 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
       </button>
     </div>
 
-    <!-- RECYCLE NOTICE -->
     <div class="recycle-notice">
       <span style="font-size:20px;">&#128260;</span>
       <div class="recycle-text"><strong>Daily Rotation</strong><br>New track every day. 20-day cycle then repeats.</div>
     </div>
 
-    <!-- TRACKLIST -->
     <div class="section-title">All 20 Tracks</div>
     <div class="tracklist" id="tracklist"></div>
 
   </div>
 
-  <!-- MINI NOW-PLAYING BAR -->
   <div class="mini-bar" id="miniBar">
     <div class="mini-disc" id="miniDisc"><i class="fas fa-music"></i></div>
     <div class="mini-info">
@@ -454,7 +436,6 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
     <button class="mini-play" id="miniPlayBtn"><i class="fas fa-play" id="miniIcon"></i></button>
   </div>
 
-  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
     <a href="wish-hub.html" class="nav-item"><i class="fas fa-star"></i><span>Wish Hub</span></a>
@@ -464,36 +445,34 @@ html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-hei
   </nav>
 </div>
 
-<!-- YouTube IFrame API -->
 <script src="https://www.youtube.com/iframe_api"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
 // ═══════════════════════════════════════════
-// TRACKS — Real Nigerian songs on YouTube
-// YouTube video IDs (official music videos)
+// TRACKS — Updated thumbnails to '0.jpg' to prevent broken images
 // ═══════════════════════════════════════════
 const TRACKS = [
-  { song:'Essence',              artist:'Wizkid ft. Tems',  yt:'WcLJZAkmI9o', thumb:'https://i.ytimg.com/vi/WcLJZAkmI9o/hqdefault.jpg' },
-  { song:'Calm Down',            artist:'Rema',             yt:'Os6gLKIaWaY', thumb:'https://i.ytimg.com/vi/Os6gLKIaWaY/hqdefault.jpg' },
-  { song:'Last Last',            artist:'Burna Boy',        yt:'hJN7fxMNRO0', thumb:'https://i.ytimg.com/vi/hJN7fxMNRO0/hqdefault.jpg' },
-  { song:'Peru',                 artist:'Fireboy DML',      yt:'g6aQeF6ZJXI', thumb:'https://i.ytimg.com/vi/g6aQeF6ZJXI/hqdefault.jpg' },
-  { song:'Love Nwantiti',        artist:'Ckay',             yt:'6JqEJMnbyW4', thumb:'https://i.ytimg.com/vi/6JqEJMnbyW4/hqdefault.jpg' },
-  { song:'Free Mind',            artist:'Tems',             yt:'jBQKSy3Ee2U', thumb:'https://i.ytimg.com/vi/jBQKSy3Ee2U/hqdefault.jpg' },
-  { song:'Buga',                 artist:'Kizz Daniel ft. Tekno', yt:'O_Fy58e9T3M', thumb:'https://i.ytimg.com/vi/O_Fy58e9T3M/hqdefault.jpg' },
-  { song:'Duduke',               artist:'Simi',             yt:'kNNwPGBg0GE', thumb:'https://i.ytimg.com/vi/kNNwPGBg0GE/hqdefault.jpg' },
-  { song:'19 & Dangerous',       artist:'Ayra Starr',       yt:'cbqG5RRqkXs', thumb:'https://i.ytimg.com/vi/cbqG5RRqkXs/hqdefault.jpg' },
-  { song:'Zazu Zeh',             artist:'Portable',         yt:'aPZElrXFbKY', thumb:'https://i.ytimg.com/vi/aPZElrXFbKY/hqdefault.jpg' },
-  { song:'Finesse',              artist:'Pheelz ft. BNXN',  yt:'M8AuvuuOhxA', thumb:'https://i.ytimg.com/vi/M8AuvuuOhxA/hqdefault.jpg' },
-  { song:'Alcohol',              artist:'Joeboy',           yt:'xoT1hWTTlgw', thumb:'https://i.ytimg.com/vi/xoT1hWTTlgw/hqdefault.jpg' },
-  { song:'Infinity',             artist:'Olamide ft. Omah Lay', yt:'hiqn-Dmhyps', thumb:'https://i.ytimg.com/vi/hiqn-Dmhyps/hqdefault.jpg' },
-  { song:'Loving You',           artist:'Zinoleesky',       yt:'GCxaHnVe-PM', thumb:'https://i.ytimg.com/vi/GCxaHnVe-PM/hqdefault.jpg' },
-  { song:'Understand',           artist:'Omah Lay',         yt:'X4KCf-i5lu0', thumb:'https://i.ytimg.com/vi/X4KCf-i5lu0/hqdefault.jpg' },
-  { song:'Organise',             artist:'Asake',            yt:'xYlPbkSzFZI', thumb:'https://i.ytimg.com/vi/xYlPbkSzFZI/hqdefault.jpg' },
-  { song:'Somebody\'s Son',      artist:'Tiwa Savage',      yt:'jExQxU3s-W4', thumb:'https://i.ytimg.com/vi/jExQxU3s-W4/hqdefault.jpg' },
-  { song:'Shake',                artist:'Flavour ft. Chidinma', yt:'FalCvvbJuMk', thumb:'https://i.ytimg.com/vi/FalCvvbJuMk/hqdefault.jpg' },
-  { song:'Johnny',               artist:'Yemi Alade',       yt:'N3bEMJ5RFNY', thumb:'https://i.ytimg.com/vi/N3bEMJ5RFNY/hqdefault.jpg' },
-  { song:'Stand Strong',         artist:'Davido ft. Mavins',yt:'3gLIE0QBKQM', thumb:'https://i.ytimg.com/vi/3gLIE0QBKQM/hqdefault.jpg' },
+  { song:'Essence',              artist:'Wizkid ft. Tems',  yt:'WcLJZAkmI9o', thumb:'https://img.youtube.com/vi/WcLJZAkmI9o/0.jpg' },
+  { song:'Calm Down',            artist:'Rema',             yt:'Os6gLKIaWaY', thumb:'https://img.youtube.com/vi/Os6gLKIaWaY/0.jpg' },
+  { song:'Last Last',            artist:'Burna Boy',        yt:'hJN7fxMNRO0', thumb:'https://img.youtube.com/vi/hJN7fxMNRO0/0.jpg' },
+  { song:'Peru',                 artist:'Fireboy DML',      yt:'g6aQeF6ZJXI', thumb:'https://img.youtube.com/vi/g6aQeF6ZJXI/0.jpg' },
+  { song:'Love Nwantiti',        artist:'Ckay',             yt:'6JqEJMnbyW4', thumb:'https://img.youtube.com/vi/6JqEJMnbyW4/0.jpg' },
+  { song:'Free Mind',            artist:'Tems',             yt:'jBQKSy3Ee2U', thumb:'https://img.youtube.com/vi/jBQKSy3Ee2U/0.jpg' },
+  { song:'Buga',                 artist:'Kizz Daniel ft. Tekno', yt:'O_Fy58e9T3M', thumb:'https://img.youtube.com/vi/O_Fy58e9T3M/0.jpg' },
+  { song:'Duduke',               artist:'Simi',             yt:'kNNwPGBg0GE', thumb:'https://img.youtube.com/vi/kNNwPGBg0GE/0.jpg' },
+  { song:'19 & Dangerous',       artist:'Ayra Starr',       yt:'cbqG5RRqkXs', thumb:'https://img.youtube.com/vi/cbqG5RRqkXs/0.jpg' },
+  { song:'Zazu Zeh',             artist:'Portable',         yt:'aPZElrXFbKY', thumb:'https://img.youtube.com/vi/aPZElrXFbKY/0.jpg' },
+  { song:'Finesse',              artist:'Pheelz ft. BNXN',  yt:'M8AuvuuOhxA', thumb:'https://img.youtube.com/vi/M8AuvuuOhxA/0.jpg' },
+  { song:'Alcohol',              artist:'Joeboy',           yt:'xoT1hWTTlgw', thumb:'https://img.youtube.com/vi/xoT1hWTTlgw/0.jpg' },
+  { song:'Infinity',             artist:'Olamide ft. Omah Lay', yt:'hiqn-Dmhyps', thumb:'https://img.youtube.com/vi/hiqn-Dmhyps/0.jpg' },
+  { song:'Loving You',           artist:'Zinoleesky',       yt:'GCxaHnVe-PM', thumb:'https://img.youtube.com/vi/GCxaHnVe-PM/0.jpg' },
+  { song:'Understand',           artist:'Omah Lay',         yt:'X4KCf-i5lu0', thumb:'https://img.youtube.com/vi/X4KCf-i5lu0/0.jpg' },
+  { song:'Organise',             artist:'Asake',            yt:'xYlPbkSzFZI', thumb:'https://img.youtube.com/vi/xYlPbkSzFZI/0.jpg' },
+  { song:'Somebody\'s Son',      artist:'Tiwa Savage',      yt:'jExQxU3s-W4', thumb:'https://img.youtube.com/vi/jExQxU3s-W4/0.jpg' },
+  { song:'Shake',                artist:'Flavour ft. Chidinma', yt:'FalCvvbJuMk', thumb:'https://img.youtube.com/vi/FalCvvbJuMk/0.jpg' },
+  { song:'Johnny',               artist:'Yemi Alade',       yt:'N3bEMJ5RFNY', thumb:'https://img.youtube.com/vi/N3bEMJ5RFNY/0.jpg' },
+  { song:'Stand Strong',         artist:'Davido ft. Mavins',yt:'3gLIE0QBKQM', thumb:'https://img.youtube.com/vi/3gLIE0QBKQM/0.jpg' },
 ];
 
 // ═══════════════════════════════════════════
@@ -522,12 +501,13 @@ let progressTimer = null;
 // ═══════════════════════════════════════════
 function onYouTubeIframeAPIReady(){
   ytPlayer = new YT.Player('ytPlayer', {
-    height:'1', width:'1',
+    height:'300', width:'300', // Cannot be 1x1 on mobile!
     videoId: TRACKS[0].yt,
     playerVars:{
       autoplay:0, controls:0, disablekb:1,
       fs:0, iv_load_policy:3, modestbranding:1,
-      rel:0, showinfo:0, playsinline:1
+      rel:0, showinfo:0, playsinline:1,
+      origin: window.location.origin 
     },
     events:{
       onReady: onPlayerReady,
@@ -549,15 +529,14 @@ function onPlayerStateChange(e){
   } else if(e.data === S.PAUSED || e.data === S.BUFFERING){
     setPlaying(false);
   } else if(e.data === S.ENDED){
-    // Auto next
     loadTrack((currentIdx+1) % TRACKS.length, true);
   }
 }
 
 function onPlayerError(e){
-  // Video blocked/unavailable — skip to next
-  setTimeout(()=> loadTrack((currentIdx+1)%TRACKS.length, isPlaying), 1000);
-  toast('Track unavailable, skipping…','error');
+  console.error("YouTube Player Error: ", e.data);
+  toast('Video restricted by owner, skipping…','error');
+  setTimeout(()=> loadTrack((currentIdx+1)%TRACKS.length, isPlaying), 1500);
 }
 
 // ═══════════════════════════════════════════
@@ -566,26 +545,23 @@ function onPlayerError(e){
 function setPlaying(state){
   isPlaying = state;
 
-  // Big play button
   const btn = document.getElementById('btnPlay');
   const icon = document.getElementById('playIcon');
+  const npLabel = document.getElementById('npLabel');
+
   if(state){
     btn.classList.add('playing');
     icon.className = 'fas fa-pause';
+    npLabel.style.display = 'flex';
   } else {
     btn.classList.remove('playing');
     icon.className = 'fas fa-play';
+    npLabel.style.display = 'none';
   }
 
-  // Vinyl disc spin
   document.getElementById('vinylDisc').classList.toggle('spin', state);
   document.getElementById('miniDisc').classList.toggle('spin', state);
-
-  // Mini bar icon
   document.getElementById('miniIcon').className = state ? 'fas fa-pause' : 'fas fa-play';
-
-  // NP label
-  document.getElementById('npLabelText').textContent = state ? 'Now Playing' : 'Paused';
 
   // Listen timer — ANTI-CHEAT: only runs while actually playing
   if(state){
@@ -604,25 +580,21 @@ function loadTrack(idx, autoplay=false){
   currentIdx = idx;
   const t = TRACKS[idx];
 
-  // Update UI
   document.getElementById('npSong').textContent   = t.song;
   document.getElementById('npArtist').textContent = t.artist;
   document.getElementById('miniSong').textContent  = t.song;
   document.getElementById('miniArtist').textContent = t.artist;
 
-  // Album thumbnail from YouTube
   const img = document.getElementById('artImg');
   const placeholder = document.getElementById('artPlaceholder');
   img.src = t.thumb;
   img.onload = ()=>{ img.style.display='block'; placeholder.style.display='none'; };
   img.onerror = ()=>{ img.style.display='none'; placeholder.style.display='flex'; };
 
-  // Reset progress bar
   document.getElementById('progFill').style.width = '0%';
   document.getElementById('curTime').textContent  = '0:00';
   document.getElementById('totTime').textContent  = '0:00';
 
-  // Load into YouTube player
   if(ytReady){
     if(autoplay){
       ytPlayer.loadVideoById(t.yt);
@@ -632,7 +604,6 @@ function loadTrack(idx, autoplay=false){
     ytPlayer.setVolume(document.getElementById('volRange').value);
   }
 
-  // Update tracklist highlight
   document.querySelectorAll('.track-row').forEach((el,i)=>{
     el.classList.toggle('active', i===idx);
     el.classList.remove('playing-now');
@@ -670,8 +641,6 @@ function stopProgressLoop(){
 
 // ═══════════════════════════════════════════
 // LISTEN TIMER — ANTI-CHEAT
-// Only ticks when YouTube is ACTUALLY playing
-// Pausing stops the timer — cannot cheat!
 // ═══════════════════════════════════════════
 function startListenTimer(){
   if(listenTimer||taskDone||claimed) return;
@@ -723,16 +692,20 @@ function unlockClaim(){
 // CONTROLS
 // ═══════════════════════════════════════════
 document.getElementById('btnPlay').addEventListener('click',()=>{
-  if(!ytReady) return;
+  if(!navigator.onLine) {
+    toast('No internet connection!', 'error');
+    return;
+  }
+  if(!ytReady) {
+    toast('Player still loading...', 'error');
+    return;
+  }
+  
   if(isPlaying){
     ytPlayer.pauseVideo();
   } else {
-    // If no video loaded yet, load today's track
-    if(!ytPlayer.getVideoData || !ytPlayer.getVideoData().video_id){
-      loadTrack(currentIdx, true);
-    } else {
-      ytPlayer.playVideo();
-    }
+    // Explicitly command YouTube to play to bypass mobile constraints
+    ytPlayer.playVideo();
   }
 });
 
@@ -749,17 +722,14 @@ document.getElementById('btnForward').addEventListener('click',()=>{
   if(ytReady) ytPlayer.seekTo((ytPlayer.getCurrentTime()||0)+10, true);
 });
 
-// Mini bar play button
 document.getElementById('miniPlayBtn').addEventListener('click',()=>{
   document.getElementById('btnPlay').click();
 });
 
-// Volume
 document.getElementById('volRange').addEventListener('input',e=>{
   if(ytReady) ytPlayer.setVolume(parseInt(e.target.value));
 });
 
-// Progress bar click to seek
 document.getElementById('progBar').addEventListener('click',e=>{
   if(!ytReady) return;
   const dur = ytPlayer.getDuration()||0;
@@ -877,7 +847,6 @@ async function init(){
   document.getElementById('dayPill').textContent='Day '+(idx+1);
   document.getElementById('dayText').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
-  // Build tracklist
   const list=document.getElementById('tracklist');
   TRACKS.forEach((t,i)=>{
     const el=document.createElement('div');
@@ -896,11 +865,9 @@ async function init(){
     list.appendChild(el);
   });
 
-  // Pre-load today's track (no autoplay — mobile requires gesture)
   currentIdx=idx;
   loadTrack(idx, false);
 
-  // Auth + check completion
   try {
     const result=await requireAuth('approved');
     if(!result) return;
