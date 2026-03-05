@@ -1157,57 +1157,286 @@
     }
 
     // ══════════════════════════════════════════════════════
-    // LOGIN AS USER — stores admin session & redirects
+    // LOGIN AS USER — opens full user dashboard inside admin
     // ══════════════════════════════════════════════════════
     async function loginAsUser(userId, userName) {
-      if (!confirm('You are about to view the app as:\n\n' + userName + '\n\nYou will stay signed in as admin. Continue?')) return;
+      closeModal();
+      showToast('Loading ' + userName + '\'s account...', 'success');
 
       try {
-        // Save admin return info
-        const { data: { session } } = await _supabase.auth.getSession();
-        sessionStorage.setItem('adminReturnSession', JSON.stringify({
-          access_token: session?.access_token,
-          refresh_token: session?.refresh_token,
-          adminName: document.getElementById('adminName').textContent
-        }));
+        // Fetch everything for this user in parallel
+        const [
+          { data: profile },
+          { data: wallet },
+          { data: txs },
+          { data: completions },
+          { data: refs }
+        ] = await Promise.all([
+          _supabase.from('profiles').select('*').eq('id', userId).single(),
+          _supabase.from('wallets').select('*').eq('user_id', userId).maybeSingle(),
+          _supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', {ascending: false}).limit(50),
+          _supabase.from('daily_completions').select('*').eq('user_id', userId).order('created_at', {ascending: false}).limit(30),
+          _supabase.from('profiles').select('id, full_name, email, created_at').eq('referred_by', userId)
+        ]);
 
-        // Store who we're viewing as
-        sessionStorage.setItem('viewAsUserId', userId);
-        sessionStorage.setItem('viewAsUserName', userName);
-        sessionStorage.setItem('isAdminView', '1');
-
-        // Fetch and cache their profile so dashboard can use it
-        const { data: profile } = await _supabase.from('profiles').select('*').eq('id', userId).single();
-        if (profile) sessionStorage.setItem('viewAsProfile', JSON.stringify(profile));
-
-        showToast('Switching to ' + userName + '\'s view...', 'success');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html?admin_view=1&uid=' + userId;
-        }, 700);
+        openUserViewPanel(profile, wallet, txs || [], completions || [], refs || []);
       } catch(e) {
-        showToast('Error: ' + e.message, 'error');
+        showToast('Error loading user data: ' + e.message, 'error');
       }
     }
 
     // ══════════════════════════════════════════════════════
-    // EXIT ADMIN VIEW
+    // USER VIEW PANEL — full account view inside admin
     // ══════════════════════════════════════════════════════
-    function exitAdminView() {
-      sessionStorage.removeItem('viewAsUserId');
-      sessionStorage.removeItem('viewAsUserName');
-      sessionStorage.removeItem('viewAsProfile');
-      sessionStorage.removeItem('isAdminView');
-      const ret = sessionStorage.getItem('adminReturnSession');
-      sessionStorage.removeItem('adminReturnSession');
-      if (ret) {
-        const { access_token, refresh_token } = JSON.parse(ret);
-        if (access_token) {
-          _supabase.auth.setSession({ access_token, refresh_token })
-            .then(() => window.location.href = 'admin.html');
-          return;
-        }
+    function openUserViewPanel(profile, wallet, txs, completions, refs) {
+      const fmt = n => '₦' + Number(n||0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2});
+      const ago = d => {
+        const s = Math.floor((Date.now() - new Date(d)) / 1000);
+        if(s < 60) return 'Just now';
+        if(s < 3600) return Math.floor(s/60) + 'm ago';
+        if(s < 86400) return Math.floor(s/3600) + 'h ago';
+        return new Date(d).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+      };
+
+      const taskEarn  = Number(wallet?.task_earnings || 0);
+      const refEarn   = Number(wallet?.referral_earnings || 0);
+      const bonusEarn = Number(wallet?.signup_bonus || 0);
+      const totalBal  = taskEarn + refEarn + bonusEarn;
+      const initials  = (profile.full_name || profile.email || 'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      const joined    = new Date(profile.created_at).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+      const isApproved = profile.is_approved === true;
+
+      // Today's completions
+      const since24h = Date.now() - 86400000;
+      const doneToday = completions.filter(c => new Date(c.created_at).getTime() > since24h).map(c => c.task_type);
+      const videoToday  = doneToday.includes('daily_video');
+      const audioToday  = doneToday.includes('daily_audio');
+      const fileToday   = doneToday.includes('daily_file_download');
+
+      // Tx rows
+      const txRows = txs.length === 0
+        ? '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">No transactions yet</td></tr>'
+        : txs.map(tx => {
+            const pos = Number(tx.amount) >= 0;
+            return `<tr>
+              <td style="padding:10px 12px;font-size:13px;">${tx.description || tx.type}</td>
+              <td style="padding:10px 12px;font-size:13px;font-weight:700;color:${pos?'#10b981':'#ef4444'}">${pos?'+':''}${fmt(tx.amount)}</td>
+              <td style="padding:10px 12px;font-size:12px;color:#94a3b8;">${tx.type}</td>
+              <td style="padding:10px 12px;font-size:12px;color:#94a3b8;">${ago(tx.created_at)}</td>
+            </tr>`;
+          }).join('');
+
+      // Refs rows
+      const refRows = refs.length === 0
+        ? '<div style="color:#94a3b8;font-size:13px;padding:12px 0;">No referrals yet</div>'
+        : refs.map(r => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;">
+            <span>${r.full_name || r.email || 'Unknown'}</span>
+            <span style="color:#94a3b8;">${ago(r.created_at)}</span>
+          </div>`).join('');
+
+      // Build panel HTML
+      const panel = document.getElementById('userViewPanel');
+      panel.innerHTML = `
+        <div style="background:white;min-height:100vh;">
+
+          <!-- PANEL HEADER -->
+          <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button onclick="closeUserViewPanel()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div>
+                <div style="font-size:16px;font-weight:700;">👤 Viewing: ${profile.full_name || profile.email}</div>
+                <div style="font-size:12px;opacity:0.8;">Admin View — you are still logged in as admin</div>
+              </div>
+            </div>
+            <button onclick="closeUserViewPanel()" style="background:white;color:#7c3aed;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">
+              ✕ Close View
+            </button>
+          </div>
+
+          <div style="max-width:900px;margin:0 auto;padding:28px 24px;">
+
+            <!-- PROFILE CARD -->
+            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;">
+              <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-size:26px;font-weight:700;flex-shrink:0;">${initials}</div>
+              <div style="flex:1;">
+                <div style="font-size:20px;font-weight:700;margin-bottom:4px;">${profile.full_name || 'No name set'}</div>
+                <div style="font-size:14px;color:#64748b;margin-bottom:6px;">${profile.email}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <span style="background:${isApproved?'#f0fdf4':'#fffbeb'};color:${isApproved?'#22c55e':'#f59e0b'};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">${isApproved ? '✓ Approved' : '⏳ Pending'}</span>
+                  <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">@${profile.username || 'no username'}</span>
+                  <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">📅 Joined ${joined}</span>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <button onclick="toggleApproval('${profile.id}', ${!isApproved}); closeUserViewPanel();" 
+                  style="background:${isApproved?'#fef2f2':'#f0fdf4'};color:${isApproved?'#ef4444':'#22c55e'};border:1.5px solid ${isApproved?'#fecaca':'#bbf7d0'};border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;">
+                  ${isApproved ? '🚫 Revoke Access' : '✅ Approve User'}
+                </button>
+              </div>
+            </div>
+
+            <!-- WALLET CARDS -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+              <div style="background:linear-gradient(135deg,#2dd4bf,#14b8a6);color:white;border-radius:14px;padding:20px;">
+                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">💰 Total Balance</div>
+                <div style="font-size:26px;font-weight:800;">${fmt(totalBal)}</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#10b981,#059669);color:white;border-radius:14px;padding:20px;">
+                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">📋 Task Earnings</div>
+                <div style="font-size:26px;font-weight:800;">${fmt(taskEarn)}</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;border-radius:14px;padding:20px;">
+                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">👥 Referral Earnings</div>
+                <div style="font-size:26px;font-weight:800;">${fmt(refEarn)}</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:14px;padding:20px;">
+                <div style="font-size:12px;opacity:0.85;margin-bottom:6px;">🎁 Signup Bonus</div>
+                <div style="font-size:26px;font-weight:800;">${fmt(bonusEarn)}</div>
+              </div>
+            </div>
+
+            <!-- TODAY'S TASK STATUS -->
+            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">📅 Today's Task Status (last 24h)</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                <div style="background:${videoToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
+                  <div style="font-size:22px;margin-bottom:6px;">🎬</div>
+                  <div style="font-size:13px;font-weight:700;color:${videoToday?'#22c55e':'#ef4444'};">${videoToday?'Completed':'Not done'}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:2px;">Video Task</div>
+                </div>
+                <div style="background:${audioToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
+                  <div style="font-size:22px;margin-bottom:6px;">🎵</div>
+                  <div style="font-size:13px;font-weight:700;color:${audioToday?'#22c55e':'#ef4444'};">${audioToday?'Completed':'Not done'}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:2px;">Audio Task</div>
+                </div>
+                <div style="background:${fileToday?'#f0fdf4':'#fef2f2'};border-radius:10px;padding:14px;text-align:center;">
+                  <div style="font-size:22px;margin-bottom:6px;">📁</div>
+                  <div style="font-size:13px;font-weight:700;color:${fileToday?'#22c55e':'#ef4444'};">${fileToday?'Completed':'Not done'}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:2px;">File Task</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACCOUNT DETAILS -->
+            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">🔍 Account Details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
+                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Phone</div>
+                  <div style="font-size:14px;font-weight:600;">${profile.phone || 'Not set'}</div>
+                </div>
+                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
+                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Location</div>
+                  <div style="font-size:14px;font-weight:600;">${profile.location || 'Not set'}</div>
+                </div>
+                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
+                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Referred By</div>
+                  <div style="font-size:13px;font-weight:600;">${profile.referred_by || 'Direct signup'}</div>
+                </div>
+                <div style="background:#f8fafc;border-radius:10px;padding:12px;">
+                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">Total Referrals</div>
+                  <div style="font-size:14px;font-weight:600;color:#22c55e;">${refs.length} referrals</div>
+                </div>
+                <div style="background:#f8fafc;border-radius:10px;padding:12px;grid-column:1/-1;">
+                  <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">User ID</div>
+                  <div style="font-size:12px;font-weight:500;word-break:break-all;">${profile.id}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- REFERRALS -->
+            ${refs.length > 0 ? `
+            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">👥 Their Referrals (${refs.length})</div>
+              ${refRows}
+            </div>` : ''}
+
+            <!-- TRANSACTIONS TABLE -->
+            <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:20px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:14px;">💳 Transaction History (${txs.length} records)</div>
+              <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:2px solid #e2e8f0;">
+                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Description</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Amount</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Type</th>
+                      <th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">When</th>
+                    </tr>
+                  </thead>
+                  <tbody style="font-family:'Inter',sans-serif;">
+                    ${txRows}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- ADMIN ACTIONS -->
+            <div style="background:#fff8f0;border:1px solid #fde68a;border-radius:16px;padding:20px;margin-bottom:28px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:#92400e;">⚙️ Admin Actions</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <button onclick="toggleApproval('${profile.id}', ${!isApproved}); closeUserViewPanel();"
+                  style="flex:1;min-width:140px;padding:12px 16px;background:${isApproved?'#ef4444':'#22c55e'};color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+                  <i class="fas fa-${isApproved?'ban':'check-circle'}"></i> ${isApproved ? 'Revoke Access' : 'Approve User'}
+                </button>
+                <button onclick="adminAdjustBalance('${profile.id}', '${(profile.full_name||profile.email||'User').replace(/['"]/g,'')}')"
+                  style="flex:1;min-width:140px;padding:12px 16px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+                  <i class="fas fa-coins"></i> Adjust Balance
+                </button>
+                <button onclick="confirmDeleteUser('${profile.id}', '${(profile.full_name||'this user').replace(/['"]/g,'')}'); closeUserViewPanel();"
+                  style="flex:1;min-width:140px;padding:12px 16px;background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+                  <i class="fas fa-trash"></i> Delete User
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      panel.style.display = 'block';
+      panel.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeUserViewPanel() {
+      const panel = document.getElementById('userViewPanel');
+      panel.style.display = 'none';
+      panel.innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    // ══════════════════════════════════════════════════════
+    // ADMIN ADJUST BALANCE
+    // ══════════════════════════════════════════════════════
+    async function adminAdjustBalance(userId, userName) {
+      const amtStr = prompt(`Adjust balance for ${userName}:\n\nEnter amount (positive to add, negative to deduct):\nExample: 500 or -200`);
+      if(amtStr === null) return;
+      const amount = parseFloat(amtStr);
+      if(isNaN(amount) || amount === 0) { showToast('Invalid amount', 'error'); return; }
+
+      const desc = prompt('Reason / description for this adjustment:') || 'Admin adjustment';
+
+      try {
+        const now = new Date().toISOString();
+        await _supabase.from('transactions').insert({
+          user_id: userId, type: 'admin_adjustment',
+          description: desc, amount: amount, created_at: now
+        });
+        const { data: w } = await _supabase.from('wallets').select('task_earnings').eq('user_id', userId).maybeSingle();
+        await _supabase.from('wallets').upsert({
+          user_id: userId,
+          task_earnings: Math.max(0, (w?.task_earnings || 0) + (amount > 0 ? amount : 0)),
+          updated_at: now
+        }, {onConflict: 'user_id'});
+        showToast(`Balance adjusted by ₦${amount} for ${userName} ✅`, 'success');
+        // Reload the view
+        loginAsUser(userId, userName);
+      } catch(e) {
+        showToast('Adjustment failed: ' + e.message, 'error');
       }
-      window.location.href = 'admin.html';
     }
 
     // ══════════════════════════════════════════════════════
@@ -1229,28 +1458,10 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════
-    // CHECK IF RETURNING FROM ADMIN VIEW
-    // ══════════════════════════════════════════════════════
-    (function checkAdminViewBar() {
-      const isView = sessionStorage.getItem('isAdminView');
-      const viewName = sessionStorage.getItem('viewAsUserName');
-      if (isView && viewName) {
-        const bar = document.getElementById('adminViewBar');
-        document.getElementById('viewingAsName').textContent = viewName;
-        bar.classList.add('show');
-        // Push content down so bar doesn't overlap
-        document.body.style.paddingTop = '44px';
-      }
-    })();
-
   </script>
 
-  <!-- ADMIN VIEW BAR -->
-  <div class="admin-view-bar" id="adminViewBar">
-    <span>&#128100; Admin View &mdash; Viewing as: <strong id="viewingAsName"></strong></span>
-    <button onclick="exitAdminView()">&#9747; Exit &amp; Return to Admin</button>
-  </div>
+  <!-- USER VIEW PANEL (full screen overlay inside admin) -->
+  <div id="userViewPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;overflow-y:auto;background:white;"></div>
 
   <!-- USER DETAIL MODAL -->
   <div class="modal-overlay" id="userModal">
