@@ -114,7 +114,7 @@
         .audio-embed {
             width: 100%; border-radius: 14px;
             overflow: hidden; background: #1a1a2e;
-            min-height: 120px;
+            min-height: 200px;
         }
         .audio-embed iframe {
             width: 100%; border: none; display: block;
@@ -206,8 +206,8 @@
     <!-- TOP NAV -->
     <nav class="top-nav">
         <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <div class="nav-title">🎵 FW Audio</div>
-        <span class="nav-badge">VIBES</span>
+        <div class="nav-title">🎵 Daily Audio</div>
+        <span class="nav-badge">EARN ₦500</span>
     </nav>
 
     <!-- MAIN -->
@@ -224,7 +224,7 @@
             <div class="np-artist" id="npArtist">Loading…</div>
             <div class="np-song" id="npSong"></div>
             <div class="audio-embed" id="audioEmbed">
-                <iframe id="audioFrame" src="" height="120" scrolling="no"></iframe>
+                <iframe id="audioFrame" src="" height="200" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:14px;"></iframe>
             </div>
         </div>
 
@@ -271,27 +271,28 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
+    // YouTube video IDs — embeds work everywhere, no blocking
     const TRACKS = [
-        { artist: 'Wizkid',          song: 'Essence (ft. Tems)',               url: 'https://audiomack.com/wizkid/song/essence-2' },
-        { artist: 'Rema',            song: 'Calm Down',                         url: 'https://audiomack.com/heisrema/song/calm-down-2' },
-        { artist: 'Burna Boy',       song: 'Last Last',                         url: 'https://audiomack.com/burna-boy/song/last-last-africa' },
-        { artist: 'SugaKing',        song: 'Street Na Stage',                   url: 'https://audiomack.com/sugaking1/song/692c427a73335' },
-        { artist: 'Mulla Ray',       song: 'Highway',                           url: 'https://audiomack.com/mulla-ray/song/highway' },
-        { artist: 'JTK',             song: 'Jo',                                url: 'https://audiomack.com/jtk-5/song/jo' },
-        { artist: 'DJ BabyGolo',     song: 'Nigerian Afrobeat Summer',          url: 'https://audiomack.com/djbabygolo-golo-nation/song/nigerian-afrobeat-summer' },
-        { artist: 'Afrobeat Music',  song: 'Feel The Groove',                   url: 'https://audiomack.com/afrobeat-music/song/feel-the-groove' },
-        { artist: 'DJ BabyGolo',     song: 'Afrobeats Night Vibes',             url: 'https://audiomack.com/djbabygolo-golo-nation/song/afrobeats-night-vibes' },
-        { artist: 'Afrobeat Music',  song: 'Exclusive Afrobeat Track',          url: 'https://audiomack.com/afrobeat-music/song/exclusive-afrobeat-track' },
-        { artist: 'Afrobeat Music',  song: 'Chill Afro Ride',                   url: 'https://audiomack.com/afrobeat-music/song/chill-afro-ride' },
-        { artist: 'Afrobeat Music',  song: 'Feel Good Afro',                    url: 'https://audiomack.com/afrobeat-music/song/feel-good-afro' },
-        { artist: 'Afrobeat Music',  song: 'National Beat',                     url: 'https://audiomack.com/afrobeat-music/song/national-beat' },
-        { artist: 'DJ BabyGolo',     song: 'Weekend Afrobeat',                  url: 'https://audiomack.com/djbabygolo-golo-nation/song/weekend-afrobeat' },
-        { artist: 'Afrobeat Music',  song: 'Uptown Afro Vibes',                 url: 'https://audiomack.com/afrobeat-music/song/uptown-afro-vibes' },
-        { artist: 'DJ BabyGolo',     song: 'Feel The Afro',                     url: 'https://audiomack.com/djbabygolo-golo-nation/song/feel-the-afro' },
-        { artist: 'Saycome',         song: '1 Billion Kuwait',                  url: 'https://audiomack.com/saycome/song/1-billion-kuwait' },
-        { artist: 'JaemallyBeatz',   song: 'Libido Afro-fusion Beat 2024',      url: 'https://audiomack.com/jaemallybeatz/song/libido-afro-fusion-type-beat-2024' },
-        { artist: 'Naija Afrobeat',  song: 'Search Picks',                      url: 'https://audiomack.com/search?q=naija%20afrobeat' },
-        { artist: 'Naija Hits',      song: 'Search Picks',                      url: 'https://audiomack.com/search?q=naija%20hits' },
+        { artist: 'Wizkid',         song: 'Essence ft. Tems',              vid: 'WcLJZAkmI9o' },
+        { artist: 'Rema',           song: 'Calm Down',                     vid: 'Os6gLKIaWaY' },
+        { artist: 'Burna Boy',      song: 'Last Last',                     vid: 'hJN7fxMNRO0' },
+        { artist: 'Asake',          song: 'Organise',                      vid: 'xYlPbkSzFZI' },
+        { artist: 'Davido',         song: 'Stand Strong ft. Mavins',       vid: '3gLIE0QBKQM' },
+        { artist: 'Fireboy DML',    song: 'Peru',                          vid: 'g6aQeF6ZJXI' },
+        { artist: 'Omah Lay',       song: 'Understand',                    vid: 'X4KCf-i5lu0' },
+        { artist: 'Ckay',           song: 'Love Nwantiti',                 vid: '6JqEJMnbyW4' },
+        { artist: 'Ayra Starr',     song: '19 & Dangerous',                vid: 'cbqG5RRqkXs' },
+        { artist: 'Kizz Daniel',    song: 'Buga ft. Tekno',                vid: 'O_Fy58e9T3M' },
+        { artist: 'Tems',           song: 'Free Mind',                     vid: 'jBQKSy3Ee2U' },
+        { artist: 'Zinoleesky',     song: 'Loving You',                    vid: 'GCxaHnVe-PM' },
+        { artist: 'Portable',       song: 'Zazu Zeh',                      vid: 'aPZElrXFbKY' },
+        { artist: 'Olamide',        song: 'Infinity ft. Omah Lay',         vid: 'hiqn-Dmhyps' },
+        { artist: 'Joeboy',         song: 'Alcohol',                       vid: 'xoT1hWTTlgw' },
+        { artist: 'Tiwa Savage',    song: 'Somebody's Son',               vid: 'jExQxU3s-W4' },
+        { artist: 'Simi',           song: 'Duduke',                        vid: 'kNNwPGBg0GE' },
+        { artist: 'Flavour',        song: 'Shake',                         vid: 'FalCvvbJuMk' },
+        { artist: 'Pheelz',         song: 'Finesse ft. BNXN',              vid: 'M8AuvuuOhxA' },
+        { artist: 'BNXN',           song: 'Gwara Gwara',                   vid: 'NpZlVCcPVbQ' },
     ];
 
     const AUDIO_EARN_AMOUNT = 500;
@@ -328,11 +329,9 @@
         return dayOfYear % 20;
     }
 
-    function getEmbedUrl(trackUrl) {
-        // Skip search URLs — use embed player for song pages only
-        if(trackUrl.includes('/search')) return null;
-        const path = trackUrl.replace('https://audiomack.com/', '');
-        return `https://audiomack.com/player/${path}`;
+    function getEmbedUrl(track) {
+        // YouTube embed — works everywhere, no iframe blocking
+        return `https://www.youtube.com/embed/${track.vid}?autoplay=0&rel=0&modestbranding=1`;
     }
 
     function startListenTimer() {
@@ -410,18 +409,14 @@
                 </button>
                 <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Press play above, then your reward unlocks automatically</div>`;
 
-            // Start timer when user interacts with the audio embed
-            document.querySelector('.now-playing-card').addEventListener('click', () => {
-                if(!listenStarted) {
+            // Timer starts when user clicks a track (handled in loadTrack)
+            // Also auto-start after 5s in case the video autoplays
+            setTimeout(() => {
+                if(!listenStarted && !taskAlreadyDone) {
                     startListenTimer();
                     updateClaimButton();
                 }
-            });
-            // Auto-start after 3s (embed may autoplay)
-            setTimeout(() => {
-                startListenTimer();
-                updateClaimButton();
-            }, 3000);
+            }, 5000);
 
             document.getElementById('audioClaimBtn').addEventListener('click', claimAudioEarning);
         }
@@ -474,27 +469,24 @@
         document.getElementById('npArtist').textContent = track.artist;
         document.getElementById('npSong').textContent = track.song;
 
-        const embedUrl = getEmbedUrl(track.url);
         const frame = document.getElementById('audioFrame');
-        if(embedUrl) {
-            frame.src = embedUrl;
-            frame.style.display = 'block';
-        } else {
-            // Search URL fallback — show link
-            frame.style.display = 'none';
-            let fallback = document.getElementById('audioFallback');
-            if(!fallback) {
-                fallback = document.createElement('div');
-                fallback.id = 'audioFallback';
-                fallback.style.cssText = 'padding:16px;text-align:center;';
-                frame.parentNode.appendChild(fallback);
-            }
-            fallback.innerHTML = `<a href="${track.url}" target="_blank" style="color:#a78bfa;font-size:13px;font-weight:600;">🎵 Open ${track.song} on Audiomack</a>`;
-        }
+        // YouTube embed — guaranteed to play
+        frame.src = getEmbedUrl(track);
+        frame.style.display = 'block';
+
+        // Remove any old fallback
+        const old = document.getElementById('audioFallback');
+        if(old) old.remove();
 
         document.querySelectorAll('.track-item').forEach((el, i) => {
             el.classList.toggle('active', i === idx);
         });
+
+        // Start listen timer when user clicks a track
+        if(!listenStarted && !taskAlreadyDone) {
+            startListenTimer();
+            updateClaimButton();
+        }
     }
 
     async function init() {
