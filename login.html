@@ -413,35 +413,82 @@
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
+    <!-- Forgot Password Modal — 3-step flow -->
     <div class="modal" id="forgotPasswordModal">
         <div class="modal-content">
             <button class="close-modal" id="closeModal">&times;</button>
-            <h2 class="modal-title">Reset Password</h2>
-            <p class="modal-subtitle">Enter your email address and we'll send you a link to reset your password.</p>
 
-            <div id="forgotPasswordAlertContainer"></div>
-
-            <form id="forgotPasswordForm">
+            <!-- STEP 1: Enter email -->
+            <div id="fpStep1">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:56px;height:56px;background:rgba(79,209,197,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                        <i class="fas fa-envelope" style="font-size:22px;color:#4fd1c5;"></i>
+                    </div>
+                    <h2 class="modal-title">Forgot Password?</h2>
+                    <p class="modal-subtitle">Enter the email address you registered with. We'll verify it exists in our system.</p>
+                </div>
+                <div id="fpAlert1"></div>
                 <div class="form-group">
-                    <label for="forgotEmail" class="form-label">Email Address</label>
+                    <label class="form-label">Email Address</label>
                     <div class="input-wrapper">
                         <i class="fas fa-envelope input-icon"></i>
-                        <input
-                            type="email"
-                            id="forgotEmail"
-                            class="form-input"
-                            placeholder="you@example.com"
-                            required
-                        >
+                        <input type="email" id="fpEmail" class="form-input" placeholder="you@example.com">
                     </div>
-                    <div class="error-message" id="forgotEmailError"></div>
+                    <div class="error-message" id="fpEmailError"></div>
                 </div>
-
-                <button type="submit" class="submit-btn" id="resetBtn">
-                    Send Reset Link
+                <button class="submit-btn" id="fpVerifyBtn" onclick="fpVerifyEmail()">
+                    <i class="fas fa-search"></i> Verify Email
                 </button>
-            </form>
+            </div>
+
+            <!-- STEP 2: Email verified — set new password -->
+            <div id="fpStep2" style="display:none;">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:56px;height:56px;background:rgba(79,209,197,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                        <i class="fas fa-check-circle" style="font-size:22px;color:#4fd1c5;"></i>
+                    </div>
+                    <h2 class="modal-title">Email Verified ✓</h2>
+                    <p class="modal-subtitle" id="fpVerifiedText">Account found. Now set your new password below.</p>
+                </div>
+                <div id="fpAlert2"></div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="fpNewPass" class="form-input" placeholder="Enter new password (min 6 chars)">
+                        <button type="button" class="password-toggle" onclick="fpToggle('fpNewPass',this)"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="error-message" id="fpNewPassError"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="fpConfirmPass" class="form-input" placeholder="Re-enter new password">
+                        <button type="button" class="password-toggle" onclick="fpToggle('fpConfirmPass',this)"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="error-message" id="fpConfirmPassError"></div>
+                </div>
+                <button class="submit-btn" id="fpSaveBtn" onclick="fpSavePassword()">
+                    <i class="fas fa-key"></i> Save New Password
+                </button>
+                <button type="button" onclick="fpGoBack()" style="width:100%;margin-top:10px;padding:10px;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;font-family:Inter,sans-serif;">
+                    ← Use a different email
+                </button>
+            </div>
+
+            <!-- STEP 3: Password changed success -->
+            <div id="fpStep3" style="display:none;">
+                <div style="text-align:center;padding:10px 0;">
+                    <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+                    <h2 class="modal-title" style="margin-bottom:10px;">Password Updated!</h2>
+                    <p class="modal-subtitle">Your password has been changed successfully. You can now sign in with your new password.</p>
+                    <button class="submit-btn" onclick="fpDone()" style="margin-top:10px;">
+                        <i class="fas fa-sign-in-alt"></i> Go to Sign In
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -451,19 +498,13 @@
 
     <script>
         // DOM Elements
-        const loginForm = document.getElementById('loginForm');
-        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const submitBtn = document.getElementById('submitBtn');
-        const passwordToggle = document.getElementById('passwordToggle');
-        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-        const closeModal = document.getElementById('closeModal');
-        const forgotEmailInput = document.getElementById('forgotEmail');
-        const resetBtn = document.getElementById('resetBtn');
-        const alertContainer = document.getElementById('alertContainer');
-        const forgotPasswordAlertContainer = document.getElementById('forgotPasswordAlertContainer');
+        const loginForm           = document.getElementById('loginForm');
+        const emailInput          = document.getElementById('email');
+        const passwordInput       = document.getElementById('password');
+        const submitBtn           = document.getElementById('submitBtn');
+        const passwordToggle      = document.getElementById('passwordToggle');
+        const forgotPasswordLink  = document.getElementById('forgotPasswordLink');
+        const alertContainer      = document.getElementById('alertContainer');
 
         // Utility Functions
         function showAlert(container, message, type) {
@@ -632,82 +673,203 @@
             }
         });
 
-        // Forgot Password Modal
+        // ── FORGOT PASSWORD — 3-STEP FLOW ──────────────────────────────
+        // Step 1 → verify email exists in profiles table
+        // Step 2 → user sets new password (no email link needed)
+        // Step 3 → success screen
+        // ───────────────────────────────────────────────────────────────
+
+        let fpVerifiedEmail = null; // stores the verified email between steps
+
+        // Open modal
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
-            forgotPasswordModal.classList.add('show');
-            hideAlert(forgotPasswordAlertContainer);
+            fpReset();
+            document.getElementById('forgotPasswordModal').classList.add('show');
         });
 
-        closeModal.addEventListener('click', () => {
-            forgotPasswordModal.classList.remove('show');
-            hideAlert(forgotPasswordAlertContainer);
-            forgotPasswordForm.reset();
+        // Close modal — X button
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('forgotPasswordModal').classList.remove('show');
         });
 
-        forgotPasswordModal.addEventListener('click', (e) => {
-            if (e.target === forgotPasswordModal) {
-                forgotPasswordModal.classList.remove('show');
-                hideAlert(forgotPasswordAlertContainer);
-                forgotPasswordForm.reset();
+        // Close modal — click outside
+        document.getElementById('forgotPasswordModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('forgotPasswordModal')) {
+                document.getElementById('forgotPasswordModal').classList.remove('show');
             }
         });
 
-        // Forgot Password Form Submission
-        forgotPasswordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideAlert(forgotPasswordAlertContainer);
+        // Reset modal back to step 1
+        function fpReset() {
+            fpVerifiedEmail = null;
+            document.getElementById('fpStep1').style.display = 'block';
+            document.getElementById('fpStep2').style.display = 'none';
+            document.getElementById('fpStep3').style.display = 'none';
+            document.getElementById('fpEmail').value = '';
+            document.getElementById('fpNewPass').value = '';
+            document.getElementById('fpConfirmPass').value = '';
+            document.getElementById('fpAlert1').innerHTML = '';
+            document.getElementById('fpAlert2').innerHTML = '';
+            document.getElementById('fpEmailError').textContent = '';
+            document.getElementById('fpEmailError').classList.remove('show');
+            document.getElementById('fpNewPassError').textContent = '';
+            document.getElementById('fpNewPassError').classList.remove('show');
+            document.getElementById('fpConfirmPassError').textContent = '';
+            document.getElementById('fpConfirmPassError').classList.remove('show');
+        }
 
-            const email = forgotEmailInput.value.trim();
+        function fpGoBack() { fpReset(); }
 
-            // Validation
+        function fpDone() {
+            document.getElementById('forgotPasswordModal').classList.remove('show');
+            fpReset();
+        }
+
+        function fpToggle(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isPass = input.type === 'password';
+            input.type = isPass ? 'text' : 'password';
+            btn.innerHTML = '<i class="fas fa-eye' + (isPass ? '-slash' : '') + '"></i>';
+        }
+
+        function fpShowAlert(containerId, msg, type) {
+            const el = document.getElementById(containerId);
+            el.innerHTML = '<div class="alert ' + type + ' show"><i class="fas fa-' +
+                (type === 'error' ? 'exclamation-circle' : 'check-circle') + '"></i> ' + msg + '</div>';
+        }
+
+        // ── STEP 1: Verify email exists ──
+        async function fpVerifyEmail() {
+            const email = document.getElementById('fpEmail').value.trim();
+            const errEl = document.getElementById('fpEmailError');
+
+            // Basic validation
             if (!email) {
-                showError(document.getElementById('forgotEmailError'), 'Email is required');
-                return;
-            } else if (!validateEmail(email)) {
-                showError(document.getElementById('forgotEmailError'), 'Please enter a valid email');
-                return;
-            } else {
-                hideError(document.getElementById('forgotEmailError'));
+                errEl.textContent = 'Please enter your email address';
+                errEl.classList.add('show'); return;
             }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errEl.textContent = 'Please enter a valid email address';
+                errEl.classList.add('show'); return;
+            }
+            errEl.classList.remove('show');
 
-            // Show loading state
-            resetBtn.disabled = true;
-            resetBtn.innerHTML = '<div class="spinner"></div> Sending...';
+            const btn = document.getElementById('fpVerifyBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Verifying…';
 
             try {
-                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/reset-password.html`
+                // Check if this email exists in the profiles table
+                const { data, error } = await _supabase
+                    .from('profiles')
+                    .select('id, full_name, email')
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!data) {
+                    // Email not found
+                    fpShowAlert('fpAlert1',
+                        'No account found with this email address. Please check and try again.',
+                        'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-search"></i> Verify Email';
+                    return;
+                }
+
+                // Email found — move to step 2
+                fpVerifiedEmail = email;
+                const name = data.full_name ? data.full_name.split(' ')[0] : 'there';
+                document.getElementById('fpVerifiedText').textContent =
+                    'Hi ' + name + '! Account found for ' + email + '. Now set your new password.';
+
+                document.getElementById('fpStep1').style.display = 'none';
+                document.getElementById('fpStep2').style.display = 'block';
+
+            } catch (err) {
+                fpShowAlert('fpAlert1', err.message || 'Something went wrong. Try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-search"></i> Verify Email';
+            }
+        }
+
+        // ── STEP 2: Save new password ──
+        async function fpSavePassword() {
+            if (!fpVerifiedEmail) return;
+
+            const newPass     = document.getElementById('fpNewPass').value;
+            const confirmPass = document.getElementById('fpConfirmPass').value;
+            const errNew      = document.getElementById('fpNewPassError');
+            const errConfirm  = document.getElementById('fpConfirmPassError');
+            let valid = true;
+
+            // Validate new password
+            if (!newPass) {
+                errNew.textContent = 'Please enter a new password';
+                errNew.classList.add('show'); valid = false;
+            } else if (newPass.length < 6) {
+                errNew.textContent = 'Password must be at least 6 characters';
+                errNew.classList.add('show'); valid = false;
+            } else {
+                errNew.classList.remove('show');
+            }
+
+            // Validate confirm password
+            if (!confirmPass) {
+                errConfirm.textContent = 'Please confirm your new password';
+                errConfirm.classList.add('show'); valid = false;
+            } else if (newPass !== confirmPass) {
+                errConfirm.textContent = 'Passwords do not match';
+                errConfirm.classList.add('show'); valid = false;
+            } else {
+                errConfirm.classList.remove('show');
+            }
+
+            if (!valid) return;
+
+            const btn = document.getElementById('fpSaveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Saving…';
+
+            try {
+                // Direct password update using Supabase RPC (no email sent at all)
+                // Calls a Postgres function that updates auth.users directly
+                const { error: rpcErr } = await _supabase.rpc('reset_user_password', {
+                    p_email: fpVerifiedEmail,
+                    p_new_password: newPass
                 });
 
-                if (error) {
-                    showAlert(forgotPasswordAlertContainer, error.message || 'Failed to send reset email', 'error');
-                } else {
-                    showAlert(forgotPasswordAlertContainer, 'Password reset link sent! Check your email.', 'success');
-                    forgotPasswordForm.reset();
-                    setTimeout(() => {
-                        forgotPasswordModal.classList.remove('show');
-                    }, 2000);
-                }
-            } catch (err) {
-                showAlert(forgotPasswordAlertContainer, err.message || 'An error occurred', 'error');
-            } finally {
-                resetBtn.disabled = false;
-                resetBtn.innerHTML = 'Send Reset Link';
-            }
-        });
+                if (rpcErr) throw rpcErr;
 
-        // Clear error messages on input
+                // Show success step
+                document.getElementById('fpStep2').style.display = 'none';
+                document.getElementById('fpStep3').style.display = 'block';
+
+            } catch (err) {
+                fpShowAlert('fpAlert2', err.message || 'Failed to update password. Try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> Save New Password';
+            }
+        }
+
+        // Clear error on input
         emailInput.addEventListener('input', () => {
             hideError(document.getElementById('emailError'));
         });
-
         passwordInput.addEventListener('input', () => {
             hideError(document.getElementById('passwordError'));
         });
-
-        forgotEmailInput.addEventListener('input', () => {
-            hideError(document.getElementById('forgotEmailError'));
+        document.getElementById('fpEmail').addEventListener('input', () => {
+            document.getElementById('fpEmailError').classList.remove('show');
+            document.getElementById('fpAlert1').innerHTML = '';
+        });
+        document.getElementById('fpNewPass').addEventListener('input', () => {
+            document.getElementById('fpNewPassError').classList.remove('show');
+        });
+        document.getElementById('fpConfirmPass').addEventListener('input', () => {
+            document.getElementById('fpConfirmPassError').classList.remove('show');
         });
     </script>
 </body>
