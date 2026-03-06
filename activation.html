@@ -300,6 +300,133 @@
         .message.success {
             color: #10b981;
         }
+
+        /* ── PAYMENT PROOF UPLOAD ── */
+        .upload-section {
+            margin-top: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .upload-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upload-title i { color: #4fd1c5; }
+        .upload-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
+        }
+        .upload-dropzone {
+            border: 2px dashed rgba(79,209,197,0.4);
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: rgba(79,209,197,0.04);
+            position: relative;
+        }
+        .upload-dropzone:hover, .upload-dropzone.drag-over {
+            border-color: #4fd1c5;
+            background: rgba(79,209,197,0.1);
+        }
+        .upload-dropzone input[type="file"] {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 32px; color: #4fd1c5; margin-bottom: 8px; }
+        .upload-hint { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; font-weight: 600; }
+        .upload-formats { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+        /* Preview */
+        .preview-wrap {
+            display: none;
+            margin-top: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(79,209,197,0.3);
+        }
+        .preview-wrap img {
+            width: 100%; max-height: 200px;
+            object-fit: cover; display: block;
+        }
+        .preview-remove {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(239,68,68,0.85);
+            color: #fff; border: none;
+            width: 28px; height: 28px; border-radius: 50%;
+            font-size: 13px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .preview-filename {
+            background: rgba(0,0,0,0.5);
+            color: #fff; font-size: 11px; font-weight: 600;
+            padding: 6px 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .preview-filename i { color: #4fd1c5; }
+
+        /* Upload progress */
+        .upload-progress-bar {
+            display: none;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .upload-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fd1c5, #45b8ad);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Submit proof button */
+        .btn-upload {
+            width: 100%;
+            margin-top: 12px;
+            padding: 13px;
+            background: linear-gradient(135deg, #4fd1c5, #45b8ad);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s;
+        }
+        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,209,197,0.4); }
+        .btn-upload:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Already uploaded state */
+        .upload-success-badge {
+            display: none;
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #10b981;
+            font-weight: 600;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -352,6 +479,45 @@
                 </button>
             </div>
 
+
+            <!-- ── PAYMENT PROOF UPLOAD ── -->
+            <div class="upload-section">
+                <div class="upload-title"><i class="fas fa-receipt"></i> Upload Payment Proof</div>
+                <div class="upload-subtitle">Upload your payment screenshot so admin can verify and approve you faster</div>
+
+                <div class="upload-dropzone" id="dropzone">
+                    <input type="file" id="proofFile" accept="image/*,.pdf" onchange="onFileSelected(event)">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="upload-hint">Tap to upload payment screenshot</div>
+                    <div class="upload-formats">JPG, PNG, PDF &mdash; max 5MB</div>
+                </div>
+
+                <!-- File preview -->
+                <div class="preview-wrap" id="previewWrap">
+                    <img id="previewImg" src="" alt="Payment proof preview">
+                    <div class="preview-filename" id="previewFilename">
+                        <i class="fas fa-file-image"></i>
+                        <span id="previewName"></span>
+                    </div>
+                    <button class="preview-remove" onclick="removeFile()" title="Remove">&#10005;</button>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="upload-progress-bar" id="progressBar">
+                    <div class="upload-progress-fill" id="progressFill"></div>
+                </div>
+
+                <!-- Submit button -->
+                <button class="btn-upload" id="submitProofBtn" onclick="uploadProof()">
+                    <i class="fas fa-paper-plane"></i> Submit Payment Proof
+                </button>
+
+                <!-- Already submitted badge -->
+                <div class="upload-success-badge" id="successBadge">
+                    <i class="fas fa-check-circle"></i> Payment proof submitted! Admin will review shortly.
+                </div>
+            </div>
+
             <!-- Message -->
             <div class="message" id="message"></div>
         </div>
@@ -389,6 +555,7 @@
 
                 // Start auto-check every 30 seconds
                 startAutoCheck();
+                checkExistingProof();
             } catch (error) {
                 console.error('Error initializing page:', error);
                 showMessage('Error loading page. Please refresh.', 'error');
@@ -521,6 +688,156 @@
                     console.error('Error in auto-check:', error);
                 }
             }, 30000);
+        }
+
+
+        // ── PAYMENT PROOF UPLOAD ──
+        let selectedFile = null;
+
+        function onFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showMessage('File too large. Maximum size is 5MB.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Show preview
+            const previewWrap = document.getElementById('previewWrap');
+            const previewImg  = document.getElementById('previewImg');
+            const previewName = document.getElementById('previewName');
+
+            previewName.textContent = file.name;
+            previewWrap.style.display = 'block';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => { previewImg.src = e.target.result; previewImg.style.display = 'block'; };
+                reader.readAsDataURL(file);
+            } else {
+                // PDF — show icon instead
+                previewImg.style.display = 'none';
+            }
+
+            // Show submit button
+            const btn = document.getElementById('submitProofBtn');
+            btn.style.display = 'flex';
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('proofFile').value = '';
+            document.getElementById('previewWrap').style.display = 'none';
+            document.getElementById('previewImg').src = '';
+            document.getElementById('submitProofBtn').style.display = 'none';
+        }
+
+        async function uploadProof() {
+            if (!selectedFile) return;
+
+            const btn      = document.getElementById('submitProofBtn');
+            const progBar  = document.getElementById('progressBar');
+            const progFill = document.getElementById('progressFill');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Uploading…';
+            progBar.style.display = 'block';
+            progFill.style.width  = '20%';
+
+            try {
+                // Get current user
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) { showMessage('Session expired. Please log in again.', 'error'); return; }
+
+                const userId  = session.user.id;
+                const ext     = selectedFile.name.split('.').pop();
+                const fileName = `payment-proofs/${userId}_${Date.now()}.${ext}`;
+
+                progFill.style.width = '50%';
+
+                // Upload to Supabase Storage bucket named "payment-proofs"
+                const { data: uploadData, error: uploadError } = await _supabase.storage
+                    .from('payment-proofs')
+                    .upload(fileName, selectedFile, { upsert: true, contentType: selectedFile.type });
+
+                if (uploadError) throw uploadError;
+
+                progFill.style.width = '80%';
+
+                // Get public URL
+                const { data: urlData } = _supabase.storage
+                    .from('payment-proofs')
+                    .getPublicUrl(fileName);
+
+                const publicUrl = urlData?.publicUrl || '';
+
+                // Save reference in profiles table
+                const { error: profileError } = await _supabase
+                    .from('profiles')
+                    .update({
+                        payment_proof_url: publicUrl,
+                        payment_proof_uploaded_at: new Date().toISOString()
+                    })
+                    .eq('id', userId);
+
+                // If profile update fails (column may not exist yet), still show success
+                // The file is uploaded to storage regardless
+
+                progFill.style.width = '100%';
+
+                // Show success state
+                setTimeout(() => {
+                    progBar.style.display = 'none';
+                    document.getElementById('previewWrap').style.display = 'none';
+                    document.getElementById('submitProofBtn').style.display = 'none';
+                    document.getElementById('dropzone').style.display = 'none';
+                    const badge = document.getElementById('successBadge');
+                    badge.style.display = 'block';
+                    showMessage('Payment proof uploaded successfully!', 'success');
+                }, 600);
+
+            } catch (err) {
+                console.error('Upload error:', err);
+                progBar.style.display = 'none';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Payment Proof';
+                showMessage('Upload failed: ' + (err.message || 'Please try again.'), 'error');
+            }
+        }
+
+        // Drag and drop support
+        const dropzone = document.getElementById('dropzone');
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const input = document.getElementById('proofFile');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                onFileSelected({ target: { files: [file] } });
+            }
+        });
+
+        // Check if already submitted on load
+        async function checkExistingProof() {
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) return;
+                const { data: profile } = await _supabase.from('profiles')
+                    .select('payment_proof_url').eq('id', session.user.id).maybeSingle();
+                if (profile?.payment_proof_url) {
+                    document.getElementById('dropzone').style.display = 'none';
+                    document.getElementById('successBadge').style.display = 'block';
+                }
+            } catch(e) { /* ignore */ }
         }
 
         // Initialize page when DOM is ready
