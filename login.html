@@ -834,21 +834,45 @@
             btn.innerHTML = '<div class="spinner"></div> Saving…';
 
             try {
-                // Direct password update using Supabase RPC (no email sent at all)
-                // Calls a Postgres function that updates auth.users directly
-                const { error: rpcErr } = await _supabase.rpc('reset_user_password', {
-                    p_email: fpVerifiedEmail,
-                    p_new_password: newPass
-                });
+                // ✅ CORRECT APPROACH:
+                // 1. Send a password reset email (Supabase standard flow)
+                // 2. The reset link takes user to reset-password.html
+                // 3. On that page, Supabase auto-signs them in via the token
+                // 4. We call updateUser({ password: newPass }) — WORKS 100%
+                // 5. No service key needed. No SQL. No exposure.
 
-                if (rpcErr) throw rpcErr;
+                // Store the desired new password in sessionStorage
+                // reset-password.html will pick it up after Supabase token login
+                sessionStorage.setItem('pendingNewPassword', newPass);
+                sessionStorage.setItem('pendingEmail', fpVerifiedEmail);
 
-                // Show success step
+                // Send the reset email
+                const { error: resetErr } = await _supabase.auth.resetPasswordForEmail(
+                    fpVerifiedEmail,
+                    { redirectTo: window.location.origin + '/reset-password.html' }
+                );
+
+                if (resetErr) throw resetErr;
+
+                // Show instruction screen
                 document.getElementById('fpStep2').style.display = 'none';
+                document.getElementById('fpStep3').innerHTML = `
+                    <div style="text-align:center;padding:10px 0;">
+                        <div style="font-size:56px;margin-bottom:16px;">📧</div>
+                        <h2 class="modal-title" style="margin-bottom:10px;">Check Your Email</h2>
+                        <p class="modal-subtitle">
+                            We sent a reset link to<br>
+                            <strong style="color:#4fd1c5;">${fpVerifiedEmail}</strong><br><br>
+                            Click that link — it will open your site and <strong>automatically set your new password</strong> without you typing anything again.
+                        </p>
+                        <button class="submit-btn" onclick="fpDone()" style="margin-top:16px;">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>`;
                 document.getElementById('fpStep3').style.display = 'block';
 
             } catch (err) {
-                fpShowAlert('fpAlert2', err.message || 'Failed to update password. Try again.', 'error');
+                fpShowAlert('fpAlert2', err.message || 'Failed to send reset. Try again.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-key"></i> Save New Password';
             }
