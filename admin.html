@@ -1083,9 +1083,9 @@
 
       const initials = (user.full_name||user.email||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
       const isApproved = user.is_approved === true;
-      const taskEarn   = Number(wallet?.task_earnings||0);
-      const refEarn    = Number(wallet?.referral_earnings||0);
-      const bonusEarn  = Number(wallet?.signup_bonus||0);
+      const taskEarn   = Number(wallet?.task_earnings   || 0);
+      const refEarn    = Number(wallet?.collab_earnings  || 0);
+      const bonusEarn  = Number(wallet?.bonus_balance    || 0);
       const totalBal   = taskEarn + refEarn + bonusEarn;
       const joined     = new Date(user.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
@@ -1359,13 +1359,15 @@
       const which = prompt('Which balance to adjust?\n\n1 = Task Earnings\n2 = Collab Earnings\n3 = Bonus Balance\n\nType 1, 2, or 3:');
       if(!['1','2','3'].includes(which)) { showToast('Invalid selection', 'error'); return; }
 
-      const colMap = { '1': 'task_earnings', '2': 'collab_earnings', '3': 'bonus_balance' };
-      const col = colMap[which];
+      const colMap   = { '1': 'task_earnings', '2': 'collab_earnings', '3': 'bonus_balance' };
+      const typeMap  = { '1': 'admin_adjustment', '2': 'admin_adjustment', '3': 'admin_adjustment' };
+      const col      = colMap[which];
       const colLabel = { '1': 'Task Earnings', '2': 'Collab Earnings', '3': 'Bonus Balance' }[which];
 
       try {
         const now = new Date().toISOString();
-        // Fetch ONLY the target column
+
+        // 1. Fetch current wallet value for the target column
         const { data: w, error: fetchErr } = await _supabase
           .from('wallets').select(col).eq('user_id', userId).maybeSingle();
         if(fetchErr) throw fetchErr;
@@ -1373,15 +1375,27 @@
         const current = Number(w?.[col] || 0);
         const newVal  = Math.max(0, current + amount);
 
-        // Update ONLY the target column — no transaction record inserted
+        // 2. Update the wallet column
         const { error: updateErr } = await _supabase
           .from('wallets')
           .update({ [col]: newVal, updated_at: now })
           .eq('user_id', userId);
         if(updateErr) throw updateErr;
 
-        showToast('\u2705 ' + colLabel + ' adjusted by \u20a6' + amount.toLocaleString() + ' for ' + userName, 'success');
-        // Reload the user view to show updated values
+        // 3. Insert a transaction record so ALL pages stay in sync
+        const { error: txErr } = await _supabase
+          .from('transactions')
+          .insert({
+            user_id:     userId,
+            type:        'admin_adjustment',
+            description: '\u2699\ufe0f Admin adjustment (' + colLabel + ')',
+            amount:      amount,
+            created_at:  now
+          });
+        if(txErr) throw txErr;
+
+        showToast('\u2705 ' + colLabel + ' adjusted by \u20a6' + Math.abs(amount).toLocaleString() + ' for ' + userName, 'success');
+        // Reload the user view panel to reflect new values immediately
         loginAsUser(userId, userName);
       } catch(e) {
         showToast('Adjustment failed: ' + e.message, 'error');
