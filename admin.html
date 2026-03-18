@@ -686,6 +686,22 @@
         <p>Welcome to the user management admin panel</p>
       </div>
 
+      <!-- BACKFILL BANNER — one-time fix for old admin adjustments -->
+      <div id="backfillBanner" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px;">⚠️ One-Time Balance Sync Required</div>
+          <div style="font-size:13px;opacity:0.9;line-height:1.5;">Previous admin balance adjustments only updated the <code style="background:rgba(0,0,0,0.2);padding:1px 6px;border-radius:4px;">wallets</code> table but not <code style="background:rgba(0,0,0,0.2);padding:1px 6px;border-radius:4px;">transactions</code>.<br>Click to backfill the gap so every user's earn page shows the correct balance.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+          <button id="backfillBtn" onclick="runBackfill()" style="background:white;color:#d97706;border:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;">
+            🔄 Sync All Balances
+          </button>
+          <button onclick="document.getElementById('backfillBanner').style.display='none'" style="background:rgba(0,0,0,0.15);color:white;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">
+            Dismiss
+          </button>
+        </div>
+      </div>
+
       <!-- STATS ROW -->
       <div class="stats-row">
         <div class="stat-card">
@@ -1083,9 +1099,9 @@
 
       const initials = (user.full_name||user.email||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
       const isApproved = user.is_approved === true;
-      const taskEarn   = Number(wallet?.task_earnings   || 0);
-      const refEarn    = Number(wallet?.collab_earnings  || 0);
-      const bonusEarn  = Number(wallet?.bonus_balance    || 0);
+      const taskEarn   = Number(wallet?.task_earnings  || 0);
+      const refEarn    = Number(wallet?.collab_earnings || 0);
+      const bonusEarn  = Number(wallet?.bonus_balance   || 0);
       const totalBal   = taskEarn + refEarn + bonusEarn;
       const joined     = new Date(user.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
@@ -1360,7 +1376,6 @@
       if(!['1','2','3'].includes(which)) { showToast('Invalid selection', 'error'); return; }
 
       const colMap   = { '1': 'task_earnings', '2': 'collab_earnings', '3': 'bonus_balance' };
-      const typeMap  = { '1': 'admin_adjustment', '2': 'admin_adjustment', '3': 'admin_adjustment' };
       const col      = colMap[which];
       const colLabel = { '1': 'Task Earnings', '2': 'Collab Earnings', '3': 'Bonus Balance' }[which];
 
@@ -1382,7 +1397,7 @@
           .eq('user_id', userId);
         if(updateErr) throw updateErr;
 
-        // 3. Insert a transaction record so ALL pages stay in sync
+        // 3. Insert a transaction so ALL pages (earn, dashboard) stay in sync
         const { error: txErr } = await _supabase
           .from('transactions')
           .insert({
@@ -1395,7 +1410,6 @@
         if(txErr) throw txErr;
 
         showToast('\u2705 ' + colLabel + ' adjusted by \u20a6' + Math.abs(amount).toLocaleString() + ' for ' + userName, 'success');
-        // Reload the user view panel to reflect new values immediately
         loginAsUser(userId, userName);
       } catch(e) {
         showToast('Adjustment failed: ' + e.message, 'error');
@@ -1418,6 +1432,82 @@
         loadUsers();
       } catch(e) {
         showToast('Delete failed: ' + e.message, 'error');
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // ONE-TIME BACKFILL — syncs wallet totals → transactions
+    // for users whose balances were adjusted before the fix.
+    // Safe to run multiple times: only inserts the GAP amount,
+    // never double-counts existing transaction records.
+    // ══════════════════════════════════════════════════════
+    async function runBackfill() {
+      const btn = document.getElementById('backfillBtn');
+      btn.textContent = '⏳ Syncing...';
+      btn.disabled = true;
+
+      try {
+        // 1. Fetch every wallet row
+        const { data: wallets, error: wErr } = await _supabase
+          .from('wallets').select('user_id, task_earnings, collab_earnings, bonus_balance');
+        if(wErr) throw wErr;
+
+        // 2. Fetch every transaction summed per user
+        const { data: txRows, error: tErr } = await _supabase
+          .from('transactions').select('user_id, amount');
+        if(tErr) throw tErr;
+
+        // Build a map of existing transaction totals per user
+        const txTotals = {};
+        (txRows || []).forEach(r => {
+          txTotals[r.user_id] = (txTotals[r.user_id] || 0) + Number(r.amount || 0);
+        });
+
+        const now = new Date().toISOString();
+        let synced = 0;
+        let skipped = 0;
+        const inserts = [];
+
+        (wallets || []).forEach(w => {
+          const walletTotal = Number(w.task_earnings || 0)
+                            + Number(w.collab_earnings || 0)
+                            + Number(w.bonus_balance || 0);
+          const txTotal     = txTotals[w.user_id] || 0;
+          const gap         = Math.round((walletTotal - txTotal) * 100) / 100;
+
+          if(gap > 0) {
+            // There is a positive gap — wallet is higher than transactions
+            inserts.push({
+              user_id:     w.user_id,
+              type:        'admin_adjustment',
+              description: '⚙️ Balance sync (backfill)',
+              amount:      gap,
+              created_at:  now
+            });
+            synced++;
+          } else {
+            skipped++;
+          }
+        });
+
+        if(inserts.length === 0) {
+          showToast('✅ All balances are already in sync — nothing to backfill!', 'success');
+          document.getElementById('backfillBanner').style.display = 'none';
+          return;
+        }
+
+        // Insert all gap transactions in one batch
+        const { error: insErr } = await _supabase
+          .from('transactions').insert(inserts);
+        if(insErr) throw insErr;
+
+        showToast('✅ Synced ' + synced + ' user(s). ' + skipped + ' already up to date.', 'success');
+        document.getElementById('backfillBanner').style.display = 'none';
+
+      } catch(e) {
+        showToast('Backfill failed: ' + e.message, 'error');
+        btn.textContent = '🔄 Sync All Balances';
+        btn.disabled = false;
       }
     }
 
