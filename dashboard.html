@@ -908,7 +908,7 @@
                     .from('wallets')
                     .select('*')
                     .eq('user_id', userId)
-                    .single();
+                    .maybeSingle();
 
                 if (error || !data) {
                     // No wallet row yet — show zeroes
