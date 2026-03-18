@@ -297,18 +297,20 @@
         <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading...</div>
     </div>
 
-    <button class="withdraw-btn" id="withdrawBtn">
-        <i class="fas fa-wallet"></i> Withdraw Earnings
-    </button>
+    <div id="withdrawBtnWrap">
+        <button class="withdraw-btn btn-coming-soon-withdraw" id="withdrawBtn" style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
+            <i class="fas fa-clock"></i> Coming Soon
+        </button>
+    </div>
 
 </main>
 
-<!-- WITHDRAW MODAL -->
+<!-- WITHDRAW COMING SOON MODAL -->
 <div class="modal" id="withdrawModal">
     <div class="modal-box">
         <div class="modal-emoji">&#128640;</div>
         <div class="modal-title">Coming Soon!</div>
-        <div class="modal-msg">Withdrawals will be available very soon. Keep earning!</div>
+        <div class="modal-msg">Withdrawals will be available very soon. Keep earning — you need at least <strong>&#8358;30,000</strong> to unlock the Check Eligibility button!</div>
         <button class="modal-btn" onclick="document.getElementById('withdrawModal').classList.remove('active')">Got it</button>
     </div>
 </div>
@@ -699,6 +701,7 @@ async function loadStats() {
         });
 
         document.getElementById('totalAmount').textContent = fmt(total);
+        updateWithdrawBtn(total);
         document.getElementById('todayEarned').textContent = fmt(today);
         document.getElementById('thisMonth').textContent = fmt(month);
         document.getElementById('tasksDone').textContent = count;
@@ -755,11 +758,27 @@ function setupEye() {
 // ═══════════════════════════════════════════════════
 // WITHDRAW
 // ═══════════════════════════════════════════════════
-function setupWithdraw() {
-    const modal = document.getElementById('withdrawModal');
-    document.getElementById('withdrawBtn').addEventListener('click', ()=>modal.classList.add('active'));
-    modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('active'); });
+function updateWithdrawBtn(totalBalance) {
+    const wrap = document.getElementById('withdrawBtnWrap');
+    if (!wrap) return;
+
+    if (totalBalance >= 30000) {
+        wrap.innerHTML = `
+            <a href="eligibility.html" class="withdraw-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-check-circle"></i> Check Eligibility
+            </a>`;
+    } else {
+        wrap.innerHTML = `
+            <button class="withdraw-btn" id="withdrawBtn" onclick="document.getElementById('withdrawModal').classList.add('active')" style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
+                <i class="fas fa-clock"></i> Coming Soon
+            </button>`;
+    }
 }
+
+function setupWithdraw() {
+    // Initial state — balance not loaded yet; stays "Coming Soon" until loadStats updates it
+}
+
 </script>
 </body>
 </html>
