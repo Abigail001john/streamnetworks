@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawal Eligibility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f3ed; color: #1f2937; min-height: 100vh; }
+
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 56px;
+            background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 100; max-width: 480px; margin: 0 auto;
+        }
+        .nav-back {
+            background: none; border: none; font-size: 20px; cursor: pointer;
+            color: #1f2937; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
+        }
+        .nav-title { font-size: 18px; font-weight: 600; flex: 1; text-align: center; }
+        .nav-spacer { width: 40px; }
+
+        main {
+            margin-top: 56px; padding: 20px 16px 40px;
+            max-width: 480px; margin-left: auto; margin-right: auto;
+        }
+
+        /* RESULT BANNER */
+        .result-card {
+            border-radius: 20px; padding: 28px 24px; text-align: center;
+            margin-bottom: 18px; color: white;
+        }
+        .result-card.eligible   { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 24px rgba(16,185,129,0.28); }
+        .result-card.ineligible { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 8px 24px rgba(245,158,11,0.28); }
+        .result-emoji   { font-size: 54px; margin-bottom: 10px; }
+        .result-title   { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .result-subtitle { font-size: 14px; opacity: 0.9; line-height: 1.55; }
+
+        /* BALANCE TILE */
+        .balance-card {
+            background: white; border-radius: 16px; padding: 18px 20px;
+            margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .balance-label { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
+        .balance-amount {
+            font-size: 26px; font-weight: 700;
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .balance-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 20px; flex-shrink: 0;
+        }
+
+        /* CRITERIA */
+        .criteria-card {
+            background: white; border-radius: 16px; padding: 20px;
+            margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+        .criteria-heading { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+
+        .criteria-row {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 0; border-bottom: 1px solid #f3f4f6;
+        }
+        .criteria-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .ci-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0; margin-top: 2px;
+        }
+        .ci-icon.pass { background: #d1fae5; color: #059669; }
+        .ci-icon.fail { background: #fee2e2; color: #dc2626; }
+
+        .ci-body { flex: 1; }
+        .ci-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .ci-detail { font-size: 12px; color: #6b7280; line-height: 1.55; }
+
+        .ci-badge {
+            display: inline-block; margin-top: 7px;
+            font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
+        }
+        .ci-badge.pass { background: #d1fae5; color: #059669; }
+        .ci-badge.fail { background: #fee2e2; color: #dc2626; }
+
+        /* INFO BOX */
+        .info-box {
+            background: #eff6ff; border-radius: 12px; padding: 14px 16px;
+            margin-bottom: 18px; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .info-box i { color: #3b82f6; font-size: 16px; margin-top: 2px; flex-shrink: 0; }
+        .info-box p { font-size: 13px; color: #1e40af; line-height: 1.55; }
+
+        /* BUTTONS */
+        .action-btn {
+            width: 100%; border: none; border-radius: 12px; padding: 15px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: inherit; margin-bottom: 12px; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-green:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-amber { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-amber:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-ghost { background: white; color: #6b7280; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn-ghost:hover { background: #f9fafb; }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a href="earn.html" class="nav-back"><i class="fas fa-arrow-left"></i></a>
+    <div class="nav-title">Withdrawal Eligibility</div>
+    <div class="nav-spacer"></div>
+</nav>
+
+<main>
+    <div id="page"></div>
+</main>
+
+<script>
+// ─── Read balance passed via URL query param from earn.html (no SQL needed) ──
+const params  = new URLSearchParams(window.location.search);
+const balance = parseFloat(params.get('balance') || '0');
+
+const fmt = n => '\u20a6' + Number(n || 0).toLocaleString('en-NG', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+});
+
+// ─── Eligibility rules ───────────────────────────────────────────────────────
+const MIN_AMOUNT = 50;
+const today      = new Date();
+const isMonday   = today.getDay() === 1;   // 0=Sun 1=Mon … 6=Sat
+const hasMinBal  = balance >= MIN_AMOUNT;
+const isEligible = hasMinBal && isMonday;
+
+// ─── Next Monday label ───────────────────────────────────────────────────────
+function nextMondayLabel() {
+    const d = new Date(today);
+    const daysAway = (8 - d.getDay()) % 7 || 7;
+    d.setDate(d.getDate() + daysAway);
+    return d.toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+}
+
+const todayLabel = today.toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+});
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+document.getElementById('page').innerHTML = `
+
+    <div class="result-card ${isEligible ? 'eligible' : 'ineligible'}">
+        <div class="result-emoji">${isEligible ? '\uD83C\uDF89' : '\u23F3'}</div>
+        <div class="result-title">${isEligible ? "You're Eligible!" : 'Not Eligible Yet'}</div>
+        <div class="result-subtitle">
+            ${isEligible
+                ? 'All conditions are met \u2014 you can proceed with your withdrawal today!'
+                : 'One or more eligibility conditions are not yet satisfied. See details below.'}
+        </div>
+    </div>
+
+    <div class="balance-card">
+        <div>
+            <div class="balance-label">Your Dashboard Balance</div>
+            <div class="balance-amount">${fmt(balance)}</div>
+        </div>
+        <div class="balance-icon"><i class="fas fa-wallet"></i></div>
+    </div>
+
+    <div class="criteria-card">
+        <div class="criteria-heading">\uD83D\uDCCB Eligibility Criteria</div>
+
+        <div class="criteria-row">
+            <div class="ci-icon ${hasMinBal ? 'pass' : 'fail'}">
+                <i class="fas fa-${hasMinBal ? 'check' : 'times'}"></i>
+            </div>
+            <div class="ci-body">
+                <div class="ci-name">Minimum Withdrawal Amount</div>
+                <div class="ci-detail">
+                    A minimum balance of <strong>\u20a650</strong> is required.<br>
+                    Your balance: <strong>${fmt(balance)}</strong>.
+                    ${!hasMinBal ? `<br>You need <strong>${fmt(MIN_AMOUNT - balance)}</strong> more to qualify.` : ''}
+                </div>
+                <span class="ci-badge ${hasMinBal ? 'pass' : 'fail'}">
+                    ${hasMinBal ? '\u2713 Condition Met' : '\u2717 Not Met'}
+                </span>
+            </div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="ci-icon ${isMonday ? 'pass' : 'fail'}">
+                <i class="fas fa-${isMonday ? 'check' : 'calendar-times'}"></i>
+            </div>
+            <div class="ci-body">
+                <div class="ci-name">Withdrawals on Mondays Only</div>
+                <div class="ci-detail">
+                    Withdrawals are only processed on <strong>Mondays</strong>.<br>
+                    Today is <strong>${todayLabel}</strong>.
+                    ${!isMonday ? `<br>Next window: <strong>${nextMondayLabel()}</strong>.` : ''}
+                </div>
+                <span class="ci-badge ${isMonday ? 'pass' : 'fail'}">
+                    ${isMonday ? '\u2713 Today is Monday!' : '\u2717 Come Back on Monday'}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    ${!isMonday ? `
+    <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <p>Withdrawals open every <strong>Monday</strong>. Your next window is
+        <strong>${nextMondayLabel()}</strong>. Keep completing daily tasks to grow your balance!</p>
+    </div>` : ''}
+
+    ${isEligible
+        ? `<button class="action-btn btn-green" onclick="alert('Withdrawal flow coming soon! \uD83D\uDE80')">
+               <i class="fas fa-paper-plane"></i> Proceed to Withdraw
+           </button>`
+        : `<a href="earn.html" class="action-btn btn-amber">
+               <i class="fas fa-coins"></i> Keep Earning
+           </a>`}
+
+    <a href="earn.html" class="action-btn btn-ghost">
+        <i class="fas fa-arrow-left"></i> Back to Earn
+    </a>
+`;
+</script>
+</body>
+</html>
