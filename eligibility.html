@@ -59,7 +59,7 @@
             color: white; font-size: 20px; flex-shrink: 0;
         }
 
-        /* CRITERIA */
+        /* CRITERIA CARD */
         .criteria-card {
             background: white; border-radius: 16px; padding: 20px;
             margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
@@ -79,6 +79,7 @@
         }
         .ci-icon.pass { background: #d1fae5; color: #059669; }
         .ci-icon.fail { background: #fee2e2; color: #dc2626; }
+        .ci-icon.info { background: #eff6ff; color: #3b82f6; }
 
         .ci-body { flex: 1; }
         .ci-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
@@ -86,19 +87,29 @@
 
         .ci-badge {
             display: inline-block; margin-top: 7px;
-            font-size: 11px; font-weight: 700;
-            padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
         }
         .ci-badge.pass { background: #d1fae5; color: #059669; }
         .ci-badge.fail { background: #fee2e2; color: #dc2626; }
+        .ci-badge.info { background: #eff6ff; color: #3b82f6; }
 
         /* INFO BOX */
         .info-box {
             background: #eff6ff; border-radius: 12px; padding: 14px 16px;
-            margin-bottom: 18px; display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;
         }
         .info-box i { color: #3b82f6; font-size: 16px; margin-top: 2px; flex-shrink: 0; }
         .info-box p { font-size: 13px; color: #1e40af; line-height: 1.55; }
+
+        /* PROGRESS BAR (shown when < ₦50k) */
+        .progress-card {
+            background: white; border-radius: 16px; padding: 20px;
+            margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+        .progress-label { font-size: 13px; color: #6b7280; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .progress-track { background: #f3f4f6; border-radius: 99px; height: 10px; overflow: hidden; }
+        .progress-fill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #2dd4bf, #14b8a6); transition: width 0.6s ease; }
+        .progress-note  { font-size: 12px; color: #9ca3af; margin-top: 8px; text-align: center; }
 
         /* BUTTONS */
         .action-btn {
@@ -114,6 +125,28 @@
         .btn-amber:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-ghost { background: white; color: #6b7280; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .btn-ghost:hover { background: #f9fafb; }
+        .btn-loading { opacity: 0.7; cursor: not-allowed; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white; border-radius: 20px; padding: 28px 24px;
+            max-width: 360px; width: 100%; text-align: center;
+        }
+        .modal-emoji { font-size: 46px; margin-bottom: 10px; }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .modal-msg   { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+        .modal-close {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            color: white; border: none; border-radius: 10px;
+            padding: 12px 28px; font-size: 14px; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -124,64 +157,152 @@
     <div class="nav-spacer"></div>
 </nav>
 
-<main>
-    <div id="page"></div>
+<main id="main">
+    <!-- Rendered by JS below -->
 </main>
 
+<!-- ALERT MODAL -->
+<div class="modal-overlay" id="alertModal">
+    <div class="modal-box">
+        <div class="modal-emoji" id="alertEmoji">⚠️</div>
+        <div class="modal-title" id="alertTitle"></div>
+        <div class="modal-msg"   id="alertMsg"></div>
+        <button class="modal-close" onclick="document.getElementById('alertModal').classList.remove('active')">OK, Got it</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-// ─── Read balance passed via URL query param from earn.html (no SQL needed) ──
+// ─── Params from earn.html ────────────────────────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
 const balance = parseFloat(params.get('balance') || '0');
+const uid     = params.get('uid') || '';
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+const MIN_WITHDRAW = 50000;   // ₦50,000 — actual withdrawal minimum
+const today        = new Date();
+const isMonday     = today.getDay() === 1;
+const hasMinBal    = balance >= MIN_WITHDRAW;   // only true if ≥ ₦50,000
+// Both balance AND day must pass for full eligibility
+const isEligible   = hasMinBal && isMonday;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = n => '\u20a6' + Number(n || 0).toLocaleString('en-NG', {
     minimumFractionDigits: 2, maximumFractionDigits: 2
 });
 
-// ─── Eligibility rules ───────────────────────────────────────────────────────
-const MIN_AMOUNT = 50;
-const today      = new Date();
-const isMonday   = today.getDay() === 1;   // 0=Sun 1=Mon … 6=Sat
-const hasMinBal  = balance >= MIN_AMOUNT;
-const isEligible = hasMinBal && isMonday;
-
-// ─── Next Monday label ───────────────────────────────────────────────────────
 function nextMondayLabel() {
     const d = new Date(today);
     const daysAway = (8 - d.getDay()) % 7 || 7;
     d.setDate(d.getDate() + daysAway);
-    return d.toLocaleDateString('en-GB', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
+    return d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 }
 
 const todayLabel = today.toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    weekday:'long', day:'numeric', month:'long', year:'numeric'
 });
 
-// ─── Render ──────────────────────────────────────────────────────────────────
-document.getElementById('page').innerHTML = `
+function showAlert(emoji, title, msg) {
+    document.getElementById('alertEmoji').textContent = emoji;
+    document.getElementById('alertTitle').textContent = title;
+    document.getElementById('alertMsg').textContent   = msg;
+    document.getElementById('alertModal').classList.add('active');
+}
 
+// ─── Withdraw button handler ──────────────────────────────────────────────────
+async function handleWithdraw() {
+    const btn = document.getElementById('withdrawActionBtn');
+    if (btn) { btn.classList.add('btn-loading'); btn.textContent = 'Checking...'; }
+
+    // Step 1 — balance guard (should always pass here but double-check)
+    if (!hasMinBal) {
+        showAlert('🚫', 'Not Eligible', 'You are not eligible to withdraw. Your balance must reach \u20a650,000 first.');
+        if (btn) { btn.classList.remove('btn-loading'); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Withdraw Earnings'; }
+        return;
+    }
+
+    // Step 2 — day guard
+    if (!isMonday) {
+        showAlert('📅', 'Wrong Day', 'Withdrawals are only processed on Mondays. Please come back on ' + nextMondayLabel() + '.');
+        if (btn) { btn.classList.remove('btn-loading'); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Withdraw Earnings'; }
+        return;
+    }
+
+    // Step 3 — referral check via Supabase
+    try {
+        const { count, error } = await _supabase
+            .from('profiles')
+            .select('id', { count: 'exact', head: true })
+            .eq('referred_by', uid);
+
+        if (error) throw error;
+
+        if ((count || 0) < 1) {
+            showAlert(
+                '👥',
+                'Referral Required',
+                'Before you can place a withdrawal, you must refer at least one person.'
+            );
+            if (btn) { btn.classList.remove('btn-loading'); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Withdraw Earnings'; }
+            return;
+        }
+
+        // ✅ All checks passed
+        showAlert('🎉', 'Withdrawal Submitted!', 'All conditions met. Your withdrawal request has been received and will be processed shortly.');
+
+    } catch (e) {
+        console.error('Referral check error:', e);
+        showAlert('⚠️', 'Error', 'Could not verify your referral status. Please try again.');
+        if (btn) { btn.classList.remove('btn-loading'); btn.innerHTML = '<i class="fas fa-paper-plane"></i> Withdraw Earnings'; }
+    }
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+const pct = Math.min(100, Math.round((balance / MIN_WITHDRAW) * 100));
+
+document.getElementById('main').innerHTML = `
+
+    <!-- Status banner -->
     <div class="result-card ${isEligible ? 'eligible' : 'ineligible'}">
         <div class="result-emoji">${isEligible ? '\uD83C\uDF89' : '\u23F3'}</div>
         <div class="result-title">${isEligible ? "You're Eligible!" : 'Not Eligible Yet'}</div>
         <div class="result-subtitle">
             ${isEligible
-                ? 'All conditions are met \u2014 you can proceed with your withdrawal today!'
-                : 'One or more eligibility conditions are not yet satisfied. See details below.'}
+                ? 'All conditions are met \u2014 tap Withdraw Earnings below to proceed.'
+                : 'Check the criteria below to see what you still need to meet.'}
         </div>
     </div>
 
+    <!-- Balance tile -->
     <div class="balance-card">
         <div>
-            <div class="balance-label">Your Dashboard Balance</div>
+            <div class="balance-label">Your Current Balance</div>
             <div class="balance-amount">${fmt(balance)}</div>
         </div>
         <div class="balance-icon"><i class="fas fa-wallet"></i></div>
     </div>
 
+    <!-- Progress bar (only shown when below ₦50k) -->
+    ${!hasMinBal ? `
+    <div class="progress-card">
+        <div class="progress-label">
+            <span>Progress to minimum withdrawal</span>
+            <span>${pct}%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="progress-note">
+            ${fmt(balance)} of ${fmt(MIN_WITHDRAW)} &nbsp;&mdash;&nbsp; ${fmt(MIN_WITHDRAW - balance)} remaining
+        </div>
+    </div>` : ''}
+
+    <!-- Criteria checklist -->
     <div class="criteria-card">
         <div class="criteria-heading">\uD83D\uDCCB Eligibility Criteria</div>
 
+        <!-- Criterion 1: ₦50,000 minimum -->
         <div class="criteria-row">
             <div class="ci-icon ${hasMinBal ? 'pass' : 'fail'}">
                 <i class="fas fa-${hasMinBal ? 'check' : 'times'}"></i>
@@ -189,9 +310,9 @@ document.getElementById('page').innerHTML = `
             <div class="ci-body">
                 <div class="ci-name">Minimum Withdrawal Amount</div>
                 <div class="ci-detail">
-                    A minimum balance of <strong>\u20a650</strong> is required.<br>
+                    The minimum withdrawal is <strong>\u20a650,000</strong>.<br>
                     Your balance: <strong>${fmt(balance)}</strong>.
-                    ${!hasMinBal ? `<br>You need <strong>${fmt(MIN_AMOUNT - balance)}</strong> more to qualify.` : ''}
+                    ${!hasMinBal ? `<br>You still need <strong>${fmt(MIN_WITHDRAW - balance)}</strong> more.` : ''}
                 </div>
                 <span class="ci-badge ${hasMinBal ? 'pass' : 'fail'}">
                     ${hasMinBal ? '\u2713 Condition Met' : '\u2717 Not Met'}
@@ -199,6 +320,7 @@ document.getElementById('page').innerHTML = `
             </div>
         </div>
 
+        <!-- Criterion 2: Monday only -->
         <div class="criteria-row">
             <div class="ci-icon ${isMonday ? 'pass' : 'fail'}">
                 <i class="fas fa-${isMonday ? 'check' : 'calendar-times'}"></i>
@@ -206,7 +328,7 @@ document.getElementById('page').innerHTML = `
             <div class="ci-body">
                 <div class="ci-name">Withdrawals on Mondays Only</div>
                 <div class="ci-detail">
-                    Withdrawals are only processed on <strong>Mondays</strong>.<br>
+                    Withdrawals are processed every <strong>Monday</strong>.<br>
                     Today is <strong>${todayLabel}</strong>.
                     ${!isMonday ? `<br>Next window: <strong>${nextMondayLabel()}</strong>.` : ''}
                 </div>
@@ -215,26 +337,52 @@ document.getElementById('page').innerHTML = `
                 </span>
             </div>
         </div>
+
+        <!-- Criterion 3: Referral (checked live on submit) -->
+        <div class="criteria-row">
+            <div class="ci-icon info">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="ci-body">
+                <div class="ci-name">Referral Requirement</div>
+                <div class="ci-detail">
+                    You must have referred <strong>at least 1 person</strong>.<br>
+                    This is verified automatically when you tap Withdraw Earnings.
+                </div>
+                <span class="ci-badge info">\u{1F50D} Checked on Submit</span>
+            </div>
+        </div>
     </div>
 
+    <!-- Info hints -->
     ${!isMonday ? `
     <div class="info-box">
         <i class="fas fa-info-circle"></i>
-        <p>Withdrawals open every <strong>Monday</strong>. Your next window is
-        <strong>${nextMondayLabel()}</strong>. Keep completing daily tasks to grow your balance!</p>
+        <p>Next withdrawal window: <strong>${nextMondayLabel()}</strong>.</p>
     </div>` : ''}
 
-    ${isEligible
-        ? `<button class="action-btn btn-green" onclick="alert('Withdrawal flow coming soon! \uD83D\uDE80')">
-               <i class="fas fa-paper-plane"></i> Proceed to Withdraw
-           </button>`
-        : `<a href="earn.html" class="action-btn btn-amber">
-               <i class="fas fa-coins"></i> Keep Earning
-           </a>`}
+    ${!hasMinBal ? `
+    <div class="info-box">
+        <i class="fas fa-piggy-bank"></i>
+        <p>Complete daily tasks to reach <strong>\u20a650,000</strong>. You need <strong>${fmt(MIN_WITHDRAW - balance)}</strong> more.</p>
+    </div>` : ''}
 
-    <a href="earn.html" class="action-btn btn-ghost">
-        <i class="fas fa-arrow-left"></i> Back to Earn
-    </a>
+    <!-- Action buttons -->
+    <div style="margin-top:8px;">
+        ${isEligible
+            /* ≥ ₦50,000 AND Monday → show Withdraw Earnings button */
+            ? `<button class="action-btn btn-green" id="withdrawActionBtn" onclick="handleWithdraw()">
+                   <i class="fas fa-paper-plane"></i> Withdraw Earnings
+               </button>`
+            /* < ₦50,000 OR wrong day → Keep Earning */
+            : `<a href="earn.html" class="action-btn btn-amber">
+                   <i class="fas fa-coins"></i> Keep Earning
+               </a>`}
+
+        <a href="earn.html" class="action-btn btn-ghost">
+            <i class="fas fa-arrow-left"></i> Back to Earn
+        </a>
+    </div>
 `;
 </script>
 </body>
