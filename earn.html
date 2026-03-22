@@ -298,19 +298,19 @@
     </div>
 
     <div id="withdrawBtnWrap">
-        <button class="withdraw-btn btn-coming-soon-withdraw" id="withdrawBtn" style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
+        <button class="withdraw-btn" style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;" disabled>
             <i class="fas fa-clock"></i> Coming Soon
         </button>
     </div>
 
 </main>
 
-<!-- WITHDRAW COMING SOON MODAL -->
+<!-- WITHDRAW MODAL — shown when balance < ₦30,000 -->
 <div class="modal" id="withdrawModal">
     <div class="modal-box">
         <div class="modal-emoji">&#128640;</div>
-        <div class="modal-title">Coming Soon!</div>
-        <div class="modal-msg">Withdrawals will be available very soon. Keep earning — you need at least <strong>&#8358;30,000</strong> to unlock the Check Eligibility button!</div>
+        <div class="modal-title">Keep Earning!</div>
+        <div class="modal-msg">You need at least <strong>&#8358;30,000</strong> to unlock the eligibility check. Keep completing daily tasks!</div>
         <button class="modal-btn" onclick="document.getElementById('withdrawModal').classList.remove('active')">Got it</button>
     </div>
 </div>
@@ -701,13 +701,15 @@ async function loadStats() {
         });
 
         document.getElementById('totalAmount').textContent = fmt(total);
-        updateWithdrawBtn(total);
         document.getElementById('todayEarned').textContent = fmt(today);
         document.getElementById('thisMonth').textContent = fmt(month);
         document.getElementById('tasksDone').textContent = count;
         document.getElementById('breakDaily').textContent = fmt(daily);
         document.getElementById('breakReferral').textContent = fmt(referral);
         document.getElementById('breakBonus').textContent = fmt(bonus);
+
+        // ≥ ₦30,000 → Check Eligibility  |  < ₦30,000 → Coming Soon
+        updateWithdrawBtn(total);
     } catch(e) { console.error('loadStats:', e); }
 }
 
@@ -758,27 +760,32 @@ function setupEye() {
 // ═══════════════════════════════════════════════════
 // WITHDRAW
 // ═══════════════════════════════════════════════════
-function updateWithdrawBtn(totalBalance) {
+function updateWithdrawBtn(total) {
     const wrap = document.getElementById('withdrawBtnWrap');
     if (!wrap) return;
 
-    if (totalBalance >= 30000) {
+    if (total >= 30000) {
+        // ≥ ₦30,000 → show Check Eligibility, pass balance + userId to eligibility page
         wrap.innerHTML = `
-            <a href="eligibility.html" class="withdraw-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <a href="eligibility.html?balance=${encodeURIComponent(total)}&uid=${encodeURIComponent(currentUserId)}"
+               class="withdraw-btn"
+               style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-check-circle"></i> Check Eligibility
             </a>`;
     } else {
+        // < ₦30,000 → grey Coming Soon, tap shows modal
         wrap.innerHTML = `
-            <button class="withdraw-btn" id="withdrawBtn" onclick="document.getElementById('withdrawModal').classList.add('active')" style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
+            <button class="withdraw-btn" id="withdrawBtn"
+                style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
                 <i class="fas fa-clock"></i> Coming Soon
             </button>`;
+        document.getElementById('withdrawBtn').addEventListener('click', () => {
+            document.getElementById('withdrawModal').classList.add('active');
+        });
     }
 }
 
-function setupWithdraw() {
-    // Initial state — balance not loaded yet; stays "Coming Soon" until loadStats updates it
-}
-
+function setupWithdraw() { /* driven by updateWithdrawBtn() after loadStats */ }
 </script>
 </body>
 </html>
