@@ -338,7 +338,8 @@ document.getElementById('main').innerHTML = `
             </div>
         </div>
 
-        <!-- Criterion 3: Referral (checked live on submit) -->
+        <!-- Criterion 3: Referral — only shown when user has ≥ ₦50,000 -->
+        ${hasMinBal ? `
         <div class="criteria-row">
             <div class="ci-icon info">
                 <i class="fas fa-user-plus"></i>
@@ -346,12 +347,12 @@ document.getElementById('main').innerHTML = `
             <div class="ci-body">
                 <div class="ci-name">Referral Requirement</div>
                 <div class="ci-detail">
-                    You must have referred <strong>at least 1 person</strong>.<br>
+                    You must have referred <strong>at least 1 person</strong> before withdrawing.<br>
                     This is verified automatically when you tap Withdraw Earnings.
                 </div>
                 <span class="ci-badge info">\u{1F50D} Checked on Submit</span>
             </div>
-        </div>
+        </div>` : ''}
     </div>
 
     <!-- Info hints -->
@@ -369,12 +370,12 @@ document.getElementById('main').innerHTML = `
 
     <!-- Action buttons -->
     <div style="margin-top:8px;">
-        ${isEligible
-            /* ≥ ₦50,000 AND Monday → show Withdraw Earnings button */
+        ${hasMinBal
+            /* ≥ ₦50,000 → show Withdraw Earnings button (day check + referral check happen on click) */
             ? `<button class="action-btn btn-green" id="withdrawActionBtn" onclick="handleWithdraw()">
                    <i class="fas fa-paper-plane"></i> Withdraw Earnings
                </button>`
-            /* < ₦50,000 OR wrong day → Keep Earning */
+            /* < ₦50,000 → Keep Earning */
             : `<a href="earn.html" class="action-btn btn-amber">
                    <i class="fas fa-coins"></i> Keep Earning
                </a>`}
