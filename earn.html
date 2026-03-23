@@ -708,7 +708,7 @@ async function loadStats() {
         document.getElementById('breakReferral').textContent = fmt(referral);
         document.getElementById('breakBonus').textContent = fmt(bonus);
 
-        // ≥ ₦30,000 → Check Eligibility  |  < ₦30,000 → Coming Soon
+        // Drive the withdraw button based on balance
         updateWithdrawBtn(total);
     } catch(e) { console.error('loadStats:', e); }
 }
@@ -765,7 +765,7 @@ function updateWithdrawBtn(total) {
     if (!wrap) return;
 
     if (total >= 30000) {
-        // ≥ ₦30,000 → show Check Eligibility, pass balance + userId to eligibility page
+        // ≥ ₦30,000 → Check Eligibility, pass balance + userId in URL
         wrap.innerHTML = `
             <a href="eligibility.html?balance=${encodeURIComponent(total)}&uid=${encodeURIComponent(currentUserId)}"
                class="withdraw-btn"
@@ -773,7 +773,7 @@ function updateWithdrawBtn(total) {
                 <i class="fas fa-check-circle"></i> Check Eligibility
             </a>`;
     } else {
-        // < ₦30,000 → grey Coming Soon, tap shows modal
+        // < ₦30,000 → Coming Soon, tap opens modal
         wrap.innerHTML = `
             <button class="withdraw-btn" id="withdrawBtn"
                 style="background:linear-gradient(135deg,#d1d5db,#9ca3af);cursor:not-allowed;">
@@ -785,7 +785,7 @@ function updateWithdrawBtn(total) {
     }
 }
 
-function setupWithdraw() { /* driven by updateWithdrawBtn() after loadStats */ }
+function setupWithdraw() { /* handled by updateWithdrawBtn once loadStats resolves */ }
 </script>
 </body>
 </html>
