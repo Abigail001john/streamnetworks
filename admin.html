@@ -470,20 +470,23 @@
     // Handle toggle change
 
     async function handleToggleChange(userId, isChecked) {
-  // Convert the switch (true/false) into the database words ('approved'/'pending')
   const newStatus = isChecked ? 'approved' : 'pending';
   
-  // Call the function you just updated in your config file
-  const success = await setUserStatus(userId, newStatus);
+  // This sends the word 'approved' to the 'status' column
+  const { error } = await _supabase
+    .from('profiles')
+    .update({ status: newStatus })
+    .eq('id', userId);
 
-  if (!success) {
-    showToast('Failed to update user status', 'error');
-    renderUsers(); // Refresh the UI to reset the switch
+  if (error) {
+    showToast('Update failed: ' + error.message, 'error');
+    renderUsers(); 
   } else {
     showToast(`User is now ${newStatus}`, 'success');
     updateStats();
   }
 }
+
 
     // Update statistics
     function updateStats() {
