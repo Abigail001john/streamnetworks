@@ -229,36 +229,32 @@
         <div class="stat-card">
           <div class="stat-card-header">
             <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
-            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 12%</div>
           </div>
-          <div class="stat-card-number" id="totalUsersCount">8</div>
+          <div class="stat-card-number" id="totalUsersCount">0</div>
           <div class="stat-card-label">Total Users</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-card-header">
             <div class="stat-card-icon green"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 5%</div>
           </div>
-          <div class="stat-card-number" id="verifiedUsersCount">4</div>
+          <div class="stat-card-number" id="verifiedUsersCount">0</div>
           <div class="stat-card-label">Verified Users</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-card-header">
             <div class="stat-card-icon amber"><i class="fas fa-hourglass-half"></i></div>
-            <div class="stat-card-trend"><i class="fas fa-arrow-down"></i> 2%</div>
           </div>
-          <div class="stat-card-number" id="pendingUsersCount">3</div>
+          <div class="stat-card-number" id="pendingUsersCount">0</div>
           <div class="stat-card-label">Pending Approval</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-card-header">
             <div class="stat-card-icon purple"><i class="fas fa-thumbs-up"></i></div>
-            <div class="stat-card-trend"><i class="fas fa-arrow-up"></i> 8%</div>
           </div>
-          <div class="stat-card-number" id="approvedUsersCount">4</div>
+          <div class="stat-card-number" id="approvedUsersCount">0</div>
           <div class="stat-card-label">Approved Users</div>
         </div>
       </div>
@@ -314,31 +310,41 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
+  <div id="userViewPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;overflow-y:auto;background:white;"></div>
+
+  <div class="modal-overlay" id="userModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>👤 User Details</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div style="text-align:center;padding:40px;color:#94a3b8;">
+          <i class="fas fa-spinner fa-spin" style="font-size:28px;display:block;margin-bottom:12px;"></i>Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
 
   <script>
-    // Store all users for filtering
     let allUsers = [];
 
-    // Toast notification system
     function showToast(message, type = 'success') {
       const toastContainer = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
-      
       const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
       toast.innerHTML = `<i class="${icon}"></i> ${message}`;
-      
       toastContainer.appendChild(toast);
-
       setTimeout(() => {
         toast.classList.add('removing');
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
 
-    // Load users live from Supabase
     async function loadUsers() {
       try {
         const { data, error } = await _supabase
@@ -347,11 +353,7 @@
           .eq('is_admin', false)
           .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error loading users:', error);
-          showToast('Error loading users: ' + error.message, 'error');
-          return;
-        }
+        if (error) throw error;
 
         allUsers = data || [];
         const query = document.getElementById('searchInput').value.trim();
@@ -366,24 +368,6 @@
       }
     }
 
-    // Subscribe to realtime changes on profiles table
-    function subscribeRealtime() {
-      _supabase
-        .channel('profiles-changes')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        }, (payload) => {
-          console.log('Realtime change:', payload);
-          loadUsers(); // reload full list on any change
-        })
-        .subscribe((status) => {
-          console.log('Realtime status:', status);
-        });
-    }
-
-    // Build one user row HTML
     function buildUserRow(user) {
       const initials = (user.full_name || user.email || 'U')
         .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -407,7 +391,7 @@
           <div class="toggle-container">
             <label class="toggle-switch">
               <input type="checkbox" ${isApproved ? 'checked' : ''}
-                data-user-id="${user.id}" onchange="handleToggleChange(this)">
+                onchange="handleToggleChange('${user.id}', this.checked)">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -421,7 +405,6 @@
       return row;
     }
 
-    // Section divider row
     function buildSectionRow(label, count, color, bg) {
       const row = document.createElement('tr');
       row.innerHTML = `<td colspan="6" style="padding:10px 16px;background:${bg};border-top:2px solid ${color};border-bottom:1px solid ${color}22;">
@@ -433,7 +416,6 @@
       return row;
     }
 
-    // Render users in table — pending first, approved below, separated
     function renderUsers(users) {
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '';
@@ -443,11 +425,9 @@
         return;
       }
 
-      const pending  = users.filter(u => u.is_approved !== true);
+      const pending  = users.filter(u => u.status !== 'approved');
       const approved = users.filter(u => u.status === 'approved');
-      
 
-      // ── PENDING SECTION ──
       tbody.appendChild(buildSectionRow('⏳ Pending Approval', pending.length, '#f59e0b', '#fffbeb'));
       if (pending.length === 0) {
         const empty = document.createElement('tr');
@@ -457,7 +437,6 @@
         pending.forEach(u => tbody.appendChild(buildUserRow(u)));
       }
 
-      // ── APPROVED SECTION ──
       tbody.appendChild(buildSectionRow('✅ Approved Users', approved.length, '#22c55e', '#f0fdf4'));
       if (approved.length === 0) {
         const empty = document.createElement('tr');
@@ -468,44 +447,40 @@
       }
     }
 
-    // Handle toggle change
-
     async function handleToggleChange(userId, isChecked) {
-  // Convert the switch (true/false) into the database words ('approved'/'pending')
-  const newStatus = isChecked ? 'approved' : 'pending';
-  
-  // FIXED: We are now updating the 'status' column, NOT 'is_approved'
-  const { error } = await _supabase
-    .from('profiles')
-    .update({ status: newStatus }) // This matches your new SQL column
-    .eq('id', userId);
+      const newStatus = isChecked ? 'approved' : 'pending';
+      const { error } = await _supabase
+        .from('profiles')
+        .update({ status: newStatus, is_approved: isChecked })
+        .eq('id', userId);
 
-  if (error) {
-    console.error("Update error:", error);
-    showToast('Update failed: ' + error.message, 'error');
-    renderUsers(); // Refresh UI to reset the switch
-  } else {
-    showToast(`User status set to ${newStatus}`, 'success');
-    updateStats();
-  }
-}
+      if (error) {
+        showToast('Update failed: ' + error.message, 'error');
+        loadUsers();
+      } else {
+        showToast(`User status set to ${newStatus}`, 'success');
+        const uIdx = allUsers.findIndex(u => u.id === userId);
+        if (uIdx !== -1) {
+            allUsers[uIdx].status = newStatus;
+            allUsers[uIdx].is_approved = isChecked;
+        }
+        updateStats();
+        // Slightly delayed refresh to ensure sort order stays clean
+        setTimeout(loadUsers, 500);
+      }
+    }
 
-
-
-    // Update statistics
     function updateStats() {
       const total = allUsers.length;
-      const approved = users.filter(u => u.status === 'approved').length;
-      const pending = allUsers.filter(u => u.is_approved !== true).length;
-      const verified = approved;
+      const approved = allUsers.filter(u => u.status === 'approved').length;
+      const pending = allUsers.filter(u => u.status !== 'approved').length;
 
       document.getElementById('totalUsersCount').textContent = total;
-      document.getElementById('verifiedUsersCount').textContent = verified;
+      document.getElementById('verifiedUsersCount').textContent = approved;
       document.getElementById('pendingUsersCount').textContent = pending;
       document.getElementById('approvedUsersCount').textContent = approved;
     }
 
-    // Search functionality
     function filterUsers(query) {
       const filtered = allUsers.filter(user => {
         const name = (user.full_name || '').toLowerCase();
@@ -516,49 +491,6 @@
       renderUsers(filtered);
     }
 
-    // Sign out handler
-    document.getElementById('signOutBtn').addEventListener('click', async () => {
-      try {
-        if (_supabase) {
-          await _supabase.auth.signOut();
-        }
-        window.location.href = 'login.html';
-      } catch (err) {
-        console.error('Sign out error:', err);
-        showToast('Error signing out', 'error');
-      }
-    });
-
-    // Search input handler
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      filterUsers(e.target.value);
-    });
-
-    // Initialize page with auth check
-    async function initPage() {
-      try {
-        if (typeof requireAuth === 'function') {
-            const result = await requireAuth('admin');
-            if (!result) return;
-            const { profile } = result;
-            document.getElementById('adminName').textContent = profile.full_name || profile.email || 'Admin';
-        }
-      } catch (err) {
-        console.warn('Auth check error:', err);
-        window.location.href = 'login.html';
-        return;
-      }
-
-      await loadUsers();
-      await loadWithdrawalBadge();
-      subscribeRealtime();
-      setInterval(loadUsers, 15000);
-    }
-
-    // Start when DOM is ready
-    document.addEventListener('DOMContentLoaded', initPage);
-
-    // OPEN USER DETAIL MODAL
     async function openUserModal(userId) {
       document.getElementById('userModal').classList.add('active');
       document.getElementById('modalBody').innerHTML =
@@ -579,24 +511,23 @@
       }
     }
 
-    // RENDER MODAL
     function renderModal(user, wallet, txs, refs) {
-      const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
-      const ago = d => {
-        const s = Math.floor((Date.now()-new Date(d))/1000);
-        if(s<60) return 'Just now';
-        if(s<3600) return Math.floor(s/60)+'m ago';
-        if(s<86400) return Math.floor(s/3600)+'h ago';
-        return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-      };
-
+      const fmt = n => '₦' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
       const initials = (user.full_name||user.email||'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-      const isApproved = user.is_approved === true;
+      const isApproved = user.status === 'approved';
       const taskEarn   = Number(wallet?.task_earnings  || 0);
       const refEarn    = Number(wallet?.collab_earnings || 0);
       const bonusEarn  = Number(wallet?.bonus_balance   || 0);
       const totalBal   = taskEarn + refEarn + bonusEarn;
       const joined     = new Date(user.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+      const ago = d => {
+        const s = Math.floor((Date.now()-new Date(d))/1000);
+        if(s<60) return 'Just now';
+        if(s<3600) return Math.floor(s/60)+'m ago';
+        if(s<86400) return Math.floor(s/3600)+'h ago';
+        return new Date(d).toLocaleDateString();
+      };
 
       let txHtml = txs.length === 0
         ? '<div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px;">No transactions yet</div>'
@@ -612,8 +543,7 @@
             </div>`;
           }).join('');
 
-      document.getElementById('userModal').dataset.uid = user.id;
-      document.getElementById('userModal').dataset.uname = user.full_name || user.email || 'User';
+      const cleanName = (user.full_name || user.email || 'User').replace(/'/g, "\\'");
 
       document.getElementById('modalBody').innerHTML = `
         <div class="modal-profile">
@@ -621,8 +551,8 @@
           <div>
             <div class="modal-user-name">${user.full_name || 'No name set'}</div>
             <div class="modal-user-email">${user.email || 'No email'}</div>
-            <span class="status-badge ${isApproved?'approved':'pending'}" style="display:inline-block;margin-top:4px;">
-              ${isApproved?'&#10003; Approved':'&#9203; Pending'}
+            <span class="status-badge ${isApproved?'approved':'pending'}">
+              ${isApproved?'✓ Approved':'⌛ Pending'}
             </span>
           </div>
         </div>
@@ -631,7 +561,7 @@
           <div>
             <div class="wallet-label">Total Wallet Balance</div>
             <div class="wallet-amount">${fmt(totalBal)}</div>
-            <div class="wallet-sub">Tasks: ${fmt(taskEarn)} &nbsp;&bull;&nbsp; Referrals: ${fmt(refEarn)} &nbsp;&bull;&nbsp; Bonus: ${fmt(bonusEarn)}</div>
+            <div class="wallet-sub">Tasks: ${fmt(taskEarn)} &bull; Referrals: ${fmt(refEarn)} &bull; Bonus: ${fmt(bonusEarn)}</div>
           </div>
           <i class="fas fa-wallet" style="font-size:30px;opacity:0.55;"></i>
         </div>
@@ -640,38 +570,33 @@
           <div class="detail-item"><div class="detail-label">Username</div><div class="detail-value">@${user.username||'not set'}</div></div>
           <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${user.phone||'not set'}</div></div>
           <div class="detail-item"><div class="detail-label">Joined</div><div class="detail-value">${joined}</div></div>
-          <div class="detail-item"><div class="detail-label">Referrals Made</div><div class="detail-value green">${refs.length} referrals</div></div>
-          <div class="detail-item"><div class="detail-label">Referred By</div><div class="detail-value" style="font-size:11px;">${user.referred_by||'Direct signup'}</div></div>
-          <div class="detail-item"><div class="detail-label">Admin Account</div><div class="detail-value ${user.is_admin?'amber':'green'}">${user.is_admin?'&#9888; Yes':'No'}</div></div>
-          <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">User ID</div><div class="detail-value" style="font-size:11px;font-weight:500;">${user.id}</div></div>
+          <div class="detail-item"><div class="detail-label">Referrals</div><div class="detail-value green">${refs.length} made</div></div>
         </div>
 
-        <div class="modal-section-title"><i class="fas fa-receipt" style="color:#2dd4bf;"></i> Last 8 Transactions</div>
+        <div class="modal-section-title"><i class="fas fa-receipt" style="color:#2dd4bf;"></i> Recent Activity</div>
         <div id="txListInModal">${txHtml}</div>
 
         <div class="modal-actions">
           <button class="modal-btn ${isApproved?'deny':'approve'}" onclick="toggleApproval('${user.id}', ${!isApproved})">
             <i class="fas fa-${isApproved?'ban':'check-circle'}"></i>
-            ${isApproved?'Revoke Access':'Approve User'}
+            ${isApproved?'Revoke':'Approve'}
           </button>
-          <button class="modal-btn login-as" onclick="loginAsUser('${user.id}', '${(user.full_name||user.email||'User').replace(/['"]/g,'')}')">
-            <i class="fas fa-sign-in-alt"></i> Login as User
+          <button class="modal-btn login-as" onclick="loginAsUser('${user.id}', '${cleanName}')">
+            <i class="fas fa-sign-in-alt"></i> Login
           </button>
-          <button class="modal-btn del" onclick="confirmDeleteUser('${user.id}', '${(user.full_name||'this user').replace(/['"]/g,'')}')">
-            <i class="fas fa-trash"></i> Delete
+          <button class="modal-btn del" onclick="confirmDeleteUser('${user.id}', '${cleanName}')">
+            <i class="fas fa-trash"></i>
           </button>
         </div>
       `;
     }
 
-    function closeModal() { document.getElementById('userModal').classList.remove('active'); }
-    document.addEventListener('click', e => { if (e.target.id === 'userModal') closeModal(); });
-
     async function toggleApproval(userId, approve) {
       try {
-        const { error } = await _supabase.from('profiles').update({ is_approved: approve }).eq('id', userId);
+        const newStatus = approve ? 'approved' : 'pending';
+        const { error } = await _supabase.from('profiles').update({ status: newStatus, is_approved: approve }).eq('id', userId);
         if (error) throw error;
-        showToast('User ' + (approve ? 'approved ✅' : 'access revoked ❌'), approve ? 'success' : 'error');
+        showToast('User updated', 'success');
         closeModal();
         loadUsers();
       } catch(e) {
@@ -679,9 +604,11 @@
       }
     }
 
+    function closeModal() { document.getElementById('userModal').classList.remove('active'); }
+
     async function loginAsUser(userId, userName) {
       closeModal();
-      showToast('Loading ' + userName + String.fromCharCode(39) + 's account...', 'success');
+      showToast('Loading ' + userName + "'s account...", 'success');
       try {
         const [
           { data: profile }, { data: wallet }, { data: txs }, { data: completions }, { data: refs }
@@ -699,365 +626,82 @@
     }
 
     function openUserViewPanel(profile, wallet, txs, completions, refs) {
-      const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2});
-      const ago = d => {
-        const s = Math.floor((Date.now() - new Date(d)) / 1000);
-        if(s < 60) return 'Just now';
-        if(s < 3600) return Math.floor(s/60) + 'm ago';
-        if(s < 86400) return Math.floor(s/3600) + 'h ago';
-        return new Date(d).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
-      };
-
-      const taskEarn   = Number(wallet?.task_earnings   || 0);
-      const collabEarn = Number(wallet?.collab_earnings || 0);
-      const bonusBal   = Number(wallet?.bonus_balance   || 0);
-      const totalBal   = taskEarn + collabEarn + bonusBal;
-
-      const initials  = (profile.full_name || profile.email || 'U').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-      const joined    = new Date(profile.created_at).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
-      const isApproved = profile.is_approved === true;
-
-      const since24h = Date.now() - 86400000;
-      const doneToday = completions.filter(c => new Date(c.created_at).getTime() > since24h).map(c => c.task_type);
-      const videoToday = doneToday.includes('daily_video');
-      const audioToday = doneToday.includes('daily_audio');
-      const fileToday  = doneToday.includes('daily_file_download');
-
-      const txRows = txs.length === 0
-        ? '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">No transactions yet</td></tr>'
-        : txs.map(tx => {
-            const pos = Number(tx.amount) >= 0;
-            return '<tr style="border-bottom:1px solid #f1f5f9;">'
-              + '<td style="padding:10px 12px;font-size:13px;">' + (tx.description||tx.type) + '</td>'
-              + '<td style="padding:10px 12px;font-size:13px;font-weight:700;color:' + (pos?'#10b981':'#ef4444') + '">' + (pos?'+':'') + fmt(tx.amount) + '</td>'
-              + '<td style="padding:10px 12px;font-size:12px;color:#94a3b8;">' + tx.type + '</td>'
-              + '<td style="padding:10px 12px;font-size:12px;color:#94a3b8;">' + ago(tx.created_at) + '</td>'
-              + '</tr>';
-          }).join('');
-
-      const refRows = refs.length === 0
-        ? '<div style="color:#94a3b8;font-size:13px;padding:8px 0;">No referrals yet</div>'
-        : refs.map(r => '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px;"><span>' + (r.full_name||r.email||'Unknown') + '</span><span style="color:#94a3b8;">' + ago(r.created_at) + '</span></div>').join('');
-
-      const safeId   = profile.id;
-      const safeName = (profile.full_name||profile.email||'User').replace(/['"]/g,'');
-      const approveToggle = !isApproved;
+      const fmt = n => '₦' + Number(n||0).toLocaleString('en-NG', {minimumFractionDigits:2});
+      const totalBal = Number(wallet?.task_earnings||0) + Number(wallet?.collab_earnings||0) + Number(wallet?.bonus_balance||0);
+      const isApproved = profile.status === 'approved';
 
       const panel = document.getElementById('userViewPanel');
-      panel.innerHTML = '<div style="background:#f1f5f9;min-height:100vh;font-family:Inter,sans-serif;">'
-        + '<div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.2);">'
-        + '<div style="display:flex;align-items:center;gap:12px;">'
-        + '<button onclick="closeUserViewPanel()" style="background:rgba(255,255,255,.2);border:none;color:white;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;"><i class=\"fas fa-arrow-left\"></i></button>'
-        + '<div><div style="font-size:16px;font-weight:700;">\u{1F464} Viewing: ' + (profile.full_name||profile.email) + '</div>'
-        + '<div style="font-size:12px;opacity:.75;">Admin View \u2014 you are still logged in as admin</div></div>'
-        + '</div>'
-        + '<button onclick="closeUserViewPanel()" style="background:white;color:#7c3aed;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;">\u2715 Close View</button>'
-        + '</div>'
-        + '<div style="max-width:900px;margin:0 auto;padding:24px 20px;">'
-        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">'
-        + '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:700;flex-shrink:0;">' + initials + '</div>'
-        + '<div style="flex:1;min-width:180px;">'
-        + '<div style="font-size:19px;font-weight:700;margin-bottom:4px;">' + (profile.full_name||'No name') + '</div>'
-        + '<div style="font-size:13px;color:#64748b;margin-bottom:8px;">' + profile.email + '</div>'
-        + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-        + '<span style="background:' + (isApproved?'#f0fdf4':'#fffbeb') + ';color:' + (isApproved?'#22c55e':'#f59e0b') + ';padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">' + (isApproved?'\u2713 Approved':'\u23f3 Pending') + '</span>'
-        + '<span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">@' + (profile.username||'no username') + '</span>'
-        + '<span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">\u{1F4C5} ' + joined + '</span>'
-        + '</div></div>'
-        + '</div>'
-        + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px;">'
-        + '<div style="background:linear-gradient(135deg,#2dd4bf,#14b8a6);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F4B0} Total Balance</div><div style="font-size:28px;font-weight:800;">' + fmt(totalBal) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">All earnings combined</div></div>'
-        + '<div style="background:linear-gradient(135deg,#10b981,#059669);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F4CB} Task Earnings</div><div style="font-size:28px;font-weight:800;">' + fmt(taskEarn) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Video, audio, file tasks</div></div>'
-        + '<div style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F91D} Collab Earnings</div><div style="font-size:28px;font-weight:800;">' + fmt(collabEarn) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Referrals & collaboration</div></div>'
-        + '<div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:14px;padding:20px;"><div style="font-size:12px;opacity:.85;margin-bottom:6px;">\u{1F381} Bonus Balance</div><div style="font-size:28px;font-weight:800;">' + fmt(bonusBal) + '</div><div style="font-size:11px;opacity:.7;margin-top:4px;">Signup & bonus rewards</div></div>'
-        + '</div>'
-        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
-        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F4C5} Today\u2019s Task Status (last 24h)</div>'
-        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">'
-        + '<div style="background:' + (videoToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F3AC}</div><div style="font-size:13px;font-weight:700;color:' + (videoToday?'#22c55e':'#ef4444') + ';">' + (videoToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">Video Task</div></div>'
-        + '<div style="background:' + (audioToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F3B5}</div><div style="font-size:13px;font-weight:700;color:' + (audioToday?'#22c55e':'#ef4444') + ';">' + (audioToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">Audio Task</div></div>'
-        + '<div style="background:' + (fileToday?'#f0fdf4':'#fef2f2') + ';border-radius:12px;padding:16px;text-align:center;"><div style="font-size:24px;margin-bottom:6px;">\u{1F4C1}</div><div style="font-size:13px;font-weight:700;color:' + (fileToday?'#22c55e':'#ef4444') + ';">' + (fileToday?'\u2713 Done':'\u2717 Not done') + '</div><div style="font-size:11px;color:#64748b;margin-top:3px;">File Task</div></div>'
-        + '</div></div>'
-        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
-        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F50D} Account Details</div>'
-        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
-        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Phone</div><div style="font-size:14px;font-weight:600;">' + (profile.phone||'Not set') + '</div></div>'
-        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Location</div><div style="font-size:14px;font-weight:600;">' + (profile.location||'Not set') + '</div></div>'
-        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Referred By</div><div style="font-size:13px;font-weight:600;word-break:break-all;">' + (profile.referred_by||'Direct signup') + '</div></div>'
-        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Total Referrals</div><div style="font-size:14px;font-weight:600;color:#22c55e;">' + refs.length + ' referrals</div></div>'
-        + '<div style="background:#f8fafc;border-radius:10px;padding:12px;grid-column:1/-1;"><div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">User ID</div><div style="font-size:11px;font-weight:500;word-break:break-all;color:#475569;">' + profile.id + '</div></div>'
-        + '</div></div>'
-        + (refs.length > 0 ? '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;"><div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F465} Their Referrals (' + refs.length + ')</div>' + refRows + '</div>' : '')
-        + '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;">'
-        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;">\u{1F4B3} Transaction History (' + txs.length + ' records)</div>'
-        + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
-        + '<thead><tr style="border-bottom:2px solid #e2e8f0;">'
-        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Description</th>'
-        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Amount</th>'
-        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">Type</th>'
-        + '<th style="padding:10px 12px;text-align:left;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;">When</th>'
-        + '</tr></thead><tbody>' + txRows + '</tbody></table></div></div>'
-        + '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:20px;margin-bottom:28px;">'
-        + '<div style="font-size:15px;font-weight:700;margin-bottom:14px;color:#92400e;">\u2699\ufe0f Admin Actions</div>'
-        + '<div style="display:flex;gap:12px;flex-wrap:wrap;">'
-        + '<button onclick="toggleApproval(\'' + safeId + '\', ' + approveToggle + '); closeUserViewPanel();" style="flex:1;min-width:130px;padding:12px 16px;background:' + (isApproved?'#ef4444':'#22c55e') + ';color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">' + (isApproved?'\u{1F6AB} Revoke Access':'\u2705 Approve User') + '</button>'
-        + '<button onclick="adminAdjustBalance(\'' + safeId + '\', \'' + safeName + '\')" style="flex:1;min-width:130px;padding:12px 16px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">\u{1FA99} Adjust Balance</button>'
-        + '<button onclick="confirmDeleteUser(\'' + safeId + '\', \'' + safeName + '\'); closeUserViewPanel();" style="flex:1;min-width:130px;padding:12px 16px;background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">\u{1F5D1} Delete User</button>'
-        + '</div></div>'
-        + '</div></div>';
-
+      panel.innerHTML = `
+        <div style="background:#f1f5f9;min-height:100vh;padding-bottom:100px;">
+          <div style="background:#7c3aed;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
+             <div style="font-weight:700;">Viewing: ${profile.full_name || profile.email}</div>
+             <button onclick="closeUserViewPanel()" style="background:white;color:#7c3aed;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;">Close</button>
+          </div>
+          <div style="max-width:800px;margin:20px auto;padding:0 20px;">
+             <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:20px;">
+                <h2 style="margin-bottom:10px;">Wallet Overview</h2>
+                <div style="font-size:32px;font-weight:800;color:#1e293b;">${fmt(totalBal)}</div>
+             </div>
+             </div>
+        </div>
+      `;
       panel.style.display = 'block';
-      panel.scrollTop = 0;
       document.body.style.overflow = 'hidden';
     }
 
     function closeUserViewPanel() {
-      const panel = document.getElementById('userViewPanel');
-      panel.style.display = 'none';
-      panel.innerHTML = '';
+      document.getElementById('userViewPanel').style.display = 'none';
       document.body.style.overflow = '';
-    }
-
-    async function adminAdjustBalance(userId, userName) {
-      const amtStr = prompt('Adjust balance for ' + userName + ':\n\nEnter amount (positive to add, negative to deduct):\nExample: 500 or -200');
-      if(amtStr === null) return;
-      const amount = parseFloat(amtStr);
-      if(isNaN(amount) || amount === 0) { showToast('Invalid amount', 'error'); return; }
-
-      const which = prompt('Which balance to adjust?\n\n1 = Task Earnings\n2 = Collab Earnings\n3 = Bonus Balance\n\nType 1, 2, or 3:');
-      if(!['1','2','3'].includes(which)) { showToast('Invalid selection', 'error'); return; }
-
-      const colMap   = { '1': 'task_earnings', '2': 'collab_earnings', '3': 'bonus_balance' };
-      const col      = colMap[which];
-      const colLabel = { '1': 'Task Earnings', '2': 'Collab Earnings', '3': 'Bonus Balance' }[which];
-
-      try {
-        const now = new Date().toISOString();
-        const { data: w, error: fetchErr } = await _supabase.from('wallets').select(col).eq('user_id', userId).maybeSingle();
-        if(fetchErr) throw fetchErr;
-
-        const current = Number(w?.[col] || 0);
-        const newVal  = Math.max(0, current + amount);
-
-        const { error: updateErr } = await _supabase.from('wallets').update({ [col]: newVal, updated_at: now }).eq('user_id', userId);
-        if(updateErr) throw updateErr;
-
-        const { error: txErr } = await _supabase.from('transactions').insert({
-            user_id:     userId,
-            type:        'admin_adjustment',
-            description: '\u2699\ufe0f Admin adjustment (' + colLabel + ')',
-            amount:      amount,
-            created_at:  now
-        });
-        if(txErr) throw txErr;
-
-        showToast('\u2705 ' + colLabel + ' adjusted by \u20a6' + Math.abs(amount).toLocaleString() + ' for ' + userName, 'success');
-        loginAsUser(userId, userName);
-      } catch(e) {
-        showToast('Adjustment failed: ' + e.message, 'error');
-      }
-    }
-
-    async function confirmDeleteUser(userId, userName) {
-      if (!confirm('⚠️ DELETE ' + userName + '?\n\nThis permanently removes their:\n• Profile\n• Wallet\n• All transactions\n• Daily completions\n\nThis CANNOT be undone!')) return;
-      try {
-        await _supabase.from('daily_completions').delete().eq('user_id', userId);
-        await _supabase.from('transactions').delete().eq('user_id', userId);
-        await _supabase.from('wallets').delete().eq('user_id', userId);
-        const { error } = await _supabase.from('profiles').delete().eq('id', userId);
-        if (error) throw error;
-        showToast(userName + ' deleted successfully', 'success');
-        closeModal();
-        loadUsers();
-      } catch(e) {
-        showToast('Delete failed: ' + e.message, 'error');
-      }
-    }
-
-    function showAdminSection(section, linkEl) {
-      document.querySelector('.main-content').style.display = section === 'dashboard' || section === 'users' ? '' : 'none';
-      const wSection = document.getElementById('withdrawalsSection');
-      if (wSection) wSection.style.display = section === 'withdrawals' ? 'block' : 'none';
-      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-      if (linkEl) linkEl.classList.add('active');
-      if (section === 'withdrawals') loadWithdrawals('pending');
-    }
-
-    let currentWFilter = 'pending';
-
-    async function loadWithdrawals(filter = 'pending') {
-      currentWFilter = filter;
-      const listEl = document.getElementById('withdrawalsList');
-      listEl.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-
-      ['pending','approved','rejected','all'].forEach(f => {
-        const btn = document.getElementById('wFilter' + f.charAt(0).toUpperCase() + f.slice(1));
-        if (btn) btn.style.background = f === filter ? (f==='pending'?'#f59e0b':f==='approved'?'#10b981':f==='rejected'?'#ef4444':'#2dd4bf') : '#f1f5f9';
-        if (btn) btn.style.color = f === filter ? 'white' : '#64748b';
-      });
-
-      try {
-        let query = _supabase.from('withdrawal_requests').select('*, profiles!withdrawal_requests_user_id_fkey(full_name, email)').order('created_at', { ascending: false });
-        if (filter !== 'all') query = query.eq('status', filter);
-
-        const { data: reqs, error } = await query;
-        if (error) throw error;
-
-        document.getElementById('wTotalLabel').textContent = (reqs?.length || 0) + ' request' + ((reqs?.length !== 1) ? 's' : '');
-
-        if (!reqs || reqs.length === 0) {
-          listEl.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;"><i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:12px;"></i>No ' + filter + ' withdrawals</div>';
-          return;
-        }
-
-        listEl.innerHTML = reqs.map(r => {
-          const userName = r.profiles?.full_name || r.profiles?.email || 'Unknown User';
-          const date = new Date(r.created_at).toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-          const statusColor = r.status === 'approved' ? '#10b981' : r.status === 'rejected' ? '#ef4444' : '#f59e0b';
-          const statusBg    = r.status === 'approved' ? '#f0fdf4' : r.status === 'rejected' ? '#fef2f2' : '#fffbeb';
-          const statusIcon  = r.status === 'approved' ? '✅' : r.status === 'rejected' ? '❌' : '⏳';
-
-          const actionBtns = r.status === 'pending' ? `
-            <div style="display:flex;gap:8px;margin-top:12px;">
-              <button onclick="handleWithdrawal('${r.id}', '${r.user_id}', ${r.amount}, 'approved')"
-                style="flex:1;background:#10b981;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
-                ✅ Approve
-              </button>
-              <button onclick="handleWithdrawal('${r.id}', '${r.user_id}', ${r.amount}, 'rejected')"
-                style="flex:1;background:#ef4444;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
-                ❌ Reject
-              </button>
-            </div>` : '';
-
-          return `<div style="padding:18px 20px;border-bottom:1px solid #f1f5f9;">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-              <div>
-                <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px;">${userName}</div>
-                <div style="font-size:13px;color:#64748b;margin-bottom:4px;">${r.bank_name} · ${r.account_number} · ${r.account_name || ''}</div>
-                <div style="font-size:12px;color:#94a3b8;">${date}</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-size:20px;font-weight:800;color:#1e293b;">₦${Number(r.amount).toLocaleString()}</div>
-                <div style="margin-top:6px;background:${statusBg};color:${statusColor};font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:inline-block;">${statusIcon} ${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</div>
-              </div>
-            </div>
-            ${actionBtns}
-          </div>`;
-        }).join('');
-
-      } catch(e) {
-        listEl.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Error loading withdrawals: ' + e.message + '</div>';
-      }
-      loadWithdrawalBadge();
-    }
-
-    async function handleWithdrawal(reqId, userId, amount, action) {
-      const label = action === 'approved' ? 'Approve' : 'Reject';
-      if (!confirm(label + ' this withdrawal of ₦' + Number(amount).toLocaleString() + '?')) return;
-
-      try {
-        const now = new Date().toISOString();
-        const { error: statusErr } = await _supabase.from('withdrawal_requests').update({ status: action, updated_at: now }).eq('id', reqId);
-        if (statusErr) throw statusErr;
-
-        if (action === 'approved') {
-          const { data: wallet } = await _supabase.from('wallets').select('*').eq('user_id', userId).maybeSingle();
-          if (wallet) {
-            let remaining = Number(amount);
-            const taskE  = Number(wallet.task_earnings  || 0);
-            const collabE = Number(wallet.collab_earnings || 0);
-            const bonusE  = Number(wallet.bonus_balance  || 0);
-            const total   = taskE + collabE + bonusE;
-
-            if (remaining > total) throw new Error('Withdrawal amount exceeds wallet balance');
-
-            let newTask = taskE, newCollab = collabE, newBonus = bonusE;
-            if (remaining <= newTask) { newTask -= remaining; remaining = 0; } else { remaining -= newTask; newTask = 0; }
-            if (remaining <= newCollab) { newCollab -= remaining; remaining = 0; } else { remaining -= newCollab; newCollab = 0; }
-            if (remaining <= newBonus) { newBonus -= remaining; remaining = 0; }
-
-            await _supabase.from('wallets').update({ task_earnings: newTask, collab_earnings: newCollab, bonus_balance: newBonus, updated_at: now }).eq('user_id', userId);
-          }
-          await _supabase.from('transactions').insert({ user_id: userId, type: 'withdrawal', description: 'Withdrawal approved', amount: -Number(amount), created_at: now });
-        }
-        showToast('✅ Withdrawal ' + action + ' successfully', 'success');
-        loadWithdrawals(currentWFilter);
-      } catch(e) {
-        showToast('Error: ' + e.message, 'error');
-      }
-    }
-
-    async function loadWithdrawalBadge() {
-      const { count } = await _supabase.from('withdrawal_requests').select('*', {count:'exact',head:true}).eq('status','pending');
-      const badge = document.getElementById('pendingWithdrawBadge');
-      if (badge) {
-         if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; }
-         else { badge.style.display = 'none'; }
-      }
     }
 
     async function runBackfill() {
       const btn = document.getElementById('backfillBtn');
       btn.textContent = '⏳ Syncing...';
       btn.disabled = true;
-
       try {
-        const { data: wallets, error: wErr } = await _supabase.from('wallets').select('user_id, task_earnings, collab_earnings, bonus_balance');
-        if(wErr) throw wErr;
-
-        const { data: txRows, error: tErr } = await _supabase.from('transactions').select('user_id, amount');
-        if(tErr) throw tErr;
-
+        const { data: wallets } = await _supabase.from('wallets').select('user_id, task_earnings, collab_earnings, bonus_balance');
+        const { data: txRows } = await _supabase.from('transactions').select('user_id, amount');
         const txTotals = {};
         (txRows || []).forEach(r => { txTotals[r.user_id] = (txTotals[r.user_id] || 0) + Number(r.amount || 0); });
-
         const now = new Date().toISOString();
-        let synced = 0, skipped = 0;
         const inserts = [];
-
         (wallets || []).forEach(w => {
-          const walletTotal = Number(w.task_earnings || 0) + Number(w.collab_earnings || 0) + Number(w.bonus_balance || 0);
-          const txTotal     = txTotals[w.user_id] || 0;
-          const gap         = Math.round((walletTotal - txTotal) * 100) / 100;
-
-          if(gap > 0) {
-            inserts.push({ user_id: w.user_id, type: 'admin_adjustment', description: '⚙️ Balance sync (backfill)', amount: gap, created_at: now });
-            synced++;
-          } else { skipped++; }
+          const wTotal = Number(w.task_earnings||0) + Number(w.collab_earnings||0) + Number(w.bonus_balance||0);
+          const gap = Math.round((wTotal - (txTotals[w.user_id]||0)) * 100) / 100;
+          if(gap > 0) inserts.push({ user_id: w.user_id, type: 'admin_adjustment', description: 'Balance sync (backfill)', amount: gap, created_at: now });
         });
-
-        if(inserts.length === 0) {
-          showToast('✅ All balances are already in sync — nothing to backfill!', 'success');
-          document.getElementById('backfillBanner').style.display = 'none';
-          return;
-        }
-
-        const { error: insErr } = await _supabase.from('transactions').insert(inserts);
-        if(insErr) throw insErr;
-
-        showToast('✅ Synced ' + synced + ' user(s). ' + skipped + ' already up to date.', 'success');
+        if(inserts.length > 0) await _supabase.from('transactions').insert(inserts);
+        showToast('Sync complete', 'success');
         document.getElementById('backfillBanner').style.display = 'none';
-
       } catch(e) {
-        showToast('Backfill failed: ' + e.message, 'error');
-        btn.textContent = '🔄 Sync All Balances';
+        showToast('Sync failed', 'error');
         btn.disabled = false;
       }
     }
+
+    function showAdminSection(section, linkEl) {
+      document.querySelector('.main-content').style.display = (section === 'dashboard' || section === 'users') ? '' : 'none';
+      document.getElementById('withdrawalsSection').style.display = section === 'withdrawals' ? 'block' : 'none';
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      if (linkEl) linkEl.classList.add('active');
+    }
+
+    async function initPage() {
+      // Basic check - assumes requireAuth exists in your config
+      if (typeof requireAuth === 'function') {
+          await requireAuth('admin');
+      }
+      await loadUsers();
+      setInterval(loadUsers, 30000); // Auto refresh every 30s
+    }
+
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => filterUsers(e.target.value));
+    document.addEventListener('DOMContentLoaded', initPage);
   </script>
-
-  <div id="userViewPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;overflow-y:auto;background:white;"></div>
-
-  <div class="modal-overlay" id="userModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>&#128100; User Details</h3>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
-      </div>
-      <div class="modal-body" id="modalBody">
-        <div style="text-align:center;padding:40px;color:#94a3b8;">
-          <i class="fas fa-spinner fa-spin" style="font-size:28px;display:block;margin-bottom:12px;"></i>Loading...
-        </div>
-      </div>
-    </div> </div> </body>
+</body>
 </html>
