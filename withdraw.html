@@ -863,7 +863,7 @@
                 <span class="currency-prefix">₦</span>
                 <input type="number" class="form-control amount-input" id="withdrawAmount" placeholder="0.00" min="500">
             </div>
-            <div class="available-hint">Available: <span id="availableHint">₦0.00</span> • Min. withdrawal: ₦500</div>
+            <div class="available-hint">Available: <span id="availableHint">₦0.00</span> • Min. balance required: ₦50,000</div>
         </div>
 
         <button class="btn-primary" onclick="processWithdrawal()" id="withdrawBtn">
@@ -908,6 +908,14 @@
     function showToast(msg, duration = 3000) {
         const t = document.getElementById('successToast');
         document.getElementById('toastMsg').textContent = msg;
+        // Use warning style for ⚠️ messages, success style otherwise
+        if (msg.startsWith('⚠️')) {
+            t.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
+            t.style.boxShadow = '0 8px 24px rgba(217,119,6,0.4)';
+        } else {
+            t.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            t.style.boxShadow = '0 8px 24px rgba(16,185,129,0.4)';
+        }
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), duration);
     }
@@ -929,7 +937,52 @@
         document.getElementById('addBankOverlay').classList.remove('active');
     }
 
-    function openWithdrawModal() {
+    async function openWithdrawModal() {
+        // --- ELIGIBILITY GATE: Minimum balance check ---
+        if (walletData.available < 50000) {
+            showToast('⚠️ You must have a minimum balance of ₦50,000 before you can withdraw.', 5000);
+            return;
+        }
+
+        // --- ELIGIBILITY GATE: Referral check ---
+        let hasReferral = false;
+        try {
+            if (typeof _supabase !== 'undefined' && currentUser) {
+                const { data: refs } = await _supabase
+                    .from('referrals')
+                    .select('id')
+                    .eq('referrer_id', currentUser.id)
+                    .limit(1);
+                hasReferral = refs && refs.length > 0;
+
+                // Fallback: check profile referred_count if referrals table not available
+                if (!hasReferral) {
+                    const { data: profile } = await _supabase
+                        .from('profiles')
+                        .select('referred_count, referral_count')
+                        .eq('id', currentUser.id)
+                        .maybeSingle();
+                    if (profile) {
+                        const count = profile.referred_count || profile.referral_count || 0;
+                        hasReferral = count >= 1;
+                    }
+                }
+            } else {
+                // Offline fallback: check localStorage
+                const localRefs = localStorage.getItem('stream_referral_count');
+                hasReferral = localRefs && parseInt(localRefs) >= 1;
+            }
+        } catch (e) {
+            // If check fails, allow to proceed to avoid blocking legitimate users
+            hasReferral = true;
+        }
+
+        if (!hasReferral) {
+            showToast('⚠️ You have not referred anyone yet. Please refer at least one person before placing a withdrawal request.', 6000);
+            return;
+        }
+
+        // All checks passed — open modal
         document.getElementById('withdrawOverlay').classList.add('active');
         document.getElementById('availableHint').textContent = formatNaira(walletData.available);
         // Show saved bank or no-bank notice
@@ -1028,7 +1081,12 @@
         const amount = parseFloat(amountInput.value);
 
         if (!savedBank) { showToast('⚠️ Please add a bank account first'); return; }
-        if (isNaN(amount) || amount < 500) { showToast('⚠️ Minimum withdrawal is ₦500'); return; }
+        if (walletData.available < 50000) {
+            showToast('⚠️ You must have a minimum balance of ₦50,000 before you can withdraw.', 5000);
+            closeWithdrawModal();
+            return;
+        }
+        if (isNaN(amount) || amount <= 0) { showToast('⚠️ Please enter a valid withdrawal amount'); return; }
         if (amount > walletData.available) { showToast('⚠️ Insufficient balance'); return; }
 
         const btn = document.getElementById('withdrawBtn');
