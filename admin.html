@@ -468,40 +468,22 @@
     }
 
     // Handle toggle change
-    async function handleToggleChange(checkbox) {
-      const userId = checkbox.dataset.userId;
-      const isChecked = checkbox.checked;
-      try {
-        if (!_supabase) {
-          const user = allUsers.find(u => u.id === userId);
-          if (user) user.is_approved = isChecked;
-          showToast(`User access ${isChecked ? 'approved ✅' : 'denied ❌'}`, isChecked ? 'success' : 'error');
-          renderUsers(allUsers);
-          updateStats();
-          return;
-        }
 
-        const { error } = await _supabase
-          .from('profiles')
-          .update({ is_approved: isChecked })
-          .eq('id', userId);
+    async function handleToggleChange(userId, isChecked) {
+  // Convert the switch (true/false) into the database words ('approved'/'pending')
+  const newStatus = isChecked ? 'approved' : 'pending';
+  
+  // Call the function you just updated in your config file
+  const success = await setUserStatus(userId, newStatus);
 
-        if (error) {
-          checkbox.checked = !isChecked; // Revert toggle
-          showToast(`Error updating access: ${error.message}`, 'error');
-        } else {
-          const user = allUsers.find(u => u.id === userId);
-          if (user) user.is_approved = isChecked;
-          showToast(isChecked ? '✅ User approved — moved to Approved section' : '❌ Access revoked — moved to Pending section', isChecked ? 'success' : 'error');
-          renderUsers(allUsers);
-          updateStats();
-        }
-      } catch (err) {
-        checkbox.checked = !isChecked; // Revert toggle
-        showToast('Error updating user status', 'error');
-        console.error('Toggle error:', err);
-      }
-    }
+  if (!success) {
+    showToast('Failed to update user status', 'error');
+    renderUsers(); // Refresh the UI to reset the switch
+  } else {
+    showToast(`User is now ${newStatus}`, 'success');
+    updateStats();
+  }
+}
 
     // Update statistics
     function updateStats() {
