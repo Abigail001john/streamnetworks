@@ -53,22 +53,29 @@ async function requireAuth(level = 'any') {
     return null;
   }
 
-  // Try fetching the profile — may fail if schema not yet set up
   let profile = await getUserProfile(session.user.id);
 
-  // Fallback: build a minimal profile from JWT metadata if DB fetch failed
   if (!profile) {
-    const meta = session.user.user_metadata || {};
-    profile = {
-      id: session.user.id,
-      email: session.user.email,
-      full_name: meta.full_name || null,
-      username: meta.username || null,
-      phone: meta.phone || null,
-      is_approved: false,
-      is_admin: meta.is_admin === true || meta.is_admin === 'true'
-    };
+    // Basic fallback if profile hasn't loaded yet
+    return { session, profile: { is_admin: false, status: 'pending' } };
   }
+
+  // Admin logic
+  const isAdmin = profile.is_admin === true;
+
+  if (level === 'admin' && !isAdmin) {
+    window.location.href = 'dashboard.html';
+    return null;
+  }
+
+  // UPDATED: Check for the 'approved' string instead of a boolean
+  if (level === 'approved' && profile.status !== 'approved' && !isAdmin) {
+    window.location.href = 'activation.html';
+    return null;
+  }
+
+  return { session, profile };
+}
 
   // Admin check: accept is_admin from DB profile OR from JWT metadata
   const jwtMeta = session.user.user_metadata || {};
