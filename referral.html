@@ -194,11 +194,12 @@
             if (!result) return;
             currentUser = result.profile;
 
-            // Generate Referral Link
+            // Generate Referral Link — uses user ID as ref code
             referralLink = window.location.origin + '/register.html?ref=' + currentUser.id;
             document.getElementById('refLinkText').textContent = referralLink;
 
-            // Fetch referred profiles
+            // Fetch ALL referred profiles regardless of approval status
+            // This ensures every referred user is tracked immediately on signup
             const { data: refs, error } = await _supabase
                 .from('profiles')
                 .select('id, full_name, email, created_at, is_approved')
@@ -207,41 +208,51 @@
 
             if (error) throw error;
 
-            const activeRefs = refs.filter(r => r.is_approved === true);
-            const totalEarned = activeRefs.length * 10000;
+            const allRefs     = refs || [];
+            const approvedRefs = allRefs.filter(r => r.is_approved === true);
+            const pendingRefs  = allRefs.filter(r => !r.is_approved);
+            const totalEarned  = approvedRefs.length * 10000;
 
-            document.getElementById('totalReferrals').textContent = refs.length;
-            document.getElementById('activeReferrals').textContent = activeRefs.length;
+            // Stats: total = ALL referrals, approved = approved count
+            document.getElementById('totalReferrals').textContent = allRefs.length;
+            document.getElementById('activeReferrals').textContent = approvedRefs.length;
             document.getElementById('totalEarned').textContent = '₦' + totalEarned.toLocaleString();
 
             const listEl = document.getElementById('referralList');
-            if (refs.length === 0) {
-                listEl.innerHTML = '<div class="empty-state"><i class="fas fa-user-plus"></i><p>No referrals yet.<br>Share your link to start earning!</p></div>';
+
+            if (allRefs.length === 0) {
+                listEl.innerHTML = \`<div class="empty-state">
+                    <i class="fas fa-user-plus"></i>
+                    <p>No referrals yet.<br>Share your link to start earning!</p>
+                    <p style="margin-top:8px;font-size:12px;color:var(--primary);">You earn ₦10,000 per approved referral</p>
+                </div>\`;
             } else {
-                listEl.innerHTML = refs.map(r => {
-                    const name = r.full_name || r.email || 'User';
+                listEl.innerHTML = allRefs.map(r => {
+                    const name    = r.full_name || r.email?.split('@')[0] || 'User';
                     const initial = name.charAt(0).toUpperCase();
-                    const date = new Date(r.created_at).toLocaleDateString();
-                    const isApproved = r.is_approved;
-                    
-                    const statusText = isApproved ? '✅ Approved' : '⏳ Pending';
-                    const earnText = isApproved ? '+₦10,000' : '₦0';
-                    const earnColor = isApproved ? 'var(--primary)' : 'var(--text-muted)';
-                    
-                    return `
-                    <div class="referral-item">
-                        <div class="ref-avatar">${initial}</div>
+                    const date    = new Date(r.created_at).toLocaleDateString('en-NG');
+                    const approved = r.is_approved === true;
+
+                    const statusBadge = approved
+                        ? \`<span style="background:rgba(16,185,129,0.15);color:#10b981;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✅ Approved</span>\`
+                        : \`<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">⏳ Pending</span>\`;
+
+                    const earnText  = approved ? '+₦10,000' : 'Pending';
+                    const earnColor = approved ? 'var(--primary)' : 'var(--text-muted)';
+
+                    return \`<div class="referral-item">
+                        <div class="ref-avatar">\${initial}</div>
                         <div class="ref-info">
-                            <div class="ref-name">${name}</div>
-                            <div class="ref-date">${date} · ${statusText}</div>
+                            <div class="ref-name">\${name}</div>
+                            <div class="ref-date">\${date} · \${statusBadge}</div>
                         </div>
-                        <div class="ref-earning" style="color:${earnColor}">${earnText}</div>
-                    </div>`;
+                        <div class="ref-earning" style="color:\${earnColor};font-size:13px;">\${earnText}</div>
+                    </div>\`;
                 }).join('');
             }
         } catch (err) {
             console.error('Error loading referrals:', err);
-            document.getElementById('referralList').innerHTML = '<div class="empty-state"><p>Could not load referrals.</p></div>';
+            document.getElementById('referralList').innerHTML = '<div class="empty-state"><p>Could not load referrals. Please refresh.</p></div>';
         }
     }
 
