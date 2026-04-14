@@ -444,7 +444,8 @@
       }
 
       const pending  = users.filter(u => u.is_approved !== true);
-      const approved = users.filter(u => u.is_approved === true);
+      const approved = users.filter(u => u.status === 'approved');
+      
 
       // ── PENDING SECTION ──
       tbody.appendChild(buildSectionRow('⏳ Pending Approval', pending.length, '#f59e0b', '#fffbeb'));
@@ -470,22 +471,25 @@
     // Handle toggle change
 
     async function handleToggleChange(userId, isChecked) {
+  // Convert the switch (true/false) into the database words ('approved'/'pending')
   const newStatus = isChecked ? 'approved' : 'pending';
   
-  // This sends the word 'approved' to the 'status' column
+  // FIXED: We are now updating the 'status' column, NOT 'is_approved'
   const { error } = await _supabase
     .from('profiles')
-    .update({ status: newStatus })
+    .update({ status: newStatus }) // This matches your new SQL column
     .eq('id', userId);
 
   if (error) {
+    console.error("Update error:", error);
     showToast('Update failed: ' + error.message, 'error');
-    renderUsers(); 
+    renderUsers(); // Refresh UI to reset the switch
   } else {
-    showToast(`User is now ${newStatus}`, 'success');
+    showToast(`User status set to ${newStatus}`, 'success');
     updateStats();
   }
 }
+
 
 
     // Update statistics
