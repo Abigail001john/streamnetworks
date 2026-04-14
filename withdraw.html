@@ -209,7 +209,26 @@
         </div>
         <div class="form-group">
             <label class="form-label">Bank Name</label>
-            <input type="text" class="form-control" id="bankSelect" placeholder="Enter Bank Name">
+            <select class="form-control" id="bankSelect" style="cursor:pointer;">
+                <option value="">-- Select your bank --</option>
+                <option value="Access Bank">Access Bank</option>
+                <option value="GTBank">GTBank (Guaranty Trust Bank)</option>
+                <option value="First Bank">First Bank of Nigeria</option>
+                <option value="Zenith Bank">Zenith Bank</option>
+                <option value="UBA">UBA (United Bank for Africa)</option>
+                <option value="Opay">Opay</option>
+                <option value="PalmPay">PalmPay</option>
+                <option value="Fidelity Bank">Fidelity Bank</option>
+                <option value="Union Bank">Union Bank</option>
+                <option value="Sterling Bank">Sterling Bank</option>
+                <option value="Kuda Bank">Kuda Bank</option>
+                <option value="Moniepoint">Moniepoint MFB</option>
+                <option value="Wema Bank">Wema Bank</option>
+                <option value="Polaris Bank">Polaris Bank</option>
+                <option value="Stanbic IBTC">Stanbic IBTC Bank</option>
+                <option value="FCMB">FCMB (First City Monument Bank)</option>
+                <option value="Ecobank">Ecobank Nigeria</option>
+            </select>
         </div>
         <div class="form-group">
             <label class="form-label">Account Number</label>
@@ -280,11 +299,13 @@
         if (walletData.available < 50000) return showToast('⚠️ Minimum balance of ₦50,000 required.');
 
         try {
-            // Require at least 1 *approved* referral
+            // Require at least 1 referral (any status — tracking must exist)
             const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true })
-                .eq('referred_by', currentUser.id).eq('is_approved', true);
+                .eq('referred_by', currentUser.id);
             
-            if (!count || count < 1) return showToast('⚠️ You need at least 1 approved referral before withdrawing.', 5000);
+            if (!count || count < 1) {
+                return showToast('⚠️ You must refer at least 1 person before withdrawing.', 5000);
+            }
         } catch (e) { return showToast('⚠️ Could not verify referral status.'); }
 
         document.getElementById('withdrawOverlay').classList.add('active');
@@ -310,41 +331,145 @@
 
     async function processWithdrawal() {
         const amount = parseFloat(document.getElementById('withdrawAmount').value);
-        if (!savedBank) return showToast('⚠️ Add bank first');
-        if (amount > walletData.available || amount < 50000) return showToast('⚠️ Invalid amount');
+        if (!savedBank) return showToast('⚠️ Add a bank account first');
+        if (!amount || amount < 50000) return showToast('⚠️ Minimum withdrawal is ₦50,000');
+        if (amount > walletData.available) return showToast('⚠️ Insufficient balance');
 
+        const btn = document.getElementById('withdrawBtn');
         try {
-            document.getElementById('withdrawBtn').textContent = "Processing...";
-            await _supabase.from('transactions').insert({ user_id: currentUser.id, type: 'withdrawal', description: `Withdrawal to ${savedBank.bank_name}`, amount: -amount });
-            walletData.available -= amount; walletData.pending += amount;
-            await _supabase.from('wallets').update({ task_earnings: walletData.available }).eq('user_id', currentUser.id);
-            
-            closeWithdrawModal(); showToast('🎉 Withdrawal pending review!');
-            setTimeout(() => window.location.reload(), 2000);
-        } catch(e) { showToast('⚠️ Error submitting request'); document.getElementById('withdrawBtn').textContent = "Withdraw Now"; }
+            btn.disabled = true;
+            btn.textContent = "Submitting...";
+
+            // Insert into withdrawal_requests table — status = 'pending'
+            // Admin must approve or reject — NO automatic deduction yet
+            const { error } = await _supabase.from('withdrawal_requests').insert({
+                user_id:        currentUser.id,
+                amount:         amount,
+                bank_name:      savedBank.bank_name,
+                account_number: savedBank.account_number,
+                account_name:   savedBank.account_name,
+                status:         'pending',
+                created_at:     new Date().toISOString()
+            });
+
+            if (error) throw error;
+
+            closeWithdrawModal();
+            showToast('✅ Withdrawal request submitted! Awaiting admin approval.');
+            setTimeout(() => window.location.reload(), 2500);
+        } catch(e) {
+            showToast('⚠️ Error submitting request: ' + (e.message || ''));
+            btn.disabled = false;
+            btn.textContent = "Withdraw Now";
+        }
+    }
+
+    function timeAgo(dateStr) {
+        const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+        if (diff < 60) return diff + 's ago';
+        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        return Math.floor(diff/86400) + 'd ago';
     }
 
     async function initPage() {
-        const res = await requireAuth('any'); if(!res) return; currentUser = res.profile;
-        const { data: wallet } = await _supabase.from('wallets').select('*').eq('user_id', currentUser.id).maybeSingle();
+        const res = await requireAuth('any');
+        if (!res) return;
+        currentUser = res.profile;
+
+        // ── Load wallet balance ──────────────────────────────────────────────
+        const { data: wallet } = await _supabase.from('wallets').select('*')
+            .eq('user_id', currentUser.id).maybeSingle();
+
         if (wallet) {
             walletData.available = (wallet.task_earnings||0) + (wallet.collab_earnings||0) + (wallet.bonus_balance||0);
             document.getElementById('availableBalance').textContent = formatNaira(walletData.available);
-            document.getElementById('usdEquiv').textContent = '$' + (walletData.available/1600).toFixed(2);
+            document.getElementById('usdEquiv').textContent = '$' + (walletData.available / 1600).toFixed(2);
         }
-        const { data: bank } = await _supabase.from('bank_accounts').select('*').eq('user_id', currentUser.id).maybeSingle();
+
+        // ── Load saved bank ──────────────────────────────────────────────────
+        const { data: bank } = await _supabase.from('bank_accounts').select('*')
+            .eq('user_id', currentUser.id).maybeSingle();
         if (bank) savedBank = bank;
 
-        const { data: txs } = await _supabase.from('transactions').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
-        if (txs && txs.length) {
-            document.getElementById('txList').innerHTML = txs.map(tx => {
+        // ── Load withdrawal_requests for stat cards ──────────────────────────
+        const { data: wReqs } = await _supabase.from('withdrawal_requests').select('*')
+            .eq('user_id', currentUser.id);
+
+        if (wReqs) {
+            const pending  = wReqs.filter(r => r.status === 'pending').reduce((s,r)=>s+Number(r.amount),0);
+            const approved = wReqs.filter(r => r.status === 'approved').reduce((s,r)=>s+Number(r.amount),0);
+            const rejected = wReqs.filter(r => r.status === 'rejected').reduce((s,r)=>s+Number(r.amount),0);
+            walletData.pending   = pending;
+            walletData.approved  = approved;
+            document.getElementById('approvedAmount').textContent  = formatNaira(approved);
+            document.getElementById('pendingAmount').textContent   = formatNaira(pending);
+            document.getElementById('totalWithdrawn').textContent  = formatNaira(approved);
+        }
+
+        // ── Transaction history — HIDE admin_adjustment types from users ─────
+        const { data: txs } = await _supabase.from('transactions').select('*')
+            .eq('user_id', currentUser.id)
+            .not('type', 'eq', 'admin_adjustment')   // ← admin actions hidden from users
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        // Also load withdrawal requests as "transactions" for display
+        const { data: wHistory } = await _supabase.from('withdrawal_requests').select('*')
+            .eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+
+        const txRows = [];
+
+        // Withdrawal requests shown as transactions
+        if (wHistory) {
+            wHistory.forEach(w => {
+                const statusIcon = w.status === 'approved' ? '✅' : w.status === 'rejected' ? '❌' : '⏳';
+                const statusColor = w.status === 'approved' ? '#10b981' : w.status === 'rejected' ? '#ef4444' : '#f59e0b';
+                txRows.push({
+                    time: w.created_at,
+                    html: `<div class="tx-item">
+                        <div class="tx-icon debit"><i class="fas fa-arrow-up"></i></div>
+                        <div class="tx-content">
+                            <div class="tx-desc">Withdrawal to ${w.bank_name}</div>
+                            <div class="tx-time">${timeAgo(w.created_at)} · <span style="color:${statusColor};font-weight:600;">${statusIcon} ${w.status.charAt(0).toUpperCase()+w.status.slice(1)}</span></div>
+                        </div>
+                        <div class="tx-amount debit">-${formatNaira(w.amount)}</div>
+                    </div>`
+                });
+            });
+        }
+
+        if (txs) {
+            txs.forEach(tx => {
                 const pos = tx.amount >= 0;
-                return `<div class="tx-item"><div class="tx-icon ${pos?'credit':'debit'}"><i class="fas fa-arrow-${pos?'down':'up'}"></i></div>
-                <div class="tx-content"><div class="tx-desc">${tx.description||tx.type}</div></div>
-                <div class="tx-amount ${pos?'credit':'debit'}">${pos?'+':''}${formatNaira(tx.amount)}</div></div>`;
-            }).join('');
+                // Clean up description — remove internal admin labels
+                let desc = tx.description || tx.type;
+                desc = desc.replace(/⚙️\s*Admin adjustment.*$/i, 'Balance update');
+                txRows.push({
+                    time: tx.created_at,
+                    html: `<div class="tx-item">
+                        <div class="tx-icon ${pos?'credit':'debit'}"><i class="fas fa-arrow-${pos?'down':'up'}"></i></div>
+                        <div class="tx-content">
+                            <div class="tx-desc">${desc}</div>
+                            <div class="tx-time">${timeAgo(tx.created_at)}</div>
+                        </div>
+                        <div class="tx-amount ${pos?'credit':'debit'}">${pos?'+':''}${formatNaira(tx.amount)}</div>
+                    </div>`
+                });
+            });
+        }
+
+        // Sort combined list by time, newest first
+        txRows.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        const listEl = document.getElementById('txList');
+        if (txRows.length === 0) {
+            listEl.innerHTML = '<div class="tx-empty"><div class="tx-empty-icon"><i class="fas fa-receipt"></i></div><p>No transactions yet.</p></div>';
+        } else {
+            listEl.innerHTML = txRows.slice(0, 20).map(r => r.html).join('');
         }
     }
+
     document.addEventListener('DOMContentLoaded', initPage);
 </script>
 </body>
