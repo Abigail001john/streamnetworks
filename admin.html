@@ -491,7 +491,7 @@
     // Update statistics
     function updateStats() {
       const total = allUsers.length;
-      const approved = allUsers.filter(u => u.is_approved === true).length;
+      const approved = users.filter(u => u.status === 'approved').length;
       const pending = allUsers.filter(u => u.is_approved !== true).length;
       const verified = approved;
 
