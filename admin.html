@@ -387,7 +387,7 @@
     function buildUserRow(user) {
       const initials = (user.full_name || user.email || 'U')
         .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-      const isApproved = user.is_approved === true;
+      const isApproved = user.status === 'approved';
       const joinedDate = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
       const statusLabel = isApproved ? 'approved' : 'pending';
       const row = document.createElement('tr');
