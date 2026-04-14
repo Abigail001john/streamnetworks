@@ -4,655 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wallet - Stream</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg-color: #f7f3ed;
+            --nav-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --card-bg: #ffffff;
+            --card-border: rgba(0,0,0,0.08);
+            --modal-bg: #ffffff;
+            --input-bg: #f9fafb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+        [data-theme="dark"] {
+            --bg-color: #0d1117;
+            --nav-bg: #0d1117;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --card-bg: linear-gradient(145deg, #1a2332, #151f2e);
+            --card-border: rgba(255,255,255,0.06);
+            --modal-bg: #151f2e;
+            --input-bg: rgba(255,255,255,0.05);
+            --shadow: none;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body {
-            width: 100%;
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            background-color: #0d1117;
-            color: #ffffff;
-            overflow-x: hidden;
+            width: 100%; min-height: 100vh; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        .container {
-            width: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            background-color: #0d1117;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        .container { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 
         /* TOP NAV */
         .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            max-width: 480px;
-            margin: 0 auto;
-            width: 100%;
-            height: 64px;
-            background-color: #0d1117;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+            width: 100%; height: 64px; background-color: var(--nav-bg); box-shadow: var(--shadow);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 16px;
+            border-bottom: 1px solid var(--card-border); z-index: 1000; transition: background-color 0.3s;
         }
+        .stream-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .stream-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .stream-logo-icon svg { width: 22px; height: 22px; fill: white; }
+        .stream-logo-text { font-size: 20px; font-weight: 700; color: #10b981; letter-spacing: -0.5px; }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .nav-actions { display: flex; gap: 10px; }
+        .icon-btn {
+            background: transparent; border: 1px solid var(--card-border); color: var(--text-main);
+            font-size: 18px; cursor: pointer; padding: 10px; border-radius: 10px;
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
         }
-
-        .stream-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .stream-logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stream-logo-icon svg {
-            width: 22px;
-            height: 22px;
-            fill: white;
-        }
-
-        .stream-logo-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: #10b981;
-            letter-spacing: -0.5px;
-        }
-
-        .hamburger-btn {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            color: #ffffff;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 10px;
-            transition: background-color 0.2s;
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .hamburger-btn:hover { background: rgba(255,255,255,0.15); }
 
         /* MAIN CONTENT */
-        .main-content {
-            margin-top: 64px;
-            margin-bottom: 80px;
-            padding: 24px 16px;
-            flex: 1;
-        }
+        .main-content { margin-top: 64px; margin-bottom: 80px; padding: 24px 16px; flex: 1; }
+        .page-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .page-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
 
-        .page-header {
-            margin-bottom: 24px;
+        .balance-card, .stat-card, .tx-item, .tx-empty {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow);
         }
+        .balance-label { font-size: 11px; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .withdraw-icon-btn { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+        .balance-amount { font-size: 42px; font-weight: 700; margin-bottom: 6px; letter-spacing: -1px; }
+        .balance-naira-equiv { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+        .balance-naira-equiv span { color: #10b981; }
 
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 6px;
-        }
+        .btn-primary { width: 100%; background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; font-size: 16px; font-weight: 600; padding: 16px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; font-family: inherit; }
+        .btn-secondary { width: 100%; background: transparent; border: 1.5px solid var(--text-muted); color: var(--text-main); font-size: 15px; font-weight: 600; padding: 15px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: inherit; }
 
-        .page-subtitle {
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        /* MAIN BALANCE CARD */
-        .balance-card {
-            background: linear-gradient(145deg, #1a2332, #151f2e);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-card::before {
-            content: '';
-            position: absolute;
-            top: -40px;
-            right: -40px;
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .balance-label {
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .withdraw-icon-btn {
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.3);
-            color: #10b981;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-
-        .withdraw-icon-btn:hover {
-            background: rgba(16,185,129,0.25);
-        }
-
-        .balance-amount {
-            font-size: 42px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 6px;
-            letter-spacing: -1px;
-        }
-
-        .balance-naira-equiv {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 24px;
-        }
-
-        .balance-naira-equiv span {
-            color: #10b981;
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 16px;
-            border-radius: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            margin-bottom: 12px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
-        }
-
-        .btn-secondary {
-            width: 100%;
-            background: transparent;
-            border: 1.5px solid rgba(255,255,255,0.15);
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 500;
-            padding: 15px;
-            border-radius: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.3);
-        }
-
-        /* STAT CARDS */
-        .stat-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: linear-gradient(145deg, #1a2332, #151f2e);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .stat-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-
+        .stat-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+        .stat-card { border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 0; }
+        .stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
         .stat-icon.approved { background: rgba(16,185,129,0.15); color: #10b981; }
         .stat-icon.pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
         .stat-icon.withdrawn { background: rgba(99,102,241,0.15); color: #6366f1; }
-        .stat-icon.reward { background: rgba(239,68,68,0.15); color: #ef4444; }
-
         .stat-info { flex: 1; }
+        .stat-label { font-size: 11px; letter-spacing: 1.2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        .stat-amount { font-size: 22px; font-weight: 700; color: var(--text-main); }
 
-        .stat-label {
-            font-size: 11px;
-            letter-spacing: 1.2px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .stat-amount {
-            font-size: 22px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .stat-amount.green { color: #10b981; }
-        .stat-amount.naira { color: #10b981; }
-
-        /* TRANSACTION HISTORY */
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 16px;
-        }
-
-        .tx-empty {
-            background: linear-gradient(145deg, #1a2332, #151f2e);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 40px 24px;
-            text-align: center;
-        }
-
-        .tx-empty-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.05);
-            border: 1.5px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #6b7280;
-            margin: 0 auto 16px;
-        }
-
-        .tx-empty p {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .tx-item {
-            background: linear-gradient(145deg, #1a2332, #151f2e);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 10px;
-        }
-
-        .tx-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .tx-item { border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+        .tx-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
         .tx-icon.credit { background: rgba(16,185,129,0.15); color: #10b981; }
         .tx-icon.debit { background: rgba(239,68,68,0.15); color: #ef4444; }
-
         .tx-content { flex: 1; }
-        .tx-desc { font-size: 14px; font-weight: 500; color: #ffffff; margin-bottom: 4px; }
-        .tx-time { font-size: 12px; color: #6b7280; }
+        .tx-desc { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .tx-time { font-size: 12px; color: var(--text-muted); }
         .tx-amount { font-size: 15px; font-weight: 700; }
         .tx-amount.credit { color: #10b981; }
         .tx-amount.debit { color: #ef4444; }
+        .tx-empty { text-align: center; }
+        .tx-empty-icon { font-size: 24px; color: var(--text-muted); margin-bottom: 16px; }
 
         /* BOTTOM NAV */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 480px;
-            margin: 0 auto;
-            width: 100%;
-            height: 72px;
-            background-color: #0d1117;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            display: flex;
-            align-items: stretch;
-            z-index: 1000;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; width: 100%; height: 80px; background-color: var(--nav-bg); box-shadow: 0 -2px 8px rgba(0,0,0,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 1000; transition: background-color 0.3s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer; padding: 8px 12px; transition: color 0.2s; }
+        .nav-item.active { color: #10b981; }
+        .nav-icon { font-size: 24px; }
 
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            text-decoration: none;
-            color: #6b7280;
-            font-size: 10px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--modal-bg); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 28px 20px 40px; border-top: 1px solid var(--card-border); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .modal-subtitle { font-size: 13px; color: var(--text-muted); }
+        .modal-close { background: rgba(128,128,128,0.2); border: none; color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
 
-        .nav-item.active, .nav-item:hover { color: #10b981; }
-
-        .nav-icon {
-            font-size: 20px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-item.active .nav-icon {
-            background: rgba(16,185,129,0.1);
-            border-radius: 10px;
-            padding: 6px 14px;
-        }
-
-        /* ==================== MODAL ==================== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: #151f2e;
-            border-radius: 24px 24px 0 0;
-            width: 100%;
-            max-width: 480px;
-            padding: 28px 20px 40px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .modal-subtitle {
-            font-size: 13px;
-            color: #6b7280;
-        }
-
-        .modal-close {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: #ffffff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .modal-close:hover { background: rgba(255,255,255,0.2); }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #9ca3af;
-            margin-bottom: 8px;
-            letter-spacing: 0.3px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1.5px solid rgba(255,255,255,0.1);
-            color: #ffffff;
-            font-size: 15px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-
-        .form-control:focus {
-            border-color: #10b981;
-            background: rgba(16,185,129,0.05);
-        }
-
-        .form-control option {
-            background: #1a2332;
-            color: #ffffff;
-        }
-
-        .select-wrapper {
-            position: relative;
-        }
-
-        .select-wrapper::after {
-            content: '\f078';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            pointer-events: none;
-            font-size: 12px;
-        }
-
-        /* WITHDRAW MODAL */
-        .withdraw-modal .amount-input-wrapper {
-            position: relative;
-        }
-
-        .withdraw-modal .currency-prefix {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            font-weight: 700;
-            color: #10b981;
-        }
-
-        .withdraw-modal .form-control.amount-input {
-            padding-left: 44px;
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .available-hint {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 6px;
-        }
-
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .form-control { width: 100%; background: var(--input-bg); border: 1.5px solid var(--card-border); color: var(--text-main); font-size: 15px; padding: 14px 16px; border-radius: 12px; outline: none; font-family: inherit; }
+        .form-control:focus { border-color: #10b981; }
+        .withdraw-modal .amount-input-wrapper { position: relative; }
+        .withdraw-modal .currency-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 700; color: #10b981; }
+        .withdraw-modal .form-control.amount-input { padding-left: 44px; font-size: 22px; font-weight: 700; }
+        .available-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
         .available-hint span { color: #10b981; }
 
-        /* SUCCESS STATE */
-        .success-toast {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 3000;
-            box-shadow: 0 8px 24px rgba(16,185,129,0.4);
-            white-space: nowrap;
-            animation: toastIn 0.3s ease forwards;
-            max-width: calc(100% - 32px);
-        }
-
-        .success-toast.show {
-            display: flex;
-        }
-
-        @keyframes toastIn {
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        /* Spinner */
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Saved bank display */
-        .saved-bank-card {
-            background: rgba(16,185,129,0.08);
-            border: 1.5px solid rgba(16,185,129,0.25);
-            border-radius: 14px;
-            padding: 16px;
-            display: none;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .saved-bank-card.visible {
-            display: flex;
-        }
-
-        .saved-bank-icon {
-            width: 44px;
-            height: 44px;
-            background: rgba(16,185,129,0.15);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #10b981;
-            font-size: 20px;
-        }
-
+        /* TOAST & BANK DISPLAY */
+        .success-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: #10b981; color: white; padding: 14px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 10px; z-index: 3000; box-shadow: 0 8px 24px rgba(16,185,129,0.4); animation: toastIn 0.3s ease forwards; }
+        .success-toast.show { display: flex; }
+        @keyframes toastIn { to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        .saved-bank-card { background: rgba(16,185,129,0.08); border: 1.5px solid rgba(16,185,129,0.25); border-radius: 14px; padding: 16px; display: none; align-items: center; gap: 14px; margin-bottom: 16px; }
+        .saved-bank-card.visible { display: flex; }
+        .saved-bank-icon { width: 44px; height: 44px; background: rgba(16,185,129,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px; }
         .saved-bank-info { flex: 1; }
-        .saved-bank-name { font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 2px; }
-        .saved-bank-number { font-size: 13px; color: #6b7280; }
-
-        .change-bank-btn {
-            background: none;
-            border: none;
-            color: #10b981;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-        }
+        .saved-bank-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .saved-bank-number { font-size: 13px; color: var(--text-muted); }
+        .change-bank-btn { background: none; border: none; color: #10b981; font-size: 13px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- TOP NAV -->
     <nav class="top-nav">
         <a href="dashboard.html" class="stream-logo">
             <div class="stream-logo-icon">
@@ -662,579 +151,200 @@
             </div>
             <span class="stream-logo-text">Stream</span>
         </a>
-        <button class="hamburger-btn">
-            <i class="fas fa-bars"></i>
-        </button>
+        <div class="nav-actions">
+            <button id="themeToggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+            <button class="icon-btn"><i class="fas fa-bars"></i></button>
+        </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-        <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">My Wallet</h1>
             <p class="page-subtitle">Manage your ₦ earnings and withdrawals</p>
         </div>
 
-        <!-- Main Balance Card -->
         <div class="balance-card">
-            <div class="balance-label">
-                AVAILABLE BALANCE
-                <button class="withdraw-icon-btn" onclick="openWithdrawModal()">
-                    <i class="fas fa-arrow-down"></i>
-                </button>
-            </div>
+            <div class="balance-label">AVAILABLE BALANCE <button class="withdraw-icon-btn" onclick="openWithdrawModal()"><i class="fas fa-arrow-down"></i></button></div>
             <div class="balance-amount" id="availableBalance">₦0.00</div>
             <div class="balance-naira-equiv">≈ <span id="usdEquiv">$0.00</span> at current rate</div>
-            <button class="btn-primary" onclick="openWithdrawModal()">
-                <i class="fas fa-arrow-down"></i> Withdraw Funds
-            </button>
-            <button class="btn-secondary" onclick="openAddBankModal()">
-                <i class="fas fa-credit-card"></i> Add Bank Account
-            </button>
+            <button class="btn-primary" onclick="openWithdrawModal()"><i class="fas fa-arrow-down"></i> Withdraw Funds</button>
+            <button class="btn-secondary" onclick="openAddBankModal()"><i class="fas fa-credit-card"></i> Add Bank Account</button>
         </div>
 
-        <!-- Stats Row -->
         <div class="stat-cards">
             <div class="stat-card">
-                <div class="stat-icon approved">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Approved for Withdrawal</div>
-                    <div class="stat-amount" id="approvedAmount">₦0.00</div>
-                </div>
+                <div class="stat-icon approved"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><div class="stat-label">Approved for Withdrawal</div><div class="stat-amount" id="approvedAmount">₦0.00</div></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon pending">
-                    <i class="fas fa-hourglass-half"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Pending Verification</div>
-                    <div class="stat-amount" id="pendingAmount">₦0.00</div>
-                </div>
+                <div class="stat-icon pending"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info"><div class="stat-label">Pending Verification</div><div class="stat-amount" id="pendingAmount">₦0.00</div></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon withdrawn">
-                    <i class="fas fa-university"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Total Withdrawn</div>
-                    <div class="stat-amount" id="totalWithdrawn">₦0.00</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon reward">
-                    <i class="fas fa-gift"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-label">Stream Reward</div>
-                    <div class="stat-amount naira" id="streamReward">₦0.00</div>
-                </div>
+                <div class="stat-icon withdrawn"><i class="fas fa-university"></i></div>
+                <div class="stat-info"><div class="stat-label">Total Withdrawn</div><div class="stat-amount" id="totalWithdrawn">₦0.00</div></div>
             </div>
         </div>
 
-        <!-- Transaction History -->
         <div class="section-title">Transaction History</div>
         <div id="txList">
-            <div class="tx-empty">
-                <div class="tx-empty-icon">
-                    <i class="fas fa-receipt"></i>
-                </div>
-                <p>No transactions yet. Withdraw your first StreamGains to see history here.</p>
-                <button class="btn-secondary" onclick="openAddBankModal()">
-                    <i class="fas fa-university"></i> Add Bank Account
-                </button>
-            </div>
+            <div class="tx-empty"><div class="tx-empty-icon"><i class="fas fa-receipt"></i></div><p>No transactions yet.</p></div>
         </div>
     </div>
 
-    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
-    </a>
-    <a href="referral.html" class="nav-item active">
-        <div class="nav-icon"><i class="fas fa-user-friends"></i></div><span>Referral</span>
-    </a>
-    <a href="earn.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-coins"></i></div><span>Earn</span>
-    </a>
-    <a href="withdraw.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-wallet"></i></div><span>Wallet</span>
-    </a>
-    <a href="profile.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-user"></i></div><span>Profile</span>
-    </a>
+        <a href="dashboard.html" class="nav-item"><div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span></a>
+        <a href="referral.html" class="nav-item"><div class="nav-icon"><i class="fas fa-user-friends"></i></div><span>Referral</span></a>
+        <a href="earn.html" class="nav-item"><div class="nav-icon"><i class="fas fa-coins"></i></div><span>Earn</span></a>
+        <a href="withdraw.html" class="nav-item active"><div class="nav-icon"><i class="fas fa-wallet"></i></div><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><div class="nav-icon"><i class="fas fa-user"></i></div><span>Profile</span></a>
     </nav>
 </div>
 
-<!-- ADD BANK MODAL -->
 <div class="modal-overlay" id="addBankOverlay">
     <div class="modal">
         <div class="modal-header">
-            <div>
-                <div class="modal-title">Add Bank Account</div>
-                <div class="modal-subtitle">Add your Nigerian bank for withdrawals</div>
-            </div>
-            <button class="modal-close" onclick="closeAddBankModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div><div class="modal-title">Add Bank Account</div><div class="modal-subtitle">Add your Nigerian bank</div></div>
+            <button class="modal-close" onclick="closeAddBankModal()"><i class="fas fa-times"></i></button>
         </div>
-
         <div class="form-group">
             <label class="form-label">Bank Name</label>
-            <div class="select-wrapper">
-                <select class="form-control" id="bankSelect">
-                    <option value="">Select your bank</option>
-                    <option value="Access Bank">Access Bank</option>
-                    <option value="GTBank">GTBank (Guaranty Trust Bank)</option>
-                    <option value="First Bank">First Bank of Nigeria</option>
-                    <option value="Zenith Bank">Zenith Bank</option>
-                    <option value="UBA">UBA (United Bank for Africa)</option>
-                    <option value="Opay">Opay</option>
-                    <option value="PalmPay">PalmPay</option>
-                    <option value="Fidelity Bank">Fidelity Bank</option>
-                    <option value="Union Bank">Union Bank</option>
-                    <option value="Sterling Bank">Sterling Bank</option>
-                    <option value="Kuda Bank">Kuda Bank</option>
-                    <option value="Moniepoint">Moniepoint</option>
-                    <option value="FCMB">FCMB (First City Monument Bank)</option>
-                    <option value="Wema Bank">Wema Bank</option>
-                    <option value="Stanbic IBTC">Stanbic IBTC Bank</option>
-                    <option value="Polaris Bank">Polaris Bank</option>
-                </select>
-            </div>
+            <input type="text" class="form-control" id="bankSelect" placeholder="Enter Bank Name">
         </div>
-
         <div class="form-group">
             <label class="form-label">Account Number</label>
-            <input type="tel" class="form-control" id="accountNumber" placeholder="10-digit account number" maxlength="10" inputmode="numeric">
+            <input type="tel" class="form-control" id="accountNumber" placeholder="10-digit account number" maxlength="10">
         </div>
-
         <div class="form-group">
             <label class="form-label">Account Name</label>
             <input type="text" class="form-control" id="accountName" placeholder="Account name">
         </div>
-
-        <button class="btn-primary" onclick="saveBankAccount()" id="saveBankBtn">
-            <i class="fas fa-university"></i> Add Bank Account
-        </button>
+        <button class="btn-primary" onclick="saveBankAccount()" id="saveBankBtn">Save Bank</button>
     </div>
 </div>
 
-<!-- WITHDRAW MODAL -->
 <div class="modal-overlay withdraw-modal" id="withdrawOverlay">
     <div class="modal">
         <div class="modal-header">
-            <div>
-                <div class="modal-title">Withdraw Funds</div>
-                <div class="modal-subtitle">Transfer earnings to your bank</div>
-            </div>
-            <button class="modal-close" onclick="closeWithdrawModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div><div class="modal-title">Withdraw Funds</div></div>
+            <button class="modal-close" onclick="closeWithdrawModal()"><i class="fas fa-times"></i></button>
         </div>
-
-        <!-- Saved bank -->
         <div class="saved-bank-card" id="savedBankCard">
-            <div class="saved-bank-icon">
-                <i class="fas fa-university"></i>
-            </div>
+            <div class="saved-bank-icon"><i class="fas fa-university"></i></div>
             <div class="saved-bank-info">
                 <div class="saved-bank-name" id="savedBankName">—</div>
                 <div class="saved-bank-number" id="savedBankNumber">—</div>
             </div>
             <button class="change-bank-btn" onclick="closeWithdrawModal(); openAddBankModal();">Change</button>
         </div>
-
-        <div id="noBankNotice" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;font-size:13px;color:#f59e0b;margin-bottom:18px;display:none;">
-            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
-            No bank account saved. <button onclick="closeWithdrawModal();openAddBankModal();" style="background:none;border:none;color:#f59e0b;font-weight:700;cursor:pointer;font-family:inherit;">Add one first →</button>
-        </div>
-
         <div class="form-group">
-            <label class="form-label">Amount to Withdraw</label>
-            <div class="amount-input-wrapper">
-                <span class="currency-prefix">₦</span>
-                <input type="number" class="form-control amount-input" id="withdrawAmount" placeholder="0.00" min="500">
-            </div>
-            <div class="available-hint">Available: <span id="availableHint">₦0.00</span> • Min. balance required: ₦50,000</div>
+            <label class="form-label">Amount</label>
+            <div class="amount-input-wrapper"><span class="currency-prefix">₦</span><input type="number" class="form-control amount-input" id="withdrawAmount" placeholder="0.00"></div>
+            <div class="available-hint">Available: <span id="availableHint">₦0.00</span> • Min: ₦50,000</div>
         </div>
-
-        <button class="btn-primary" onclick="processWithdrawal()" id="withdrawBtn">
-            <i class="fas fa-arrow-down"></i> Withdraw Now
-        </button>
+        <button class="btn-primary" onclick="processWithdrawal()" id="withdrawBtn">Withdraw Now</button>
     </div>
 </div>
 
-<!-- SUCCESS TOAST -->
-<div class="success-toast" id="successToast">
-    <i class="fas fa-check-circle"></i>
-    <span id="toastMsg">Done!</span>
-</div>
+<div class="success-toast" id="successToast"><i class="fas fa-check-circle"></i><span id="toastMsg">Done!</span></div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-    // ==========================================
-    // STATE
-    // ==========================================
-    let currentUser = null;
-    let walletData = { available: 0, approved: 0, pending: 0, totalWithdrawn: 0, reward: 0 };
-    let savedBank = null;
+    // ─── Theme Setup ────────────────────────────────────────────────────────
+    const body = document.documentElement;
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
 
-    // ==========================================
-    // HELPERS
-    // ==========================================
-    function formatNaira(amount) {
-        return '₦' + Number(amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function timeAgo(dateStr) {
-        const now = new Date(), then = new Date(dateStr);
-        const diff = Math.floor((now - then) / 1000);
-        if (diff < 60) return 'Just now';
-        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-        return Math.floor(diff / 86400) + ' days ago';
-    }
-
-    function showToast(msg, duration = 3000) {
-        const t = document.getElementById('successToast');
-        document.getElementById('toastMsg').textContent = msg;
-        // Use warning style for ⚠️ messages, success style otherwise
-        if (msg.startsWith('⚠️')) {
-            t.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
-            t.style.boxShadow = '0 8px 24px rgba(217,119,6,0.4)';
-        } else {
-            t.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            t.style.boxShadow = '0 8px 24px rgba(16,185,129,0.4)';
-        }
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), duration);
-    }
-
-    // ==========================================
-    // MODAL CONTROLS
-    // ==========================================
-    function openAddBankModal() {
-        document.getElementById('addBankOverlay').classList.add('active');
-        // Pre-fill if already saved
-        if (savedBank) {
-            document.getElementById('bankSelect').value = savedBank.bank_name || '';
-            document.getElementById('accountNumber').value = savedBank.account_number || '';
-            document.getElementById('accountName').value = savedBank.account_name || '';
-        }
-    }
-
-    function closeAddBankModal() {
-        document.getElementById('addBankOverlay').classList.remove('active');
-    }
-
-    async function openWithdrawModal() {
-        // --- ELIGIBILITY GATE: Minimum balance check ---
-        if (walletData.available < 50000) {
-            showToast('⚠️ You must have a minimum balance of ₦50,000 before you can withdraw.', 5000);
-            return;
-        }
-
-        // --- ELIGIBILITY GATE: Referral check ---
-        let hasReferral = false;
-        try {
-            if (typeof _supabase !== 'undefined' && currentUser) {
-                const { data: refs } = await _supabase
-                    .from('referrals')
-                    .select('id')
-                    .eq('referrer_id', currentUser.id)
-                    .limit(1);
-                hasReferral = refs && refs.length > 0;
-
-                // Fallback: check profile referred_count if referrals table not available
-                if (!hasReferral) {
-                    const { data: profile } = await _supabase
-                        .from('profiles')
-                        .select('referred_count, referral_count')
-                        .eq('id', currentUser.id)
-                        .maybeSingle();
-                    if (profile) {
-                        const count = profile.referred_count || profile.referral_count || 0;
-                        hasReferral = count >= 1;
-                    }
-                }
-            } else {
-                // Offline fallback: check localStorage
-                const localRefs = localStorage.getItem('stream_referral_count');
-                hasReferral = localRefs && parseInt(localRefs) >= 1;
-            }
-        } catch (e) {
-            // If check fails, allow to proceed to avoid blocking legitimate users
-            hasReferral = true;
-        }
-
-        if (!hasReferral) {
-            showToast('⚠️ You have not referred anyone yet. Please refer at least one person before placing a withdrawal request.', 6000);
-            return;
-        }
-
-        // All checks passed — open modal
-        document.getElementById('withdrawOverlay').classList.add('active');
-        document.getElementById('availableHint').textContent = formatNaira(walletData.available);
-        // Show saved bank or no-bank notice
-        const savedCard = document.getElementById('savedBankCard');
-        const noBankNotice = document.getElementById('noBankNotice');
-        if (savedBank) {
-            savedCard.classList.add('visible');
-            noBankNotice.style.display = 'none';
-            document.getElementById('savedBankName').textContent = savedBank.account_name || savedBank.bank_name;
-            document.getElementById('savedBankNumber').textContent = savedBank.bank_name + ' • ' + (savedBank.account_number || '').replace(/(\d{6})(\d{4})/, '••••••$2');
-        } else {
-            savedCard.classList.remove('visible');
-            noBankNotice.style.display = 'block';
-        }
-    }
-
-    function closeWithdrawModal() {
-        document.getElementById('withdrawOverlay').classList.remove('active');
-        document.getElementById('withdrawAmount').value = '';
-    }
-
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', e => {
-            if (e.target === overlay) {
-                overlay.classList.remove('active');
-            }
-        });
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
     });
 
-    // ==========================================
-    // SAVE BANK ACCOUNT
-    // ==========================================
+    function updateThemeIcon(theme) { themeToggleBtn.innerHTML = theme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>'; }
+
+    // ─── Wallet Logic ───────────────────────────────────────────────────────
+    let currentUser = null, walletData = { available: 0, approved: 0, pending: 0, totalWithdrawn: 0 }, savedBank = null;
+    function formatNaira(a) { return '₦' + Number(a || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 }); }
+    function showToast(m, duration=3000) { const t = document.getElementById('successToast'); document.getElementById('toastMsg').textContent = m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), duration); }
+
+    function openAddBankModal() { document.getElementById('addBankOverlay').classList.add('active'); }
+    function closeAddBankModal() { document.getElementById('addBankOverlay').classList.remove('active'); }
+
+    async function openWithdrawModal() {
+        if (walletData.available < 50000) return showToast('⚠️ Minimum balance of ₦50,000 required.');
+
+        try {
+            // Require at least 1 *approved* referral
+            const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true })
+                .eq('referred_by', currentUser.id).eq('is_approved', true);
+            
+            if (!count || count < 1) return showToast('⚠️ You need at least 1 approved referral before withdrawing.', 5000);
+        } catch (e) { return showToast('⚠️ Could not verify referral status.'); }
+
+        document.getElementById('withdrawOverlay').classList.add('active');
+        document.getElementById('availableHint').textContent = formatNaira(walletData.available);
+        if (savedBank) {
+            document.getElementById('savedBankCard').classList.add('visible');
+            document.getElementById('savedBankName').textContent = savedBank.account_name;
+            document.getElementById('savedBankNumber').textContent = savedBank.bank_name + ' • ' + savedBank.account_number.slice(-4);
+        }
+    }
+    function closeWithdrawModal() { document.getElementById('withdrawOverlay').classList.remove('active'); }
+
     async function saveBankAccount() {
-        const bankName = document.getElementById('bankSelect').value;
-        const accountNumber = document.getElementById('accountNumber').value.trim();
-        const accountName = document.getElementById('accountName').value.trim();
-
-        if (!bankName) { showFieldError('bankSelect', 'Please select your bank'); return; }
-        if (accountNumber.length !== 10 || !/^\d+$/.test(accountNumber)) {
-            showFieldError('accountNumber', 'Enter a valid 10-digit account number'); return;
-        }
-        if (!accountName) { showFieldError('accountName', 'Please enter account name'); return; }
-
-        const btn = document.getElementById('saveBankBtn');
-        btn.innerHTML = '<span class="spinner"></span> Saving...';
-        btn.disabled = true;
-
+        const bank = document.getElementById('bankSelect').value, num = document.getElementById('accountNumber').value, name = document.getElementById('accountName').value;
+        if (!bank || !num || !name) return showToast('⚠️ Fill all bank details');
+        
         try {
-            if (typeof _supabase !== 'undefined' && currentUser) {
-                const { error } = await _supabase
-                    .from('bank_accounts')
-                    .upsert({
-                        user_id: currentUser.id,
-                        bank_name: bankName,
-                        account_number: accountNumber,
-                        account_name: accountName,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'user_id' });
-
-                if (error) throw error;
-            }
-
-            // Save locally too
-            savedBank = { bank_name: bankName, account_number: accountNumber, account_name: accountName };
-            localStorage.setItem('stream_saved_bank', JSON.stringify(savedBank));
-
-            closeAddBankModal();
-            showToast('✅ Bank account saved successfully!');
-        } catch (err) {
-            console.error('Save bank error:', err);
-            // Still save locally
-            savedBank = { bank_name: bankName, account_number: accountNumber, account_name: accountName };
-            localStorage.setItem('stream_saved_bank', JSON.stringify(savedBank));
-            closeAddBankModal();
-            showToast('✅ Bank account saved!');
-        } finally {
-            btn.innerHTML = '<i class="fas fa-university"></i> Add Bank Account';
-            btn.disabled = false;
-        }
+            await _supabase.from('bank_accounts').upsert({ user_id: currentUser.id, bank_name: bank, account_number: num, account_name: name });
+            savedBank = { bank_name: bank, account_number: num, account_name: name };
+            closeAddBankModal(); showToast('✅ Bank saved!');
+        } catch(e) { showToast('⚠️ Error saving bank'); }
     }
 
-    function showFieldError(fieldId, msg) {
-        const el = document.getElementById(fieldId);
-        el.style.borderColor = '#ef4444';
-        showToast('⚠️ ' + msg, 2500);
-        el.focus();
-        setTimeout(() => el.style.borderColor = '', 2000);
-    }
-
-    // ==========================================
-    // PROCESS WITHDRAWAL
-    // ==========================================
     async function processWithdrawal() {
-        const amountInput = document.getElementById('withdrawAmount');
-        const amount = parseFloat(amountInput.value);
-
-        if (!savedBank) { showToast('⚠️ Please add a bank account first'); return; }
-        if (walletData.available < 50000) {
-            showToast('⚠️ You must have a minimum balance of ₦50,000 before you can withdraw.', 5000);
-            closeWithdrawModal();
-            return;
-        }
-        if (isNaN(amount) || amount <= 0) { showToast('⚠️ Please enter a valid withdrawal amount'); return; }
-        if (amount > walletData.available) { showToast('⚠️ Insufficient balance'); return; }
-
-        const btn = document.getElementById('withdrawBtn');
-        btn.innerHTML = '<span class="spinner"></span> Processing...';
-        btn.disabled = true;
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        if (!savedBank) return showToast('⚠️ Add bank first');
+        if (amount > walletData.available || amount < 50000) return showToast('⚠️ Invalid amount');
 
         try {
-            if (typeof _supabase !== 'undefined' && currentUser) {
-                await _supabase.from('transactions').insert({
-                    user_id: currentUser.id,
-                    type: 'withdrawal',
-                    description: `Withdrawal to ${savedBank.bank_name}`,
-                    amount: -amount,
-                    created_at: new Date().toISOString()
-                });
-
-                // Deduct from wallet
-                const newBalance = walletData.available - amount;
-                await _supabase.from('wallets')
-                    .update({ task_earnings: Math.max(0, newBalance), updated_at: new Date().toISOString() })
-                    .eq('user_id', currentUser.id);
-            }
-
-            walletData.pending += amount;
-            walletData.available = Math.max(0, walletData.available - amount);
-            updateWalletUI();
-            loadTransactions();
-            closeWithdrawModal();
-            showToast(`🎉 Withdrawal of ${formatNaira(amount)} is pending review!`, 4000);
-        } catch (err) {
-            console.error('Withdrawal error:', err);
-            showToast('⚠️ Withdrawal submitted (pending review)');
-            closeWithdrawModal();
-        } finally {
-            btn.innerHTML = '<i class="fas fa-arrow-down"></i> Withdraw Now';
-            btn.disabled = false;
-        }
+            document.getElementById('withdrawBtn').textContent = "Processing...";
+            await _supabase.from('transactions').insert({ user_id: currentUser.id, type: 'withdrawal', description: `Withdrawal to ${savedBank.bank_name}`, amount: -amount });
+            walletData.available -= amount; walletData.pending += amount;
+            await _supabase.from('wallets').update({ task_earnings: walletData.available }).eq('user_id', currentUser.id);
+            
+            closeWithdrawModal(); showToast('🎉 Withdrawal pending review!');
+            setTimeout(() => window.location.reload(), 2000);
+        } catch(e) { showToast('⚠️ Error submitting request'); document.getElementById('withdrawBtn').textContent = "Withdraw Now"; }
     }
 
-    // ==========================================
-    // UPDATE UI
-    // ==========================================
-    function updateWalletUI() {
-        document.getElementById('availableBalance').textContent = formatNaira(walletData.available);
-        document.getElementById('usdEquiv').textContent = '$' + (walletData.available / 1600).toFixed(2);
-        document.getElementById('approvedAmount').textContent = formatNaira(walletData.approved);
-        document.getElementById('pendingAmount').textContent = formatNaira(walletData.pending);
-        document.getElementById('totalWithdrawn').textContent = formatNaira(walletData.totalWithdrawn);
-        document.getElementById('streamReward').textContent = formatNaira(walletData.reward);
-    }
-
-    // ==========================================
-    // LOAD TRANSACTIONS
-    // ==========================================
-    async function loadTransactions() {
-        const list = document.getElementById('txList');
-        if (!currentUser || typeof _supabase === 'undefined') return;
-
-        try {
-            const { data } = await _supabase
-                .from('transactions')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (!data || data.length === 0) {
-                list.innerHTML = `
-                    <div class="tx-empty">
-                        <div class="tx-empty-icon"><i class="fas fa-receipt"></i></div>
-                        <p>No transactions yet. Withdraw your first StreamGains to see history here.</p>
-                        <button class="btn-secondary" onclick="openAddBankModal()">
-                            <i class="fas fa-university"></i> Add Bank Account
-                        </button>
-                    </div>`;
-                return;
-            }
-
-            list.innerHTML = data.map(tx => {
-                const isCredit = tx.amount >= 0;
-                const icon = isCredit ? 'fas fa-arrow-down' : 'fas fa-arrow-up';
-                return `
-                    <div class="tx-item">
-                        <div class="tx-icon ${isCredit ? 'credit' : 'debit'}">
-                            <i class="${icon}"></i>
-                        </div>
-                        <div class="tx-content">
-                            <div class="tx-desc">${tx.description || tx.type}</div>
-                            <div class="tx-time">${timeAgo(tx.created_at)}</div>
-                        </div>
-                        <div class="tx-amount ${isCredit ? 'credit' : 'debit'}">
-                            ${isCredit ? '+' : ''}${formatNaira(tx.amount)}
-                        </div>
-                    </div>`;
-            }).join('');
-        } catch (err) {
-            console.error('Transactions error:', err);
-        }
-    }
-
-    // ==========================================
-    // INIT PAGE
-    // ==========================================
     async function initPage() {
-        // Try to load saved bank from localStorage first
-        const localBank = localStorage.getItem('stream_saved_bank');
-        if (localBank) {
-            try { savedBank = JSON.parse(localBank); } catch(e) {}
+        const res = await requireAuth('any'); if(!res) return; currentUser = res.profile;
+        const { data: wallet } = await _supabase.from('wallets').select('*').eq('user_id', currentUser.id).maybeSingle();
+        if (wallet) {
+            walletData.available = (wallet.task_earnings||0) + (wallet.collab_earnings||0) + (wallet.bonus_balance||0);
+            document.getElementById('availableBalance').textContent = formatNaira(walletData.available);
+            document.getElementById('usdEquiv').textContent = '$' + (walletData.available/1600).toFixed(2);
         }
+        const { data: bank } = await _supabase.from('bank_accounts').select('*').eq('user_id', currentUser.id).maybeSingle();
+        if (bank) savedBank = bank;
 
-        // Default reward
-        walletData.reward = 10000;
-        updateWalletUI();
-
-        try {
-            if (typeof requireAuth === 'function') {
-                const result = await requireAuth('any');
-                if (!result) return;
-                currentUser = result.profile;
-
-                // Load wallet
-                const { data: wallet } = await _supabase
-                    .from('wallets')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .maybeSingle();
-
-                if (wallet) {
-                    const total = (wallet.collab_earnings || 0) + (wallet.task_earnings || 0) + (wallet.bonus_balance || 0);
-                    walletData.available = total;
-                    walletData.reward = wallet.bonus_balance || 10000;
-                    updateWalletUI();
-                }
-
-                // Load saved bank from Supabase
-                const { data: bank } = await _supabase
-                    .from('bank_accounts')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .maybeSingle();
-
-                if (bank) {
-                    savedBank = bank;
-                    localStorage.setItem('stream_saved_bank', JSON.stringify(bank));
-                }
-
-                await loadTransactions();
-            }
-        } catch (err) {
-            console.error('Init error:', err);
+        const { data: txs } = await _supabase.from('transactions').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+        if (txs && txs.length) {
+            document.getElementById('txList').innerHTML = txs.map(tx => {
+                const pos = tx.amount >= 0;
+                return `<div class="tx-item"><div class="tx-icon ${pos?'credit':'debit'}"><i class="fas fa-arrow-${pos?'down':'up'}"></i></div>
+                <div class="tx-content"><div class="tx-desc">${tx.description||tx.type}</div></div>
+                <div class="tx-amount ${pos?'credit':'debit'}">${pos?'+':''}${formatNaira(tx.amount)}</div></div>`;
+            }).join('');
         }
     }
-
     document.addEventListener('DOMContentLoaded', initPage);
 </script>
 </body>
