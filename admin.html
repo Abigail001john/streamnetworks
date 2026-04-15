@@ -849,6 +849,84 @@
       }, 3000);
     }
 
+    
+async function setUserStatus(userId, statusValue) {
+  const { error } = await _supabase
+    .from('profiles')
+    .update({ status: statusValue })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Error updating status:', error);
+    return false;
+  }
+
+  // NEW: if approving a user, credit their referrer's bonus
+  if (statusValue === 'approved') {
+    await creditReferralBonus(userId);
+  }
+
+  return true;
+}
+
+    // admin-withdrawals.js
+
+async function loadWithdrawals() {
+  const { data, error } = await _supabase
+    .from('withdrawals')
+    .select(`
+      *,
+      profiles (full_name, email)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to load withdrawals:', error);
+    return;
+  }
+
+  const container = document.getElementById('withdrawals-container');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p>No withdrawal requests.</p>';
+    return;
+  }
+
+  container.innerHTML = data.map(w => `
+    <div class="withdrawal-card" data-id="${w.id}">
+      <div>
+        <strong>${w.profiles?.full_name || 'Unknown'}</strong>
+        <span>${w.profiles?.email || ''}</span>
+      </div>
+      <div>Amount: ₦${Number(w.amount).toLocaleString()}</div>
+      <div>Status: <span class="status-badge status-${w.status}">${w.status}</span></div>
+      <div>Requested: ${new Date(w.created_at).toLocaleDateString()}</div>
+      ${w.status === 'pending' ? `
+        <div class="actions">
+          <button onclick="handleWithdrawal('${w.id}', 'approved')" class="btn-approve">Approve</button>
+          <button onclick="handleWithdrawal('${w.id}', 'rejected')" class="btn-reject">Reject</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+async function handleWithdrawal(withdrawalId, newStatus) {
+  const confirmed = confirm(`Are you sure you want to ${newStatus} this withdrawal?`);
+  if (!confirmed) return;
+
+  const success = await updateWithdrawalStatus(withdrawalId, newStatus);
+  
+  if (success) {
+    alert(`Withdrawal ${newStatus} successfully.`);
+    loadWithdrawals(); // Refresh the list
+  } else {
+    alert('Something went wrong. Please try again.');
+  }
+}
+
+// Call when admin opens the withdrawals tab
+loadWithdrawals();
+
     // Load users live from Supabase
     async function loadUsers() {
       try {
@@ -1715,8 +1793,6 @@
           <i class="fas fa-spinner fa-spin" style="font-size:28px;display:block;margin-bottom:12px;"></i>Loading...
         </div>
       </div>
-    </div>
   </div>
-
 </body>
 </html>
