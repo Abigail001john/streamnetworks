@@ -54,7 +54,7 @@
         .code-card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); transition: background-color 0.3s; }
         .code-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
         .code-box { background: rgba(45,212,191,0.1); border: 2px dashed var(--primary); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; word-break: break-all; }
-        .code-text { font-size: 14px; font-weight: 600; color: var(--primary); }
+        .code-text { font-size: 13px; font-weight: 600; color: var(--primary); flex: 1; word-break: break-all; }
         .copy-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 10px; }
         
         .share-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -74,6 +74,9 @@
         .empty-state { text-align: center; padding: 30px 0; color: var(--text-muted); }
         .empty-state i { font-size: 40px; margin-bottom: 10px; display: block; }
         .empty-state p { font-size: 14px; }
+
+        .error-banner { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; color: #ef4444; font-size: 13px; display: none; }
+        .error-banner.show { display: block; }
         
         /* BOTTOM NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: var(--nav-bg); box-shadow: 0 -2px 8px rgba(0,0,0,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 100; max-width: 480px; margin: 0 auto; transition: background-color 0.3s; }
@@ -84,6 +87,7 @@
         .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1f2937; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
     </style>
 </head>
 <body>
@@ -95,6 +99,8 @@
 </nav>
 
 <div class="content">
+    <div id="errorBanner" class="error-banner"></div>
+
     <div class="hero">
         <span class="hero-emoji">🎁</span>
         <h2>Invite Friends &amp; Earn!</h2>
@@ -103,15 +109,15 @@
 
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-value" id="totalReferrals">0</div>
+            <div class="stat-value" id="totalReferrals">—</div>
             <div class="stat-label">Total Referred</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value" id="activeReferrals">0</div>
+            <div class="stat-value" id="activeReferrals">—</div>
             <div class="stat-label">Approved</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value" id="totalEarned">₦0</div>
+            <div class="stat-value" id="totalEarned">—</div>
             <div class="stat-label">Total Value</div>
         </div>
     </div>
@@ -120,7 +126,7 @@
         <div class="section-title">Your Referral Link</div>
         <div class="code-label">Send this link to invite friends</div>
         <div class="code-box">
-            <span class="code-text" id="refLinkText">Loading...</span>
+            <span class="code-text" id="refLinkText">Loading your link...</span>
             <button class="copy-btn" id="copyCodeBtn" onclick="copyLink()">
                 <i class="fas fa-copy"></i> Copy
             </button>
@@ -166,71 +172,123 @@
 <script src="supabase-config.js"></script>
 <script>
     // ─── Theme Setup ────────────────────────────────────────────────────────
-    const body = document.documentElement;
+    const htmlEl = document.documentElement;
     const themeToggleBtn = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme') || 'light';
-    body.setAttribute('data-theme', savedTheme);
+    htmlEl.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 
     themeToggleBtn.addEventListener('click', () => {
-        const currentTheme = body.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        body.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
+        const cur = htmlEl.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        htmlEl.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
     });
 
     function updateThemeIcon(theme) {
-        themeToggleBtn.innerHTML = theme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        themeToggleBtn.innerHTML = theme === 'light'
+            ? '<i class="fas fa-moon"></i>'
+            : '<i class="fas fa-sun"></i>';
     }
 
-    // ─── Supabase Data Logic ────────────────────────────────────────────────
-    let currentUser = null;
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+    let toastTimeout;
+    function showToast(msg, type = '') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + type;
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => t.className = 'toast', 2500);
+    }
+
+    function showError(msg) {
+        const b = document.getElementById('errorBanner');
+        b.textContent = '⚠️ ' + msg;
+        b.classList.add('show');
+    }
+
+    // ─── Build referral link ──────────────────────────────────────────────────
+    // Uses the app's BASE_URL from supabase-config.js if defined,
+    // otherwise falls back to window.location.origin (works on Vercel).
+    function buildReferralLink(userId) {
+        // If your supabase-config.js exports APP_BASE_URL use it; otherwise auto-detect
+        const base = (typeof APP_BASE_URL !== 'undefined' && APP_BASE_URL)
+            ? APP_BASE_URL.replace(/\/$/, '')
+            : window.location.origin;
+        return base + '/register.html?ref=' + userId;
+    }
+
+    // ─── Main Load ───────────────────────────────────────────────────────────
     let referralLink = '';
 
     async function loadReferrals() {
+        // Guard: make sure _supabase is available (from supabase-config.js)
+        if (typeof _supabase === 'undefined') {
+            showError('Supabase not initialised. Check supabase-config.js is loaded.');
+            document.getElementById('refLinkText').textContent = 'Error loading link';
+            document.getElementById('referralList').innerHTML =
+                '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not connect. Please refresh.</p></div>';
+            return;
+        }
+
         try {
-            const result = await requireAuth('any');
-            if (!result) {
-                document.getElementById('refLinkText').textContent = 'Please log in';
-                document.getElementById('referralList').innerHTML = '<div class="empty-state"><p>Authentication required.</p></div>';
+            // ── 1. Get current session ──────────────────────────────────────
+            const { data: { session }, error: sessErr } = await _supabase.auth.getSession();
+            if (sessErr || !session) {
+                // Not logged in — redirect to login
+                window.location.href = 'index.html';
                 return;
             }
-            currentUser = result.profile;
 
-            // Generate Referral Link
-            referralLink = window.location.origin + '/register.html?ref=' + currentUser.id;
+            const userId = session.user.id;
+
+            // ── 2. Fetch this user's profile ────────────────────────────────
+            const { data: profile, error: profErr } = await _supabase
+                .from('profiles')
+                .select('id, full_name, email')
+                .eq('id', userId)
+                .maybeSingle();   // won't throw if row missing
+
+            if (profErr) throw profErr;
+
+            // ── 3. Build & display referral link ────────────────────────────
+            referralLink = buildReferralLink(userId);
             document.getElementById('refLinkText').textContent = referralLink;
 
-            const { data: refs, error } = await _supabase
+            // ── 4. Fetch all users referred by this user ─────────────────────
+            const { data: refs, error: refsErr } = await _supabase
                 .from('profiles')
                 .select('id, full_name, email, created_at, is_approved')
-                .eq('referred_by', currentUser.id)
+                .eq('referred_by', userId)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (refsErr) throw refsErr;
 
-            const allRefs     = refs || [];
+            const allRefs      = refs || [];
             const approvedRefs = allRefs.filter(r => r.is_approved === true);
             const totalEarned  = approvedRefs.length * 10000;
 
+            // ── 5. Update stats ──────────────────────────────────────────────
             document.getElementById('totalReferrals').textContent = allRefs.length;
             document.getElementById('activeReferrals').textContent = approvedRefs.length;
             document.getElementById('totalEarned').textContent = '₦' + totalEarned.toLocaleString();
 
+            // ── 6. Render list ───────────────────────────────────────────────
             const listEl = document.getElementById('referralList');
 
             if (allRefs.length === 0) {
-                listEl.innerHTML = `<div class="empty-state">
-                    <i class="fas fa-user-plus"></i>
-                    <p>No referrals yet.<br>Share your link to start earning!</p>
-                    <p style="margin-top:8px;font-size:12px;color:var(--primary);">You earn ₦10,000 per approved referral</p>
-                </div>`;
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-plus"></i>
+                        <p>No referrals yet.<br>Share your link to start earning!</p>
+                        <p style="margin-top:8px;font-size:12px;color:var(--primary);">You earn ₦10,000 per approved referral</p>
+                    </div>`;
             } else {
                 listEl.innerHTML = allRefs.map(r => {
-                    const name    = r.full_name || r.email?.split('@')[0] || 'User';
-                    const initial = name.charAt(0).toUpperCase();
-                    const date    = new Date(r.created_at).toLocaleDateString('en-NG');
+                    const name     = r.full_name || r.email?.split('@')[0] || 'User';
+                    const initial  = name.charAt(0).toUpperCase();
+                    const date     = new Date(r.created_at).toLocaleDateString('en-NG');
                     const approved = r.is_approved === true;
 
                     const statusBadge = approved
@@ -250,33 +308,64 @@
                     </div>`;
                 }).join('');
             }
+
         } catch (err) {
-            console.error('Error loading referrals:', err);
-            document.getElementById('refLinkText').textContent = 'Error loading link';
-            document.getElementById('referralList').innerHTML = '<div class="empty-state"><p>Could not load referrals. Please refresh.</p></div>';
+            console.error('Referral load error:', err);
+            const msg = err.message || 'Unknown error';
+            showError('Could not load referrals: ' + msg);
+            document.getElementById('referralList').innerHTML =
+                '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not load referrals.<br>Please refresh the page.</p></div>';
+            document.getElementById('totalReferrals').textContent = '—';
+            document.getElementById('activeReferrals').textContent = '—';
+            document.getElementById('totalEarned').textContent = '—';
         }
     }
 
     document.addEventListener('DOMContentLoaded', loadReferrals);
 
-    // ─── Sharing Logic ──────────────────────────────────────────────────────
-    function getMsg() { return `Hey! Join this awesome earning app 🚀\nSign up using my link and let's earn together: ${referralLink}`; }
-    
-    function copyLink() {
-        if (!referralLink) return;
-        const btn = document.getElementById('copyCodeBtn');
-        const done = () => { btn.innerHTML='<i class="fas fa-check"></i> Copied!'; showToast('Link copied! 🔗', 'success'); setTimeout(()=>btn.innerHTML='<i class="fas fa-copy"></i> Copy', 2000); };
-        if (navigator.clipboard) navigator.clipboard.writeText(referralLink).then(done).catch(done); else done();
+    // ─── Sharing ──────────────────────────────────────────────────────────────
+    function getMsg() {
+        return `Hey! Join this awesome earning app 🚀\nSign up using my link and let's earn together: ${referralLink}`;
     }
-    
-    function shareWhatsApp() { window.open('https://wa.me/?text='+encodeURIComponent(getMsg()),'_blank'); }
-    function shareTelegram() { window.open('https://t.me/share/url?url=&text='+encodeURIComponent(getMsg()),'_blank'); }
-    
-    let toastTimeout;
-    function showToast(msg, type='') {
-        const t = document.getElementById('toast');
-        t.textContent = msg; t.className = 'toast show ' + type;
-        clearTimeout(toastTimeout); toastTimeout = setTimeout(() => t.className = 'toast', 2500);
+
+    function copyLink() {
+        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
+        const btn = document.getElementById('copyCodeBtn');
+        const done = () => {
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            showToast('Link copied! 🔗', 'success');
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copy', 2000);
+        };
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(referralLink).then(done).catch(() => {
+                // fallback for browsers that deny clipboard without HTTPS interaction
+                fallbackCopy(referralLink);
+                done();
+            });
+        } else {
+            fallbackCopy(referralLink);
+            done();
+        }
+    }
+
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    function shareWhatsApp() {
+        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
+        window.open('https://wa.me/?text=' + encodeURIComponent(getMsg()), '_blank');
+    }
+
+    function shareTelegram() {
+        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
+        window.open('https://t.me/share/url?url=' + encodeURIComponent(referralLink) + '&text=' + encodeURIComponent(getMsg()), '_blank');
     }
 </script>
 </body>
