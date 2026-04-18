@@ -165,7 +165,7 @@
 
         <!-- REFERRAL WARNING BANNER -->
         <div id="referralWarningBanner" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;font-size:13px;font-weight:600;">
-            <i class="fas fa-exclamation-triangle"></i> You must refer at least 1 person before withdrawing.
+            <i class="fas fa-exclamation-triangle"></i> You must refer at least 2 people before withdrawing.
         </div>
 
         <div class="balance-card">
@@ -304,14 +304,14 @@
         if (walletData.available < 50000) return showToast('⚠️ Minimum balance of ₦50,000 required.');
 
         try {
-            // Require at least 1 referral (any status — tracking must exist)
+            // Check if user has referred at least 2 people
             const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true })
                 .eq('referred_by', currentUser.id);
             
-            if (!count || count < 1) {
+            if (!count || count < 2) {
                 const banner = document.getElementById('referralWarningBanner');
                 if (banner) banner.style.display = 'flex';
-                return showToast('⚠️ You must refer at least 1 person before withdrawing.', 5000);
+                return showToast('⚠️ You must refer at least 2 people before withdrawing.', 5000);
             } else {
                 const banner = document.getElementById('referralWarningBanner');
                 if (banner) banner.style.display = 'none';
