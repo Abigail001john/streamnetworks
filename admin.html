@@ -2086,14 +2086,20 @@
 
       const recipients = Array.from(selectedEmails).join(',');
       
-      // Gmail Compose URL format:
-      // https://mail.google.com/mail/?view=cm&fs=1&to=EMAIL&su=SUBJECT&body=BODY
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipients)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      // Check if user is on mobile
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
-      // Open Gmail in a new tab
-      window.open(gmailUrl, '_blank');
+      if (isMobile) {
+        // Use standard mailto: which triggers the Gmail APP (or default mail app) on phones
+        const mailtoUrl = `mailto:${recipients}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
+      } else {
+        // On Desktop, use the full Gmail web composer (Desktop version)
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipients)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(gmailUrl, '_blank');
+      }
       
-      showToast('Redirecting to Gmail...', 'success');
+      showToast('Opening Email App...', 'success');
       
       // Update last sent time
       document.getElementById('lastSentTime').textContent = new Date().toLocaleTimeString();
