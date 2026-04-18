@@ -853,42 +853,52 @@
         // SIGNUP BONUS — runs once per user
         // ==========================================
         async function checkAndGrantSignupBonus(profile) {
-            // Check if bonus already given (bonus_granted flag on profile)
+            // 1. Check if bonus already given in profile flag
             if (profile.bonus_granted) return;
 
             try {
-                // Insert ₦12,000 signup bonus into transactions table
-                const { error: txError } = await _supabase
+                // 2. Check if a signup bonus transaction already exists
+                const { data: existingBonus } = await _supabase
                     .from('transactions')
-                    .insert({
-                        user_id: profile.id,
-                        type: 'signup_bonus',
-                        description: '🎁 Welcome bonus',
-                        amount: 12000,
-                        created_at: new Date().toISOString()
-                    });
-
-                if (txError) {
-                    console.error('Bonus insert error:', txError);
+                    .select('id')
+                    .eq('user_id', profile.id)
+                    .eq('type', 'signup_bonus')
+                    .maybeSingle();
+                
+                if (existingBonus) {
+                    // Sync profile flag if transaction exists
+                    await _supabase.from('profiles').update({ bonus_granted: true }).eq('id', profile.id);
                     return;
                 }
 
-                // Also update wallet balance
-                await _supabase
-                    .from('wallets')
-                    .upsert({
-                        user_id: profile.id,
-                        bonus_balance: 12000,
-                        collab_earnings: 0,
-                        task_earnings: 0,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'user_id' });
+                // 3. Grant the ₦12,000 bonus
+                const now = new Date().toISOString();
+                
+                // Transaction
+                await _supabase.from('transactions').insert({
+                    user_id: profile.id,
+                    type: 'signup_bonus',
+                    description: '🎁 Welcome bonus',
+                    amount: 12000,
+                    created_at: now
+                });
 
-                // Mark bonus as granted so it never fires again
-                await _supabase
-                    .from('profiles')
-                    .update({ bonus_granted: true })
-                    .eq('id', profile.id);
+                // Wallet
+                const { data: w } = await _supabase.from('wallets').select('bonus_balance').eq('user_id', profile.id).maybeSingle();
+                await _supabase.from('wallets').upsert({
+                    user_id: profile.id,
+                    bonus_balance: (Number(w?.bonus_balance || 0) + 12000),
+                    updated_at: now
+                }, { onConflict: 'user_id' });
+
+                // Update profile flag
+                await _supabase.from('profiles').update({ bonus_granted: true }).eq('id', profile.id);
+                
+                // Show a success message
+                showToast('🎁 Welcome! ₦12,000 bonus added to your wallet!', 'success');
+                
+                // Refresh UI
+                loadDashboard();
 
             } catch (err) {
                 console.error('Signup bonus error:', err);
