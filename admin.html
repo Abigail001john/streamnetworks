@@ -1091,7 +1091,21 @@
           _supabase.from('profiles').select('id').eq('referred_by', userId)
         ]);
         if (uErr) throw uErr;
-        renderModal(user, wallet, txs||[], refs||[]);
+
+        // Fetch referrer name/email if exists
+        let referrerInfo = 'Direct signup';
+        if (user.referred_by) {
+          const { data: refData } = await _supabase
+            .from('profiles')
+            .select('username, email')
+            .eq('id', user.referred_by)
+            .single();
+          if (refData) {
+            referrerInfo = refData.username ? `@${refData.username}` : refData.email;
+          }
+        }
+
+        renderModal(user, wallet, txs||[], refs||[], referrerInfo);
       } catch(e) {
         document.getElementById('modalBody').innerHTML =
           '<div style="text-align:center;padding:40px;color:#ef4444;font-size:14px;"><i class="fas fa-exclamation-circle" style="font-size:28px;display:block;margin-bottom:12px;"></i>Failed to load: ' + e.message + '</div>';
@@ -1101,7 +1115,7 @@
     // ══════════════════════════════════════════════════════
     // RENDER MODAL
     // ══════════════════════════════════════════════════════
-    function renderModal(user, wallet, txs, refs) {
+    function renderModal(user, wallet, txs, refs, referrerInfo) {
       const fmt = n => '\u20a6' + Number(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
       const ago = d => {
         const s = Math.floor((Date.now()-new Date(d))/1000);
@@ -1163,7 +1177,7 @@
           <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${user.phone||'not set'}</div></div>
           <div class="detail-item"><div class="detail-label">Joined</div><div class="detail-value">${joined}</div></div>
           <div class="detail-item"><div class="detail-label">Referrals Made</div><div class="detail-value green">${refs.length} referrals</div></div>
-          <div class="detail-item"><div class="detail-label">Referred By</div><div class="detail-value" style="font-size:11px;">${user.referred_by||'Direct signup'}</div></div>
+          <div class="detail-item"><div class="detail-label">Referred By</div><div class="detail-value" style="font-size:11px;color:#2dd4bf;font-weight:600;">${referrerInfo}</div></div>
           <div class="detail-item"><div class="detail-label">Admin Account</div><div class="detail-value ${user.is_admin?'amber':'green'}">${user.is_admin?'&#9888; Yes':'No'}</div></div>
           <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">User ID</div><div class="detail-value" style="font-size:11px;font-weight:500;">${user.id}</div></div>
         </div>
@@ -1254,9 +1268,11 @@
 
         // 3. Update referrer's wallet (collab_earnings)
         const { data: w } = await _supabase.from('wallets').select('collab_earnings').eq('user_id', referrerId).maybeSingle();
+        
+        // Use upsert to create wallet if it doesn't exist
         await _supabase.from('wallets').upsert({
           user_id: referrerId,
-          collab_earnings: (w?.collab_earnings || 0) + rewardAmount,
+          collab_earnings: (Number(w?.collab_earnings || 0) + rewardAmount),
           updated_at: now
         }, { onConflict: 'user_id' });
 
