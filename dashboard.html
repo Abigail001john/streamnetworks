@@ -839,9 +839,6 @@
                 showPendingOverlay();
             }
 
-            // ---- CHECK REFERRAL STATUS FOR WITHDRAWAL BANNER ----
-            await checkReferralRequirement(profile.id);
-
             // ---- GIVE ₦12,000 SIGNUP BONUS if first time ----
             await checkAndGrantSignupBonus(profile);
 
@@ -852,34 +849,15 @@
             await loadActivity(profile.id);
         }
 
-        /** Check if user has referred at least 1 approved person */
+        /** Check if user has referred at least 1 person */
         async function checkReferralRequirement(userId) {
-            try {
-                const { count, error } = await _supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('referred_by', userId)
-                    .eq('is_approved', true);
-                
-                if (error) throw error;
-
-                if (count === 0) {
-                    const banner = document.createElement('div');
-                    banner.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;';
-                    banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i> You must refer at least 1 person before withdrawing.';
-                    const mainContent = document.querySelector('.main-content');
-                    // Insert after welcome section
-                    const welcome = document.querySelector('.welcome-section');
-                    mainContent.insertBefore(banner, welcome.nextSibling);
-                }
-            } catch (err) {
-                console.error('Referral check error:', err);
-            }
+            // Function body removed - logic is now handled in withdraw.html
+            return;
         }
-
-        // ==========================================
-        // SIGNUP BONUS — runs once per user
-        // ==========================================
+ 
+         // ==========================================
+         // SIGNUP BONUS — runs once per user
+         // ==========================================
         async function checkAndGrantSignupBonus(profile) {
             // 1. Check if bonus already given in profile flag
             if (profile.bonus_granted) return;
