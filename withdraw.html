@@ -163,6 +163,11 @@
             <p class="page-subtitle">Manage your ₦ earnings and withdrawals</p>
         </div>
 
+        <!-- REFERRAL WARNING BANNER -->
+        <div id="referralWarningBanner" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;font-size:13px;font-weight:600;">
+            <i class="fas fa-exclamation-triangle"></i> You must refer at least 1 person before withdrawing.
+        </div>
+
         <div class="balance-card">
             <div class="balance-label">AVAILABLE BALANCE <button class="withdraw-icon-btn" onclick="openWithdrawModal()"><i class="fas fa-arrow-down"></i></button></div>
             <div class="balance-amount" id="availableBalance">₦0.00</div>
@@ -304,7 +309,12 @@
                 .eq('referred_by', currentUser.id);
             
             if (!count || count < 1) {
+                const banner = document.getElementById('referralWarningBanner');
+                if (banner) banner.style.display = 'flex';
                 return showToast('⚠️ You must refer at least 1 person before withdrawing.', 5000);
+            } else {
+                const banner = document.getElementById('referralWarningBanner');
+                if (banner) banner.style.display = 'none';
             }
         } catch (e) { return showToast('⚠️ Could not verify referral status.'); }
 
@@ -391,6 +401,21 @@
         const { data: bank } = await _supabase.from('bank_accounts').select('*')
             .eq('user_id', currentUser.id).maybeSingle();
         if (bank) savedBank = bank;
+
+        // ── 3. Check Referral Requirement ────────────────────────────────────
+        try {
+            const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true })
+                .eq('referred_by', currentUser.id);
+            
+            const banner = document.getElementById('referralWarningBanner');
+            if (banner) {
+                if (!count || count < 1) {
+                    banner.style.display = 'flex';
+                } else {
+                    banner.style.display = 'none';
+                }
+            }
+        } catch (e) { console.error('Referral check error:', e); }
 
         // ── Load withdrawal_requests for stat cards ──────────────────────────
         const { data: wReqs } = await _supabase.from('withdrawal_requests').select('*')
