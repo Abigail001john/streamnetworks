@@ -650,6 +650,220 @@
     .admin-view-bar button { background:white; color:#7c3aed; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
     .admin-view-bar button:hover { background:#f3f0ff; }
 
+    /* MESSAGING SECTION */
+    .messaging-section {
+      display: none;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .messaging-grid {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 32px;
+    }
+
+    .recipients-panel {
+      border-right: 1px solid #f1f5f9;
+      padding-right: 32px;
+    }
+
+    .composer-panel {
+      padding-left: 8px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #1e293b;
+    }
+
+    .filter-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .filter-tab.active {
+      background: white;
+      color: #2dd4bf;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .selection-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .select-all-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: #2dd4bf;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .recipient-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #f1f5f9;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .recipient-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid #f8fafc;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .recipient-item:hover {
+      background: #f0fdfa;
+    }
+
+    .recipient-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #2dd4bf;
+    }
+
+    .recipient-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .recipient-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .recipient-email {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #2dd4bf;
+      box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 16px;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 200px;
+    }
+
+    .send-btn {
+      width: 100%;
+      padding: 14px;
+      background: #2dd4bf;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .send-btn:hover {
+      background: #14b8a6;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
+    }
+
+    .send-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .summary-badge {
+      background: #f0fdfa;
+      color: #2dd4bf;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      .messaging-grid {
+        grid-template-columns: 1fr;
+      }
+      .recipients-panel {
+        border-right: none;
+        padding-right: 0;
+        margin-bottom: 32px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -667,8 +881,9 @@
       </div>
 
       <nav class="nav-links">
-        <a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
-        <a href="#"><i class="fas fa-users"></i> Users</a>
+        <a href="#" class="active" id="navDashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="#" id="navMessaging"><i class="fas fa-envelope"></i> Messaging</a>
+        <a href="#" id="navUsers"><i class="fas fa-users"></i> Users</a>
         <a href="#"><i class="fas fa-cog"></i> Settings</a>
       </nav>
 
@@ -750,7 +965,7 @@
       </div>
 
       <!-- USER MANAGEMENT -->
-      <div class="user-management">
+      <div class="user-management" id="userManagementSection">
         <div class="section-header">
           <div class="section-header-text">
             <h2>User Management</h2>
@@ -779,6 +994,104 @@
             <!-- Users will be populated here -->
           </tbody>
         </table>
+      </div>
+
+      <!-- EMAIL MESSAGING SECTION -->
+      <div class="messaging-section" id="messagingSection">
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h1>Email Messaging</h1>
+            <p>Send messages to your users via Gmail</p>
+          </div>
+          <div class="summary-badge" style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; padding:8px 16px;">
+            <i class="fas fa-history"></i> Last sent: <span id="lastSentTime">Never</span>
+          </div>
+        </div>
+
+        <div class="messaging-grid">
+          <!-- Left: Recipients Selection -->
+          <div class="recipients-panel">
+            <div class="panel-title">
+              <i class="fas fa-users"></i> Select Recipients
+            </div>
+            
+            <div class="filter-tabs">
+              <div class="filter-tab active" id="tabApproved" onclick="switchMessagingTab('approved')">Approved Users</div>
+              <div class="filter-tab" id="tabPending" onclick="switchMessagingTab('pending')">Pending Users</div>
+            </div>
+
+            <div class="selection-controls">
+              <button class="select-all-btn" onclick="toggleSelectAllRecipients(true)">Select All</button>
+              <button class="select-all-btn" style="color:#64748b" onclick="toggleSelectAllRecipients(false)">Deselect All</button>
+            </div>
+
+            <div class="recipient-list" id="recipientList">
+              <!-- Recipients will be populated here -->
+            </div>
+
+            <div style="background:#f8fafc; padding:16px; border-radius:12px; border:1px dashed #e2e8f0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:13px;color:#64748b;font-weight:500;">Selected Recipients</span>
+                <span class="summary-badge" id="selectedCount">0</span>
+              </div>
+              <div style="font-size:11px; color:#94a3b8; line-height:1.4;">
+                <i class="fas fa-info-circle"></i> Emails will be sent individually to each selected user to prevent them from seeing other recipients.
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Email Composer -->
+          <div class="composer-panel">
+            <div class="panel-title">
+              <i class="fas fa-pen-nib"></i> Compose Message
+            </div>
+
+            <div class="form-group">
+              <label><i class="fas fa-at"></i> Sender Account</label>
+              <select class="form-control form-select" id="emailSender">
+                <option value="default">Primary Gmail (noreply@streamnetworks.com)</option>
+                <option value="support">Support Team (support@streamnetworks.com)</option>
+                <option value="marketing">Marketing Hub (marketing@streamnetworks.com)</option>
+                <option value="admin">System Admin (admin@streamnetworks.com)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fas fa-heading"></i> Subject</label>
+              <input type="text" class="form-control" id="emailSubject" placeholder="Enter email subject...">
+            </div>
+
+            <div class="form-group">
+              <label><i class="fas fa-align-left"></i> Message Body</label>
+              <textarea class="form-control" id="emailBody" placeholder="Write your message here... You can use {name} to personalize the email."></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+              <button class="select-all-btn" style="color:#ef4444" onclick="clearComposer()">
+                <i class="fas fa-trash-alt"></i> Clear Composer
+              </button>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
+              <button class="btn-view" style="width:100%; height:48px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0;" onclick="previewEmail()">
+                <i class="fas fa-eye"></i> Preview Sample
+              </button>
+              <button class="send-btn" id="sendEmailBtn" onclick="handleSendEmail()">
+                <i class="fas fa-paper-plane"></i> Send to <span id="btnSelectedCount">0</span> users
+              </button>
+            </div>
+            
+            <div id="sendingProgress" style="display:none; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px;">
+                <span id="progressText">Sending...</span>
+                <span id="progressPercent">0%</span>
+              </div>
+              <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                <div id="progressBar" style="width:0%; height:100%; background:#2dd4bf; transition:width 0.3s;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -1597,6 +1910,248 @@
         btn.disabled = false;
       }
     }
+
+    // ══════════════════════════════════════════════════════
+    // EMAIL MESSAGING LOGIC
+    // ══════════════════════════════════════════════════════
+    let messagingTab = 'approved';
+    let selectedEmails = new Set();
+
+    // Navigation between Dashboard and Messaging
+    document.getElementById('navDashboard').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('navDashboard').classList.add('active');
+      document.getElementById('navMessaging').classList.remove('active');
+      document.getElementById('userManagementSection').style.display = 'block';
+      document.getElementById('messagingSection').style.display = 'none';
+      // Ensure backfill banner and stats are shown if they exist
+      const backfill = document.getElementById('backfillBanner');
+      if (backfill) backfill.style.display = 'flex';
+      const stats = document.querySelector('.stats-row');
+      if (stats) stats.style.display = 'grid';
+    });
+
+    document.getElementById('navMessaging').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('navMessaging').classList.add('active');
+      document.getElementById('navDashboard').classList.remove('active');
+      document.getElementById('userManagementSection').style.display = 'none';
+      document.getElementById('messagingSection').style.display = 'block';
+      // Hide backfill and stats for cleaner messaging view
+      const backfill = document.getElementById('backfillBanner');
+      if (backfill) backfill.style.display = 'none';
+      const stats = document.querySelector('.stats-row');
+      if (stats) stats.style.display = 'none';
+      
+      renderRecipients();
+    });
+
+    function switchMessagingTab(tab) {
+      messagingTab = tab;
+      document.querySelectorAll('.filter-tab').forEach(t => {
+        t.classList.toggle('active', t.textContent.toLowerCase() === tab);
+      });
+      renderRecipients();
+    }
+
+    function renderRecipients() {
+      const container = document.getElementById('recipientList');
+      container.innerHTML = '';
+      
+      const filtered = allUsers.filter(u => {
+        if (messagingTab === 'approved') return u.is_approved === true;
+        return u.is_approved !== true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;font-size:13px;">No users in this category</div>';
+        return;
+      }
+
+      filtered.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'recipient-item';
+        const isChecked = selectedEmails.has(user.email);
+        
+        item.innerHTML = `
+          <input type="checkbox" ${isChecked ? 'checked' : ''} data-email="${user.email}" onchange="toggleRecipient('${user.email}')">
+          <div class="recipient-info">
+            <div class="recipient-name">${user.full_name || user.username || 'Unknown'}</div>
+            <div class="recipient-email">${user.email || 'No email'}</div>
+          </div>
+        `;
+        
+        item.onclick = (e) => {
+          if (e.target.tagName !== 'INPUT') {
+            const cb = item.querySelector('input');
+            cb.checked = !cb.checked;
+            toggleRecipient(user.email);
+          }
+        };
+        
+        container.appendChild(item);
+      });
+      
+      updateSelectedCount();
+    }
+
+    function toggleRecipient(email) {
+      if (selectedEmails.has(email)) {
+        selectedEmails.delete(email);
+      } else {
+        selectedEmails.add(email);
+      }
+      updateSelectedCount();
+    }
+
+    function toggleSelectAllRecipients(select) {
+      const filtered = allUsers.filter(u => {
+        if (messagingTab === 'approved') return u.is_approved === true;
+        return u.is_approved !== true;
+      });
+
+      filtered.forEach(u => {
+        if (u.email) {
+          if (select) selectedEmails.add(u.email);
+          else selectedEmails.delete(u.email);
+        }
+      });
+      
+      renderRecipients();
+    }
+
+    function updateSelectedCount() {
+      const count = selectedEmails.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('btnSelectedCount').textContent = count;
+      document.getElementById('sendEmailBtn').disabled = count === 0;
+    }
+
+    function previewEmail() {
+      const subject = document.getElementById('emailSubject').value.trim() || '(No Subject)';
+      const body = document.getElementById('emailBody').value.trim() || '(No Message Body)';
+      
+      // Personalization preview
+      const previewBody = body.replace(/{name}/g, '<strong>[User Name]</strong>');
+      
+      const previewHtml = `
+        <div style="padding:20px; font-family:Inter, sans-serif;">
+          <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+            <div style="color:#64748b; font-size:12px; margin-bottom:4px;">Subject:</div>
+            <div style="font-weight:700; font-size:16px;">${subject}</div>
+          </div>
+          <div style="color:#1e293b; line-height:1.6; white-space: pre-wrap;">${previewBody}</div>
+          <div style="margin-top:30px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:12px; color:#94a3b8;">
+            Sent from: ${document.getElementById('emailSender').options[document.getElementById('emailSender').selectedIndex].text}
+          </div>
+        </div>
+      `;
+      
+      // Open preview in modal
+      const modal = document.getElementById('userModal');
+      const modalBody = document.getElementById('modalBody');
+      modalBody.innerHTML = previewHtml;
+      modal.classList.add('active');
+    }
+
+    function clearComposer() {
+      if (confirm('Are you sure you want to clear the subject and message?')) {
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailBody').value = '';
+      }
+    }
+
+    async function handleSendEmail() {
+      const subject = document.getElementById('emailSubject').value.trim();
+      const body = document.getElementById('emailBody').value.trim();
+      const sender = document.getElementById('emailSender').value;
+      
+      if (selectedEmails.size === 0) {
+        showToast('Please select at least one recipient', 'error');
+        return;
+      }
+      if (!subject || !body) {
+        showToast('Please enter both subject and message body', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('sendEmailBtn');
+      const progressContainer = document.getElementById('sendingProgress');
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+      const progressText = document.getElementById('progressText');
+      
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '0%';
+      progressPercent.textContent = '0%';
+      progressText.textContent = `Preparing to send to ${selectedEmails.size} users...`;
+
+      try {
+        const recipients = Array.from(selectedEmails);
+        const total = recipients.length;
+        
+        for (let i = 0; i < total; i++) {
+          const email = recipients[i];
+          const user = allUsers.find(u => u.email === email);
+          const userName = user ? (user.full_name || user.username || 'User') : 'User';
+          
+          // Update progress
+          const percent = Math.round(((i + 1) / total) * 100);
+          progressBar.style.width = `${percent}%`;
+          progressPercent.textContent = `${percent}%`;
+          progressText.textContent = `Sending to ${email}...`;
+
+          // In a real implementation, you would call a Supabase Edge Function here:
+          /*
+          await _supabase.functions.invoke('send-gmail', {
+            body: { 
+              to: email,
+              subject: subject,
+              body: body.replace(/{name}/g, userName),
+              sender: sender
+            }
+          });
+          */
+
+          // Simulate network delay for bulk sending
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        
+        showToast(`✅ Successfully sent ${total} emails!`, 'success');
+        
+        // Update last sent time
+        document.getElementById('lastSentTime').textContent = new Date().toLocaleTimeString();
+        
+        // Reset form after a delay
+        setTimeout(() => {
+          document.getElementById('emailSubject').value = '';
+          document.getElementById('emailBody').value = '';
+          selectedEmails.clear();
+          renderRecipients();
+          progressContainer.style.display = 'none';
+        }, 1500);
+        
+      } catch (err) {
+        showToast('Failed to send emails: ' + err.message, 'error');
+        progressText.textContent = 'Error occurred during sending.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Initialize the navigation link for "Users" to scroll to user management
+    document.getElementById('navUsers').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('navDashboard').click();
+      setTimeout(() => {
+        document.getElementById('userManagementSection').scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    });
 
   </script>
 
