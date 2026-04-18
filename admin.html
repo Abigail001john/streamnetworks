@@ -1049,10 +1049,7 @@
             <div class="form-group">
               <label><i class="fas fa-at"></i> Sender Account</label>
               <select class="form-control form-select" id="emailSender">
-                <option value="default">Primary Gmail (noreply@streamnetworks.com)</option>
-                <option value="support">Support Team (support@streamnetworks.com)</option>
-                <option value="marketing">Marketing Hub (marketing@streamnetworks.com)</option>
-                <option value="admin">System Admin (admin@streamnetworks.com)</option>
+                <option value="streamafricanetwork@gmail.com">Stream Africa Network (streamafricanetwork@gmail.com)</option>
               </select>
             </div>
 
@@ -2140,12 +2137,18 @@
 
           // In a real implementation, you would call a Supabase Edge Function here:
           /*
+          // To make this work with streamafricanetwork@gmail.com, you would:
+          // 1. Create a Supabase Edge Function: 'supabase functions new send-gmail'
+          // 2. Use 'nodemailer' in that function.
+          // 3. Use a Gmail 'App Password' for authentication.
+          
           await _supabase.functions.invoke('send-gmail', {
             body: { 
               to: email,
+              from: 'streamafricanetwork@gmail.com',
+              fromName: 'Stream Africa Network',
               subject: subject,
-              body: body.replace(/{name}/g, userName),
-              sender: sender
+              body: body.replace(/{name}/g, userName)
             }
           });
           */
