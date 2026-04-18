@@ -265,6 +265,9 @@
 
             if (refsErr) throw refsErr;
 
+            const allRefs      = refs || [];
+            const approvedRefs = allRefs.filter(r => r.is_approved === true);
+
             // ── 5. Fetch total money earned from referrals ───────────────────
             // Calculate from transactions to be 100% accurate
             const { data: txs, error: txErr } = await _supabase
@@ -275,9 +278,7 @@
 
             if (txErr) throw txErr;
 
-            const allRefs      = refs || [];
-            const approvedRefs = allRefs.filter(r => r.is_approved === true);
-            const totalEarned  = (txs || []).reduce((acc, tx) => acc + Number(tx.amount), 0);
+            const totalEarned = (txs || []).reduce((acc, tx) => acc + Number(tx.amount), 0);
 
             // ── 6. Update stats ──────────────────────────────────────────────
             const totalRefEl = document.getElementById('totalReferrals');
@@ -288,7 +289,7 @@
             if (activeRefEl) activeRefEl.textContent = approvedRefs.length;
             if (totalEarnedEl) totalEarnedEl.textContent = '₦' + totalEarned.toLocaleString();
 
-            // ── 6. Render list ───────────────────────────────────────────────
+            // ── 7. Render list ───────────────────────────────────────────────
             const listEl = document.getElementById('referralList');
 
             if (allRefs.length === 0) {
