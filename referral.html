@@ -1,372 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Referrals</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f3f4f6;
-            --nav-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --card-bg: #ffffff;
-            --border-color: #e5e7eb;
-            --shadow: 0 1px 4px rgba(0,0,0,0.06);
-            --primary: #2dd4bf;
-        }
-        [data-theme="dark"] {
-            --bg-color: #0d1117;
-            --nav-bg: #151f2e;
-            --text-main: #ffffff;
-            --text-muted: #9ca3af;
-            --card-bg: #1a2332;
-            --border-color: rgba(255,255,255,0.1);
-            --shadow: 0 4px 12px rgba(0,0,0,0.2);
-            --primary: #14b8a6;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account — App</title>
+  <link rel="icon" href="favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; max-width: 480px; margin: 0 auto; padding-bottom: 100px; transition: background-color 0.3s, color 0.3s; }
-        
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--nav-bg); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; max-width: 480px; margin: 0 auto; transition: background-color 0.3s; }
-        .nav-back, .theme-toggle { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .nav-title { font-size: 18px; font-weight: 600; flex: 1; text-align: center; }
-        
-        .content { padding: 72px 16px 16px; }
-        
-        .hero { background: linear-gradient(135deg, #2dd4bf, #0ea5e9); border-radius: 20px; padding: 28px 24px; text-align: center; color: white; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .hero::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; }
-        .hero::after { content: ''; position: absolute; bottom: -20px; left: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.08); border-radius: 50%; }
-        .hero-emoji { font-size: 48px; margin-bottom: 10px; display: block; }
-        .hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-        .hero p { font-size: 14px; opacity: 0.9; line-height: 1.5; }
-        
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--card-bg); border-radius: 14px; padding: 14px 10px; text-align: center; box-shadow: var(--shadow); transition: background-color 0.3s; }
-        .stat-value { font-size: 20px; font-weight: 700; color: var(--primary); }
-        .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
-        
-        .section-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
-        
-        .code-card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); transition: background-color 0.3s; }
-        .code-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
-        .code-box { background: rgba(45,212,191,0.1); border: 2px dashed var(--primary); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; word-break: break-all; }
-        .code-text { font-size: 13px; font-weight: 600; color: var(--primary); flex: 1; word-break: break-all; }
-        .copy-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 10px; }
-        
-        .share-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .share-btn { border: none; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .share-whatsapp { background: #25D366; color: white; }
-        .share-telegram { background: #229ED9; color: white; }
-        
-        .referral-list-card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); transition: background-color 0.3s; }
-        .referral-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        .referral-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .ref-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2dd4bf, #0ea5e9); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; flex-shrink: 0; }
-        .ref-info { flex: 1; margin-left: 12px; }
-        .ref-name { font-size: 14px; font-weight: 600; color: var(--text-main); }
-        .ref-date { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        .ref-earning { font-size: 14px; font-weight: 700; }
-        
-        .empty-state { text-align: center; padding: 30px 0; color: var(--text-muted); }
-        .empty-state i { font-size: 40px; margin-bottom: 10px; display: block; }
-        .empty-state p { font-size: 14px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
 
-        .error-banner { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; color: #ef4444; font-size: 13px; display: none; }
-        .error-banner.show { display: block; }
-        
-        /* BOTTOM NAV */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: var(--nav-bg); box-shadow: 0 -2px 8px rgba(0,0,0,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 100; max-width: 480px; margin: 0 auto; transition: background-color 0.3s; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 8px 12px; }
-        .nav-item.active { color: var(--primary); font-weight: 600; }
-        .nav-icon { font-size: 24px; }
-        
-        .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1f2937; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.success { background: #10b981; }
-        .toast.error { background: #ef4444; }
-    </style>
+    .card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 460px;
+      color: #fff;
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .logo-wrap img { height: 48px; object-fit: contain; }
+    .logo-wrap h1 { font-size: 22px; font-weight: 700; margin-top: 10px; }
+    .logo-wrap p { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    .input-wrap { position: relative; }
+    .input-wrap i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.35);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .input-wrap .toggle-pw {
+      left: unset;
+      right: 14px;
+      pointer-events: all;
+      cursor: pointer;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 13px 14px 13px 42px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    select { appearance: none; }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+    input:focus, select:focus {
+      border-color: #4fd1c5;
+      box-shadow: 0 0 0 3px rgba(79,209,197,0.18);
+    }
+    input.error { border-color: #fc8181; }
+
+    .field-error {
+      font-size: 11.5px;
+      color: #fc8181;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      margin-top: 8px;
+    }
+    .btn:hover { opacity: .9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: linear-gradient(135deg, #4fd1c5, #38b2ac);
+      color: #0f2027;
+    }
+    .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .divider {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      margin: 20px 0 16px;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .login-link {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+    }
+    .login-link a { color: #4fd1c5; text-decoration: none; font-weight: 600; }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .alert-error { background: rgba(252,129,129,0.15); border: 1px solid rgba(252,129,129,0.4); color: #fc8181; }
+    .alert-success { background: rgba(79,209,197,0.15); border: 1px solid rgba(79,209,197,0.4); color: #4fd1c5; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #0f2027;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    @media (max-width: 480px) {
+      .card { padding: 30px 20px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<nav class="top-nav">
-    <a href="dashboard.html" class="nav-back"><i class="fas fa-arrow-left"></i></a>
-    <div class="nav-title">Referral 🤝</div>
-    <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i></button>
-</nav>
+<div class="card">
+  <div class="logo-wrap">
+    <img src="logo.png" alt="Logo"/>
+    <h1>Create Account</h1>
+    <p>Sign up to get started — it's free</p>
+  </div>
 
-<div class="content">
-    <div id="errorBanner" class="error-banner"></div>
+  <div class="alert alert-error" id="alertError"></div>
+  <div class="alert alert-success" id="alertSuccess"></div>
 
-    <div class="hero">
-        <span class="hero-emoji">🎁</span>
-        <h2>Invite Friends &amp; Earn!</h2>
-        <p>Share your unique referral link. You earn <strong>₦10,000</strong> for every friend who joins and gets approved!</p>
+  <form id="registerForm" novalidate>
+    <div class="two-col">
+      <div class="form-group">
+        <label>Full Name</label>
+        <div class="input-wrap">
+          <i class="fas fa-user"></i>
+          <input type="text" id="fullName" placeholder="John Doe" autocomplete="name"/>
+        </div>
+        <div class="field-error" id="errFullName">Please enter your full name.</div>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <i class="fas fa-at"></i>
+          <input type="text" id="username" placeholder="johndoe" autocomplete="username"/>
+        </div>
+        <div class="field-error" id="errUsername">Username is required.</div>
+      </div>
     </div>
 
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-value" id="totalReferrals">—</div>
-            <div class="stat-label">Total Referred</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="activeReferrals">—</div>
-            <div class="stat-label">Approved</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="totalEarned">—</div>
-            <div class="stat-label">Total Value</div>
-        </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <div class="input-wrap">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field-error" id="errEmail">Please enter a valid email.</div>
     </div>
 
-    <div class="code-card">
-        <div class="section-title">Your Referral Link</div>
-        <div class="code-label">Send this link to invite friends</div>
-        <div class="code-box">
-            <span class="code-text" id="refLinkText">Loading your link...</span>
-            <button class="copy-btn" id="copyCodeBtn" onclick="copyLink()">
-                <i class="fas fa-copy"></i> Copy
-            </button>
-        </div>
-        <div class="share-row">
-            <button class="share-btn share-whatsapp" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-            <button class="share-btn share-telegram" onclick="shareTelegram()"><i class="fab fa-telegram"></i> Telegram</button>
-        </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <div class="input-wrap">
+        <i class="fas fa-phone"></i>
+        <input type="tel" id="phone" placeholder="+234 800 000 0000" autocomplete="tel"/>
+      </div>
+      <div class="field-error" id="errPhone">Phone number is required.</div>
     </div>
 
-    <div class="referral-list-card">
-        <div class="section-title">Your Referrals</div>
-        <div id="referralList">
-            <div class="empty-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Loading referrals...</p>
-            </div>
-        </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password"/>
+        <i class="fas fa-eye toggle-pw" id="togglePw"></i>
+      </div>
+      <div class="field-error" id="errPassword">Password must be at least 8 characters.</div>
     </div>
+
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <div class="input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password"/>
+        <i class="fas fa-eye toggle-pw" id="togglePw2"></i>
+      </div>
+      <div class="field-error" id="errConfirm">Passwords do not match.</div>
+    </div>
+
+    <button class="btn btn-primary" type="submit" id="submitBtn">
+      Create Account
+    </button>
+  </form>
+
+  <div class="divider">or</div>
+  <div class="login-link">Already have an account? <a href="login.html">Sign in</a></div>
 </div>
 
-<nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-home"></i></div><span>Home</span>
-    </a>
-    <a href="referral.html" class="nav-item active">
-        <div class="nav-icon"><i class="fas fa-user-friends"></i></div><span>Referral</span>
-    </a>
-    <a href="earn.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-coins"></i></div><span>Earn</span>
-    </a>
-    <a href="withdraw.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-wallet"></i></div><span>Wallet</span>
-    </a>
-    <a href="profile.html" class="nav-item">
-        <div class="nav-icon"><i class="fas fa-user"></i></div><span>Profile</span>
-    </a>
-</nav>
-
-<div class="toast" id="toast"></div>
-
+<!-- Supabase CDN must load BEFORE any script that uses _supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+
 <script>
-    // ─── Theme Setup ────────────────────────────────────────────────────────
-    const htmlEl = document.documentElement;
-    const themeToggleBtn = document.getElementById('themeToggle');
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    htmlEl.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
+  // Toggle password visibility (runs after DOM and Supabase are both ready)
+  document.getElementById('togglePw').addEventListener('click', function() {
+    const pw = document.getElementById('password');
+    const isText = pw.type === 'text';
+    pw.type = isText ? 'password' : 'text';
+    this.className = isText ? 'fas fa-eye toggle-pw' : 'fas fa-eye-slash toggle-pw';
+  });
+  document.getElementById('togglePw2').addEventListener('click', function() {
+    const pw = document.getElementById('confirmPassword');
+    const isText = pw.type === 'text';
+    pw.type = isText ? 'password' : 'text';
+    this.className = isText ? 'fas fa-eye toggle-pw' : 'fas fa-eye-slash toggle-pw';
+  });
 
-    themeToggleBtn.addEventListener('click', () => {
-        const cur = htmlEl.getAttribute('data-theme');
-        const next = cur === 'light' ? 'dark' : 'light';
-        htmlEl.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        updateThemeIcon(next);
-    });
+  function showError(id, inputId) {
+    document.getElementById(id).style.display = 'block';
+    if (inputId) document.getElementById(inputId).classList.add('error');
+  }
+  function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+  }
+  function showAlert(type, msg) {
+    const el = document.getElementById(type === 'error' ? 'alertError' : 'alertSuccess');
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type !== 'success') setTimeout(() => el.style.display = 'none', 5000);
+  }
 
-    function updateThemeIcon(theme) {
-        themeToggleBtn.innerHTML = theme === 'light'
-            ? '<i class="fas fa-moon"></i>'
-            : '<i class="fas fa-sun"></i>';
-    }
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    clearErrors();
+    document.getElementById('alertError').style.display = 'none';
+    document.getElementById('alertSuccess').style.display = 'none';
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-    let toastTimeout;
-    function showToast(msg, type = '') {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = 'toast show ' + type;
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => t.className = 'toast', 2500);
-    }
+    const fullName = document.getElementById('fullName').value.trim();
+    const username = document.getElementById('username').value.trim().toLowerCase();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
 
-    function showError(msg) {
-        const b = document.getElementById('errorBanner');
-        b.textContent = '⚠️ ' + msg;
-        b.classList.add('show');
-    }
+    // Capture referral ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referredBy = urlParams.get('ref');
 
-    // ─── Build referral link ──────────────────────────────────────────────────
-    // Uses the app's BASE_URL from supabase-config.js if defined,
-    // otherwise falls back to window.location.origin (works on Vercel).
-    function buildReferralLink(userId) {
-        // If your supabase-config.js exports APP_BASE_URL use it; otherwise auto-detect
-        const base = (typeof APP_BASE_URL !== 'undefined' && APP_BASE_URL)
-            ? APP_BASE_URL.replace(/\/$/, '')
-            : window.location.origin;
-        return base + '/register.html?ref=' + userId;
-    }
+    let valid = true;
+    if (!fullName) { showError('errFullName', 'fullName'); valid = false; }
+    if (!username) { showError('errUsername', 'username'); valid = false; }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('errEmail', 'email'); valid = false; }
+    if (!phone) { showError('errPhone', 'phone'); valid = false; }
+    if (password.length < 8) { showError('errPassword', 'password'); valid = false; }
+    if (password !== confirm) { showError('errConfirm', 'confirmPassword'); valid = false; }
+    if (!valid) return;
 
-    // ─── Main Load ───────────────────────────────────────────────────────────
-    let referralLink = '';
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Creating account…';
 
-    async function loadReferrals() {
-        // Guard: make sure _supabase is available (from supabase-config.js)
-        if (typeof _supabase === 'undefined') {
-            showError('Supabase not initialised. Check supabase-config.js is loaded.');
-            document.getElementById('refLinkText').textContent = 'Error loading link';
-            document.getElementById('referralList').innerHTML =
-                '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not connect. Please refresh.</p></div>';
-            return;
+    try {
+      const { data, error } = await _supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { 
+            full_name: fullName, 
+            username, 
+            phone,
+            referred_by: referredBy 
+          },
+          emailRedirectTo: window.location.origin + '/login.html'
         }
+      });
 
-        try {
-            // ── 1. Get current session ──────────────────────────────────────
-            const { data: { session }, error: sessErr } = await _supabase.auth.getSession();
-            if (sessErr || !session) {
-                // Not logged in — redirect to login
-                window.location.href = 'index.html';
-                return;
-            }
+      if (error) throw error;
 
-            const userId = session.user.id;
+      // Wait briefly for the DB trigger to create the profile row
+      await new Promise(r => setTimeout(r, 800));
 
-            // ── 2. Fetch this user's profile ────────────────────────────────
-            const { data: profile, error: profErr } = await _supabase
-                .from('profiles')
-                .select('id, full_name, email')
-                .eq('id', userId)
-                .maybeSingle();   // won't throw if row missing
+      // Always go to dashboard — it handles pending/approved state internally
+      const user = data.session?.user || data.user;
+      if (user) {
+        const profile = await getUserProfile(user.id);
+        if (profile?.is_admin) { window.location.href = 'admin.html'; return; }
+      }
+      window.location.href = 'dashboard.html';
 
-            if (profErr) throw profErr;
-
-            // ── 3. Build & display referral link ────────────────────────────
-            referralLink = buildReferralLink(userId);
-            document.getElementById('refLinkText').textContent = referralLink;
-
-            // ── 4. Fetch all users referred by this user ─────────────────────
-            const { data: refs, error: refsErr } = await _supabase
-                .from('profiles')
-                .select('id, full_name, email, created_at, is_approved')
-                .eq('referred_by', userId)
-                .order('created_at', { ascending: false });
-
-            if (refsErr) throw refsErr;
-
-            const allRefs      = refs || [];
-            const approvedRefs = allRefs.filter(r => r.is_approved === true);
-            const totalEarned  = approvedRefs.length * 10000;
-
-            // ── 5. Update stats ──────────────────────────────────────────────
-            document.getElementById('totalReferrals').textContent = allRefs.length;
-            document.getElementById('activeReferrals').textContent = approvedRefs.length;
-            document.getElementById('totalEarned').textContent = '₦' + totalEarned.toLocaleString();
-
-            // ── 6. Render list ───────────────────────────────────────────────
-            const listEl = document.getElementById('referralList');
-
-            if (allRefs.length === 0) {
-                listEl.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user-plus"></i>
-                        <p>No referrals yet.<br>Share your link to start earning!</p>
-                        <p style="margin-top:8px;font-size:12px;color:var(--primary);">You earn ₦10,000 per approved referral</p>
-                    </div>`;
-            } else {
-                listEl.innerHTML = allRefs.map(r => {
-                    const name     = r.full_name || r.email?.split('@')[0] || 'User';
-                    const initial  = name.charAt(0).toUpperCase();
-                    const date     = new Date(r.created_at).toLocaleDateString('en-NG');
-                    const approved = r.is_approved === true;
-
-                    const statusBadge = approved
-                        ? `<span style="background:rgba(16,185,129,0.15);color:#10b981;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✅ Approved</span>`
-                        : `<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">⏳ Pending</span>`;
-
-                    const earnText  = approved ? '+₦10,000' : 'Pending';
-                    const earnColor = approved ? 'var(--primary)' : 'var(--text-muted)';
-
-                    return `<div class="referral-item">
-                        <div class="ref-avatar">${initial}</div>
-                        <div class="ref-info">
-                            <div class="ref-name">${name}</div>
-                            <div class="ref-date">${date} · ${statusBadge}</div>
-                        </div>
-                        <div class="ref-earning" style="color:${earnColor};font-size:13px;">${earnText}</div>
-                    </div>`;
-                }).join('');
-            }
-
-        } catch (err) {
-            console.error('Referral load error:', err);
-            const msg = err.message || 'Unknown error';
-            showError('Could not load referrals: ' + msg);
-            document.getElementById('referralList').innerHTML =
-                '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not load referrals.<br>Please refresh the page.</p></div>';
-            document.getElementById('totalReferrals').textContent = '—';
-            document.getElementById('activeReferrals').textContent = '—';
-            document.getElementById('totalEarned').textContent = '—';
-        }
+    } catch (err) {
+      showAlert('error', err.message || 'Registration failed. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account';
     }
-
-    document.addEventListener('DOMContentLoaded', loadReferrals);
-
-    // ─── Sharing ──────────────────────────────────────────────────────────────
-    function getMsg() {
-        return `Hey! Join this awesome earning app 🚀\nSign up using my link and let's earn together: ${referralLink}`;
-    }
-
-    function copyLink() {
-        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
-        const btn = document.getElementById('copyCodeBtn');
-        const done = () => {
-            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            showToast('Link copied! 🔗', 'success');
-            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copy', 2000);
-        };
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(referralLink).then(done).catch(() => {
-                // fallback for browsers that deny clipboard without HTTPS interaction
-                fallbackCopy(referralLink);
-                done();
-            });
-        } else {
-            fallbackCopy(referralLink);
-            done();
-        }
-    }
-
-    function fallbackCopy(text) {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
-        document.body.appendChild(ta);
-        ta.focus(); ta.select();
-        try { document.execCommand('copy'); } catch(e) {}
-        document.body.removeChild(ta);
-    }
-
-    function shareWhatsApp() {
-        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
-        window.open('https://wa.me/?text=' + encodeURIComponent(getMsg()), '_blank');
-    }
-
-    function shareTelegram() {
-        if (!referralLink) { showToast('Link not ready yet', 'error'); return; }
-        window.open('https://t.me/share/url?url=' + encodeURIComponent(referralLink) + '&text=' + encodeURIComponent(getMsg()), '_blank');
-    }
+  });
 </script>
 </body>
 </html>
