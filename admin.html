@@ -1188,6 +1188,7 @@
       try {
         const { error } = await _supabase.from('profiles').update({ is_approved: approve }).eq('id', userId);
         if (error) throw error;
+
         showToast('User ' + (approve ? 'approved ✅' : 'access revoked ❌'), approve ? 'success' : 'error');
         closeModal();
         loadUsers();
@@ -1397,12 +1398,15 @@
         if(updateErr) throw updateErr;
 
         // 3. Insert a transaction so ALL pages (earn, dashboard) stay in sync
+        // Using generic descriptions so it looks like a normal task/bonus
+        const descMap = { 'task_earnings': '✅ Task Reward', 'collab_earnings': '🤝 Referral Bonus', 'bonus_balance': '🎁 Extra Bonus' };
+        
         const { error: txErr } = await _supabase
           .from('transactions')
           .insert({
             user_id:     userId,
-            type:        'admin_adjustment',
-            description: '\u2699\ufe0f Admin adjustment (' + colLabel + ')',
+            type:        'daily_task', // Using 'daily_task' so it looks normal
+            description: descMap[col] || 'Reward',
             amount:      amount,
             created_at:  now
           });
