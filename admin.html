@@ -1186,14 +1186,67 @@
     // ══════════════════════════════════════════════════════
     async function toggleApproval(userId, approve) {
       try {
+        // 1. Fetch current user data to check referral
+        const { data: user, error: uErr } = await _supabase
+          .from('profiles')
+          .select('id, is_approved, referred_by')
+          .eq('id', userId)
+          .single();
+        
+        if (uErr) throw uErr;
+
+        // 2. Update the status
         const { error } = await _supabase.from('profiles').update({ is_approved: approve }).eq('id', userId);
         if (error) throw error;
+
+        // 3. If just approved and has a referrer, grant referral reward
+        if (approve === true && user.is_approved !== true && user.referred_by) {
+          await grantReferralReward(user.referred_by, userId);
+        }
 
         showToast('User ' + (approve ? 'approved ✅' : 'access revoked ❌'), approve ? 'success' : 'error');
         closeModal();
         loadUsers();
       } catch(e) {
         showToast('Update failed: ' + e.message, 'error');
+      }
+    }
+
+    /** Grant ₦10,000 to the referrer */
+    async function grantReferralReward(referrerId, referredUserId) {
+      try {
+        const now = new Date().toISOString();
+        const rewardAmount = 10000;
+
+        // 1. Check if already rewarded (safety)
+        const { data: ex } = await _supabase.from('transactions')
+          .select('id')
+          .eq('user_id', referrerId)
+          .eq('type', 'referral')
+          .eq('description', '🤝 Referral reward for approving user ' + referredUserId)
+          .maybeSingle();
+        
+        if (ex) return; // already paid
+
+        // 2. Insert transaction for referrer
+        await _supabase.from('transactions').insert({
+          user_id: referrerId,
+          type: 'referral',
+          description: '🤝 Referral reward for approving user ' + referredUserId,
+          amount: rewardAmount,
+          created_at: now
+        });
+
+        // 3. Update referrer's wallet (collab_earnings)
+        const { data: w } = await _supabase.from('wallets').select('collab_earnings').eq('user_id', referrerId).maybeSingle();
+        await _supabase.from('wallets').upsert({
+          user_id: referrerId,
+          collab_earnings: (w?.collab_earnings || 0) + rewardAmount,
+          updated_at: now
+        }, { onConflict: 'user_id' });
+
+      } catch (err) {
+        console.error('Referral reward error:', err);
       }
     }
 
