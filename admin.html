@@ -831,7 +831,6 @@
         const { data, error } = await _supabase
           .from('profiles')
           .select('*')
-          .eq('is_admin', false)
           .order('created_at', { ascending: false });
 
         if (error) {
