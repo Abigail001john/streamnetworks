@@ -275,12 +275,18 @@
 
             if (txErr) throw txErr;
 
-            const totalEarned = (txs || []).reduce((acc, tx) => acc + Number(tx.amount), 0);
+            const allRefs      = refs || [];
+            const approvedRefs = allRefs.filter(r => r.is_approved === true);
+            const totalEarned  = (txs || []).reduce((acc, tx) => acc + Number(tx.amount), 0);
 
             // ── 6. Update stats ──────────────────────────────────────────────
-            document.getElementById('totalReferrals').textContent = allRefs.length;
-            document.getElementById('activeReferrals').textContent = approvedRefs.length;
-            document.getElementById('totalEarned').textContent = '₦' + totalEarned.toLocaleString();
+            const totalRefEl = document.getElementById('totalReferrals');
+            const activeRefEl = document.getElementById('activeReferrals');
+            const totalEarnedEl = document.getElementById('totalEarned');
+            
+            if (totalRefEl) totalRefEl.textContent = allRefs.length;
+            if (activeRefEl) activeRefEl.textContent = approvedRefs.length;
+            if (totalEarnedEl) totalEarnedEl.textContent = '₦' + totalEarned.toLocaleString();
 
             // ── 6. Render list ───────────────────────────────────────────────
             const listEl = document.getElementById('referralList');
