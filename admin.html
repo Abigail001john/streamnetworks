@@ -1047,20 +1047,13 @@
             </div>
 
             <div class="form-group">
-              <label><i class="fas fa-at"></i> Sender Account</label>
-              <select class="form-control form-select" id="emailSender">
-                <option value="streamafricanetwork@gmail.com">Stream Africa Network (streamafricanetwork@gmail.com)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
               <label><i class="fas fa-heading"></i> Subject</label>
               <input type="text" class="form-control" id="emailSubject" placeholder="Enter email subject...">
             </div>
 
             <div class="form-group">
               <label><i class="fas fa-align-left"></i> Message Body</label>
-              <textarea class="form-control" id="emailBody" placeholder="Write your message here... You can use {name} to personalize the email."></textarea>
+              <textarea class="form-control" id="emailBody" placeholder="Write your message here..."></textarea>
             </div>
 
             <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
@@ -1074,18 +1067,8 @@
                 <i class="fas fa-eye"></i> Preview Sample
               </button>
               <button class="send-btn" id="sendEmailBtn" onclick="handleSendEmail()">
-                <i class="fas fa-paper-plane"></i> Send to <span id="btnSelectedCount">0</span> users
+                <i class="fas fa-paper-plane"></i> Open in Gmail (<span id="btnSelectedCount">0</span>)
               </button>
-            </div>
-            
-            <div id="sendingProgress" style="display:none; margin-top:16px;">
-              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px;">
-                <span id="progressText">Sending...</span>
-                <span id="progressPercent">0%</span>
-              </div>
-              <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                <div id="progressBar" style="width:0%; height:100%; background:#2dd4bf; transition:width 0.3s;"></div>
-              </div>
             </div>
           </div>
         </div>
@@ -2071,9 +2054,6 @@
             <div style="font-weight:700; font-size:16px;">${subject}</div>
           </div>
           <div style="color:#1e293b; line-height:1.6; white-space: pre-wrap;">${previewBody}</div>
-          <div style="margin-top:30px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:12px; color:#94a3b8;">
-            Sent from: ${document.getElementById('emailSender').options[document.getElementById('emailSender').selectedIndex].text}
-          </div>
         </div>
       `;
       
@@ -2094,7 +2074,6 @@
     async function handleSendEmail() {
       const subject = document.getElementById('emailSubject').value.trim();
       const body = document.getElementById('emailBody').value.trim();
-      const sender = document.getElementById('emailSender').value;
       
       if (selectedEmails.size === 0) {
         showToast('Please select at least one recipient', 'error');
@@ -2105,79 +2084,19 @@
         return;
       }
 
-      const btn = document.getElementById('sendEmailBtn');
-      const progressContainer = document.getElementById('sendingProgress');
-      const progressBar = document.getElementById('progressBar');
-      const progressPercent = document.getElementById('progressPercent');
-      const progressText = document.getElementById('progressText');
+      const recipients = Array.from(selectedEmails).join(',');
       
-      const originalText = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      // Gmail Compose URL format:
+      // https://mail.google.com/mail/?view=cm&fs=1&to=EMAIL&su=SUBJECT&body=BODY
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipients)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       
-      progressContainer.style.display = 'block';
-      progressBar.style.width = '0%';
-      progressPercent.textContent = '0%';
-      progressText.textContent = `Preparing to send to ${selectedEmails.size} users...`;
-
-      try {
-        const recipients = Array.from(selectedEmails);
-        const total = recipients.length;
-        
-        for (let i = 0; i < total; i++) {
-          const email = recipients[i];
-          const user = allUsers.find(u => u.email === email);
-          const userName = user ? (user.full_name || user.username || 'User') : 'User';
-          
-          // Update progress
-          const percent = Math.round(((i + 1) / total) * 100);
-          progressBar.style.width = `${percent}%`;
-          progressPercent.textContent = `${percent}%`;
-          progressText.textContent = `Sending to ${email}...`;
-
-          // In a real implementation, you would call a Supabase Edge Function here:
-          /*
-          // To make this work with streamafricanetwork@gmail.com, you would:
-          // 1. Create a Supabase Edge Function: 'supabase functions new send-gmail'
-          // 2. Use 'nodemailer' in that function.
-          // 3. Use a Gmail 'App Password' for authentication.
-          
-          await _supabase.functions.invoke('send-gmail', {
-            body: { 
-              to: email,
-              from: 'streamafricanetwork@gmail.com',
-              fromName: 'Stream Africa Network',
-              subject: subject,
-              body: body.replace(/{name}/g, userName)
-            }
-          });
-          */
-
-          // Simulate network delay for bulk sending
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        showToast(`✅ Successfully sent ${total} emails!`, 'success');
-        
-        // Update last sent time
-        document.getElementById('lastSentTime').textContent = new Date().toLocaleTimeString();
-        
-        // Reset form after a delay
-        setTimeout(() => {
-          document.getElementById('emailSubject').value = '';
-          document.getElementById('emailBody').value = '';
-          selectedEmails.clear();
-          renderRecipients();
-          progressContainer.style.display = 'none';
-        }, 1500);
-        
-      } catch (err) {
-        showToast('Failed to send emails: ' + err.message, 'error');
-        progressText.textContent = 'Error occurred during sending.';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
+      // Open Gmail in a new tab
+      window.open(gmailUrl, '_blank');
+      
+      showToast('Redirecting to Gmail...', 'success');
+      
+      // Update last sent time
+      document.getElementById('lastSentTime').textContent = new Date().toLocaleTimeString();
     }
 
     // Initialize the navigation link for "Users" to scroll to user management
