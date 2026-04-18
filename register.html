@@ -298,6 +298,10 @@
     const password = document.getElementById('password').value;
     const confirm = document.getElementById('confirmPassword').value;
 
+    // Capture referral ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referredBy = urlParams.get('ref');
+
     let valid = true;
     if (!fullName) { showError('errFullName', 'fullName'); valid = false; }
     if (!username) { showError('errUsername', 'username'); valid = false; }
@@ -316,7 +320,12 @@
         email,
         password,
         options: {
-          data: { full_name: fullName, username, phone },
+          data: { 
+            full_name: fullName, 
+            username, 
+            phone,
+            referred_by: referredBy 
+          },
           emailRedirectTo: window.location.origin + '/login.html'
         }
       });
