@@ -968,6 +968,16 @@
           return;
         }
 
+        // 1. Fetch current user data to check referral
+        const { data: user, error: uErr } = await _supabase
+          .from('profiles')
+          .select('id, is_approved, referred_by')
+          .eq('id', userId)
+          .single();
+        
+        if (uErr) throw uErr;
+
+        // 2. Update the status
         const { error } = await _supabase
           .from('profiles')
           .update({ is_approved: isChecked })
@@ -977,10 +987,15 @@
           checkbox.checked = !isChecked; // Revert toggle
           showToast(`Error updating access: ${error.message}`, 'error');
         } else {
+          // 3. If just approved and has a referrer, grant referral reward
+          if (isChecked === true && user.is_approved !== true && user.referred_by) {
+            await grantReferralReward(user.referred_by, userId);
+          }
+
           // Update local state and re-render so user moves to correct section instantly
-          const user = allUsers.find(u => u.id === userId);
-          if (user) user.is_approved = isChecked;
-          showToast(isChecked ? '✅ User approved — moved to Approved section' : '❌ Access revoked — moved to Pending section', isChecked ? 'success' : 'error');
+          const target = allUsers.find(u => u.id === userId);
+          if (target) target.is_approved = isChecked;
+          showToast(isChecked ? '✅ User approved & Referral Paid' : '❌ Access revoked', isChecked ? 'success' : 'error');
           renderUsers(allUsers);
           updateStats();
         }
